@@ -1,13 +1,13 @@
 // Content script for ChatGPT pages - handles message pinning and highlighting
 
-let hoveredElement = null;
-let pinButton = null;
-
-// Create floating pin button
-function createPinButton() {
-  if (pinButton) return pinButton;
+// Create a pin button for a specific message
+function createPinButtonForMessage(messageContainer) {
+  // Check if button already exists
+  if (messageContainer.querySelector('.pingpt-pin-button')) {
+    return;
+  }
   
-  pinButton = document.createElement('button');
+  const pinButton = document.createElement('button');
   // SVG pin icon matching ChatGPT's style
   pinButton.innerHTML = `
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -27,8 +27,8 @@ function createPinButton() {
     width: 28px;
     height: 28px;
     cursor: pointer;
-    display: none;
-    transition: background 0.15s, color 0.15s;
+    opacity: 0;
+    transition: opacity 0.15s, background 0.15s, color 0.15s;
     pointer-events: auto;
     left: -36px;
     top: 8px;
@@ -47,13 +47,16 @@ function createPinButton() {
   pinButton.addEventListener('click', async (e) => {
     e.stopPropagation();
     e.preventDefault();
-    if (hoveredElement) {
-      await openPinDialog(hoveredElement);
-    }
-    pinButton.style.display = 'none';
+    await openPinDialog(messageContainer);
   });
   
-  document.body.appendChild(pinButton);
+  // Set position relative on container if needed
+  const computedPosition = window.getComputedStyle(messageContainer).position;
+  if (computedPosition === 'static') {
+    messageContainer.style.position = 'relative';
+  }
+  
+  messageContainer.appendChild(pinButton);
   return pinButton;
 }
 
@@ -75,134 +78,81 @@ function findMessageContainer(element) {
   return null;
 }
 
-// Show pin button on hover
-function attachHoverListeners() {
-  let hideTimeout = null;
-  let lastHoveredElement = null;
+// Add pin buttons to all existing messages and observe for new ones
+function initializePinButtons() {
+  console.log('PinGPT: Initializing pin buttons');
   
-  console.log('PinGPT: Hover listeners attached');
+  // Find all message containers
+  function findAllMessages() {
+    // Look for elements with data-message-author-role attribute
+    return document.querySelectorAll('[data-message-author-role]');
+  }
   
-  document.addEventListener('mouseover', (e) => {
-    const target = e.target;
-    
-    // Skip if hovering over the button itself or its children
-    if (target === pinButton || pinButton?.contains(target)) {
-      if (hideTimeout) {
-        clearTimeout(hideTimeout);
-        hideTimeout = null;
+  // Add buttons to existing messages
+  function addButtonsToExistingMessages() {
+    const messages = findAllMessages();
+    console.log(`PinGPT: Found ${messages.length} messages`);
+    messages.forEach(msg => {
+      const text = (msg.innerText || '').trim();
+      // Only add button to messages with meaningful content
+      if (text.length >= 10) {
+        createPinButtonForMessage(msg);
       }
-      return;
-    }
-    
-    // Don't show on input areas, buttons, sidebar, navigation, footer, or header
-    if (target.closest && target.closest('textarea, input, button, form, nav, aside, header, footer, [role="navigation"], [role="banner"], [role="contentinfo"]')) {
-      return;
-    }
-    
-    // Make sure we're in the main content area
-    const mainContent = document.querySelector('main');
-    if (!mainContent || !mainContent.contains(target)) {
-      return;
-    }
-    
-    // Skip footer disclaimers and UI elements
-    const textContent = target.textContent || '';
-    if (textContent.includes('ChatGPT can make mistakes') || 
-        textContent.includes('Share') || 
-        target.closest('.sticky, [class*="footer"], [class*="disclaimer"]')) {
-      return;
-    }
-    
-    // Look for message containers
-    const messageContainer = findMessageContainer(target);
-    if (!messageContainer) {
-      return;
-    }
-    
-    // Verify it's actually a message with meaningful content
-    const text = (messageContainer.innerText || '').trim();
-    if (text.length < 10) {
-      return;
-    }
-    
-    // Don't reposition if we're still on the same element and button is visible
-    if (messageContainer === lastHoveredElement && pinButton && pinButton.style.display === 'flex') {
-      return;
-    }
-    
-    // Clear any pending hide
-    if (hideTimeout) {
-      clearTimeout(hideTimeout);
-      hideTimeout = null;
-    }
-    
-    lastHoveredElement = messageContainer;
-    hoveredElement = messageContainer;
-    
-    const btn = createPinButton();
-    
-    console.log('PinGPT: Showing button for message:', text.slice(0, 50));
-    
-    // Set position relative on container if needed
-    const computedPosition = window.getComputedStyle(messageContainer).position;
-    if (computedPosition === 'static') {
-      messageContainer.style.position = 'relative';
-    }
-    
-    // Append button to the message container
-    if (btn.parentElement !== messageContainer) {
-      messageContainer.appendChild(btn);
-    }
-    
-    // Button position is set in CSS (left: -36px, top: 8px)
-    btn.style.display = 'flex';
-  });
+    });
+  }
   
-  document.addEventListener('mouseout', (e) => {
-    const relatedTarget = e.relatedTarget;
+  // Initial setup
+  addButtonsToExistingMessages();
+  
+  // Observe for new messages
+  const observer = new MutationObserver((mutations) => {
+    let shouldUpdate = false;
     
-    // Don't hide if moving to the button
-    if (relatedTarget === pinButton || pinButton?.contains(relatedTarget)) {
-      if (hideTimeout) {
-        clearTimeout(hideTimeout);
-        hideTimeout = null;
-      }
-      return;
-    }
-    
-    // Only hide if we're leaving the message container
-    const messageContainer = findMessageContainer(e.target);
-    if (messageContainer === lastHoveredElement) {
-      // Check if the related target is still within the same message
-      const newMessageContainer = relatedTarget ? findMessageContainer(relatedTarget) : null;
-      if (newMessageContainer === messageContainer) {
-        return; // Still within same message
-      }
-      
-      // Delay hiding to allow moving to button
-      hideTimeout = setTimeout(() => {
-        // Check if button is being hovered or if cursor returned to message
-        if (pinButton && !pinButton.matches(':hover')) {
-          const currentHover = document.querySelector(':hover');
-          const hoveredMessage = currentHover ? findMessageContainer(currentHover) : null;
-          if (hoveredMessage !== lastHoveredElement) {
-            pinButton.style.display = 'none';
-            lastHoveredElement = null;
+    mutations.forEach(mutation => {
+      mutation.addedNodes.forEach(node => {
+        if (node.nodeType === 1) { // Element node
+          // Check if the node itself is a message
+          if (node.getAttribute && node.getAttribute('data-message-author-role')) {
+            const text = (node.innerText || '').trim();
+            if (text.length >= 10) {
+              createPinButtonForMessage(node);
+              shouldUpdate = true;
+            }
+          }
+          // Check if the node contains messages
+          else if (node.querySelectorAll) {
+            const newMessages = node.querySelectorAll('[data-message-author-role]');
+            newMessages.forEach(msg => {
+              const text = (msg.innerText || '').trim();
+              if (text.length >= 10 && !msg.querySelector('.pingpt-pin-button')) {
+                createPinButtonForMessage(msg);
+                shouldUpdate = true;
+              }
+            });
           }
         }
-      }, 200);
+      });
+    });
+    
+    if (shouldUpdate) {
+      console.log('PinGPT: New messages detected, buttons added');
     }
   });
   
-  // Also hide button when it's not hovered anymore and mouse leaves it
-  document.addEventListener('mouseover', (e) => {
-    if (e.target === pinButton || pinButton?.contains(e.target)) {
-      if (hideTimeout) {
-        clearTimeout(hideTimeout);
-        hideTimeout = null;
-      }
-    }
-  });
+  // Observe the main content area
+  const mainContent = document.querySelector('main');
+  if (mainContent) {
+    observer.observe(mainContent, {
+      childList: true,
+      subtree: true
+    });
+    console.log('PinGPT: Observer attached to main content');
+  }
+  
+  // Re-scan periodically for any missed messages
+  setInterval(() => {
+    addButtonsToExistingMessages();
+  }, 3000);
 }
 
 // Get XPath for an element
@@ -865,9 +815,9 @@ if (typeof idbGetAll === 'function') {
   console.error('❌ PinGPT: idb.js not loaded properly!');
 }
 
-attachHoverListeners();
+initializePinButtons();
 
-// Add CSS animation
+// Add CSS for pin button hover effects
 const style = document.createElement('style');
 style.textContent = `
   @keyframes slideIn {
@@ -881,6 +831,11 @@ style.textContent = `
     }
   }
   
+  /* Show pin button on message hover */
+  [data-message-author-role]:hover .pingpt-pin-button {
+    opacity: 1 !important;
+  }
+  
   .pingpt-pin-button {
     display: flex !important;
     align-items: center;
@@ -889,6 +844,7 @@ style.textContent = `
   
   .pingpt-pin-button:hover {
     background: rgba(0, 0, 0, 0.1) !important;
+    opacity: 1 !important;
   }
   
   .pingpt-pin-button svg {
