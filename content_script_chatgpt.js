@@ -8,36 +8,47 @@ function createPinButton() {
   if (pinButton) return pinButton;
   
   pinButton = document.createElement('button');
-  pinButton.innerHTML = '📌 Pin';
+  // SVG pin icon matching ChatGPT's style
+  pinButton.innerHTML = `
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M16 12V4H17V2H7V4H8V12L6 14V16H11V22H13V16H18V14L16 12Z" fill="currentColor"/>
+    </svg>
+  `;
+  pinButton.title = 'Pin this message';
+  pinButton.className = 'pingpt-pin-button';
   pinButton.style.cssText = `
     position: absolute;
     z-index: 10000;
-    background: #10a37f;
-    color: white;
+    background: transparent;
+    color: #6e6e80;
     border: none;
     border-radius: 6px;
-    padding: 6px 12px;
-    font-size: 13px;
-    font-weight: 600;
+    padding: 4px;
+    width: 28px;
+    height: 28px;
     cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     display: none;
-    transition: opacity 0.2s;
+    transition: background 0.15s, color 0.15s;
+    pointer-events: auto;
+    left: -36px;
+    top: 8px;
   `;
   
   pinButton.addEventListener('mouseenter', () => {
-    pinButton.style.opacity = '1';
+    pinButton.style.background = 'rgba(0, 0, 0, 0.1)';
+    pinButton.style.color = '#000';
   });
   
   pinButton.addEventListener('mouseleave', () => {
-    pinButton.style.opacity = '0.9';
+    pinButton.style.background = 'transparent';
+    pinButton.style.color = '#6e6e80';
   });
   
   pinButton.addEventListener('click', async (e) => {
     e.stopPropagation();
     e.preventDefault();
     if (hoveredElement) {
-      await pinMessage(hoveredElement);
+      await openPinDialog(hoveredElement);
     }
     pinButton.style.display = 'none';
   });
@@ -49,15 +60,14 @@ function createPinButton() {
 // Find the message container element
 function findMessageContainer(element) {
   let current = element;
-  // Look for ChatGPT message containers (adjust selectors based on actual ChatGPT structure)
+  // Look for ChatGPT message containers - specifically those with data-message-author-role
   while (current && current !== document.body) {
-    // Try multiple possible selectors for ChatGPT messages
-    if (current.matches('[data-message-author-role], [data-message-id], .group, article') || 
-        current.classList.contains('markdown') ||
-        current.classList.contains('min-h-8') ||
-        current.getAttribute('data-testid')?.includes('conversation-turn') ||
-        (current.tagName === 'DIV' && current.querySelector('.markdown')) ||
-        (current.tagName === 'DIV' && current.querySelector('[data-message-author-role]'))) {
+    // Primary selector: actual message containers with author role
+    if (current.getAttribute('data-message-author-role')) {
+      return current;
+    }
+    // Fallback: div containing a child with data-message-author-role
+    if (current.tagName === 'DIV' && current.querySelector('[data-message-author-role]')) {
       return current;
     }
     current = current.parentElement;
@@ -70,28 +80,53 @@ function attachHoverListeners() {
   let hideTimeout = null;
   let lastHoveredElement = null;
   
+  console.log('PinGPT: Hover listeners attached');
+  
   document.addEventListener('mouseover', (e) => {
-    // Check if we're hovering over message content
     const target = e.target;
-    if (!target.closest || target === pinButton) return;
     
-    // Don't show on input areas, buttons, sidebar, or navigation
-    if (target.closest('textarea, input, button, form, nav, aside, [role="navigation"]')) return;
+    // Skip if hovering over the button itself or its children
+    if (target === pinButton || pinButton?.contains(target)) {
+      if (hideTimeout) {
+        clearTimeout(hideTimeout);
+        hideTimeout = null;
+      }
+      return;
+    }
+    
+    // Don't show on input areas, buttons, sidebar, navigation, footer, or header
+    if (target.closest && target.closest('textarea, input, button, form, nav, aside, header, footer, [role="navigation"], [role="banner"], [role="contentinfo"]')) {
+      return;
+    }
     
     // Make sure we're in the main content area
     const mainContent = document.querySelector('main');
-    if (mainContent && !mainContent.contains(target)) return;
+    if (!mainContent || !mainContent.contains(target)) {
+      return;
+    }
+    
+    // Skip footer disclaimers and UI elements
+    const textContent = target.textContent || '';
+    if (textContent.includes('ChatGPT can make mistakes') || 
+        textContent.includes('Share') || 
+        target.closest('.sticky, [class*="footer"], [class*="disclaimer"]')) {
+      return;
+    }
     
     // Look for message containers
     const messageContainer = findMessageContainer(target);
-    if (!messageContainer) return;
+    if (!messageContainer) {
+      return;
+    }
     
     // Verify it's actually a message with meaningful content
     const text = (messageContainer.innerText || '').trim();
-    if (text.length < 10) return; // Skip elements with very little text
+    if (text.length < 10) {
+      return;
+    }
     
-    // Don't reposition if we're still on the same element
-    if (messageContainer === lastHoveredElement && pinButton && pinButton.style.display === 'block') {
+    // Don't reposition if we're still on the same element and button is visible
+    if (messageContainer === lastHoveredElement && pinButton && pinButton.style.display === 'flex') {
       return;
     }
     
@@ -103,28 +138,69 @@ function attachHoverListeners() {
     
     lastHoveredElement = messageContainer;
     hoveredElement = messageContainer;
-    const btn = createPinButton();
-    const rect = messageContainer.getBoundingClientRect();
     
-    btn.style.display = 'block';
-    btn.style.left = (rect.right - 80) + 'px';
-    btn.style.top = (rect.top + window.scrollY + 8) + 'px';
-    btn.style.opacity = '0.9';
+    const btn = createPinButton();
+    
+    console.log('PinGPT: Showing button for message:', text.slice(0, 50));
+    
+    // Set position relative on container if needed
+    const computedPosition = window.getComputedStyle(messageContainer).position;
+    if (computedPosition === 'static') {
+      messageContainer.style.position = 'relative';
+    }
+    
+    // Append button to the message container
+    if (btn.parentElement !== messageContainer) {
+      messageContainer.appendChild(btn);
+    }
+    
+    // Button position is set in CSS (left: -36px, top: 8px)
+    btn.style.display = 'flex';
   });
   
   document.addEventListener('mouseout', (e) => {
-    const target = e.target;
-    if (target === pinButton || target.contains(pinButton)) return;
+    const relatedTarget = e.relatedTarget;
+    
+    // Don't hide if moving to the button
+    if (relatedTarget === pinButton || pinButton?.contains(relatedTarget)) {
+      if (hideTimeout) {
+        clearTimeout(hideTimeout);
+        hideTimeout = null;
+      }
+      return;
+    }
     
     // Only hide if we're leaving the message container
-    const messageContainer = findMessageContainer(target);
+    const messageContainer = findMessageContainer(e.target);
     if (messageContainer === lastHoveredElement) {
+      // Check if the related target is still within the same message
+      const newMessageContainer = relatedTarget ? findMessageContainer(relatedTarget) : null;
+      if (newMessageContainer === messageContainer) {
+        return; // Still within same message
+      }
+      
+      // Delay hiding to allow moving to button
       hideTimeout = setTimeout(() => {
+        // Check if button is being hovered or if cursor returned to message
         if (pinButton && !pinButton.matches(':hover')) {
-          pinButton.style.display = 'none';
-          lastHoveredElement = null;
+          const currentHover = document.querySelector(':hover');
+          const hoveredMessage = currentHover ? findMessageContainer(currentHover) : null;
+          if (hoveredMessage !== lastHoveredElement) {
+            pinButton.style.display = 'none';
+            lastHoveredElement = null;
+          }
         }
       }, 200);
+    }
+  });
+  
+  // Also hide button when it's not hovered anymore and mouse leaves it
+  document.addEventListener('mouseover', (e) => {
+    if (e.target === pinButton || pinButton?.contains(e.target)) {
+      if (hideTimeout) {
+        clearTimeout(hideTimeout);
+        hideTimeout = null;
+      }
     }
   });
 }
@@ -171,45 +247,263 @@ function getTextAnchors(element) {
   };
 }
 
-// Pin a message
-async function pinMessage(element) {
-  const messageText = element.innerText || element.textContent || '';
-  if (!messageText.trim()) {
-    showNotification('⚠️ No text found to pin');
-    return;
-  }
-  
-  const name = prompt('Name this pin (optional):', '');
-  if (name === null) return; // User cancelled
-  
-  const tagsInput = prompt('Add tags (comma-separated, optional):', '');
-  const tags = tagsInput ? tagsInput.split(',').map(t => t.trim()).filter(Boolean) : [];
-  
-  const pin = {
-    id: crypto.randomUUID(),
-    messageText: messageText.trim(),
-    name: name.trim(),
-    tags: tags,
-    pageUrl: window.location.href,
-    site: 'ChatGPT',
-    pinnedAt: Date.now(),
-    xpath: getXPath(element),
-    anchors: getTextAnchors(element)
-  };
-  
-  try {
-    // Use the global idbAdd function
-    if (typeof idbAdd === 'function') {
-      await idbAdd(pin);
-      console.log('Pin saved successfully:', pin);
-      showNotification('✅ Message pinned successfully!');
-    } else {
-      throw new Error('idbAdd function not available');
+// Create and show pin dialog
+function openPinDialog(element) {
+  return new Promise((resolve) => {
+    const messageText = element.innerText || element.textContent || '';
+    if (!messageText.trim()) {
+      showNotification('⚠️ No text found to pin');
+      resolve();
+      return;
     }
-  } catch (err) {
-    console.error('Failed to pin:', err);
-    showNotification('❌ Failed to save pin: ' + err.message);
-  }
+    
+    // Create modal overlay
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 100000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+    `;
+    
+    // Create dialog
+    const dialog = document.createElement('div');
+    dialog.style.cssText = `
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      font-family: system-ui, -apple-system, sans-serif;
+    `;
+    
+    const messagePreview = messageText.length > 300 ? messageText.slice(0, 300) + '...' : messageText;
+    
+    dialog.innerHTML = `
+      <h2 style="margin: 0 0 20px 0; font-size: 20px; color: #202124;">📌 Pin Message</h2>
+      
+      <div style="margin-bottom: 16px;">
+        <label style="display: block; font-weight: 600; margin-bottom: 6px; color: #5f6368; font-size: 14px;">
+          Preview
+        </label>
+        <div style="
+          background: #f8f9fa;
+          border: 1px solid #e8eaed;
+          border-radius: 6px;
+          padding: 12px;
+          max-height: 150px;
+          overflow-y: auto;
+          font-size: 13px;
+          color: #5f6368;
+          white-space: pre-wrap;
+          line-height: 1.5;
+        ">${escapeHtml(messagePreview)}</div>
+      </div>
+      
+      <div style="margin-bottom: 16px;">
+        <label for="pin-name" style="display: block; font-weight: 600; margin-bottom: 6px; color: #5f6368; font-size: 14px;">
+          Name (optional)
+        </label>
+        <input 
+          type="text" 
+          id="pin-name" 
+          placeholder="Give this pin a memorable name..."
+          style="
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #dadce0;
+            border-radius: 6px;
+            font-size: 14px;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+          "
+        />
+      </div>
+      
+      <div style="margin-bottom: 24px;">
+        <label for="pin-tags" style="display: block; font-weight: 600; margin-bottom: 6px; color: #5f6368; font-size: 14px;">
+          Tags (optional)
+        </label>
+        <input 
+          type="text" 
+          id="pin-tags" 
+          placeholder="python, tutorial, code (comma-separated)"
+          style="
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #dadce0;
+            border-radius: 6px;
+            font-size: 14px;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+          "
+        />
+        <div style="font-size: 12px; color: #80868b; margin-top: 4px;">
+          Separate tags with commas
+        </div>
+      </div>
+      
+      <div style="display: flex; gap: 10px; justify-content: flex-end;">
+        <button 
+          id="pin-cancel" 
+          style="
+            padding: 10px 20px;
+            border: 1px solid #dadce0;
+            border-radius: 6px;
+            background: white;
+            color: #5f6368;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+          "
+        >Cancel</button>
+        <button 
+          id="pin-save" 
+          style="
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            background: #10a37f;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+          "
+        >Save Pin</button>
+      </div>
+    `;
+    
+    overlay.appendChild(dialog);
+    document.body.appendChild(overlay);
+    
+    // Focus on name input
+    setTimeout(() => {
+      const nameInput = document.getElementById('pin-name');
+      if (nameInput) nameInput.focus();
+    }, 100);
+    
+    // Add hover effects
+    const cancelBtn = dialog.querySelector('#pin-cancel');
+    const saveBtn = dialog.querySelector('#pin-save');
+    
+    cancelBtn.addEventListener('mouseenter', () => {
+      cancelBtn.style.background = '#f8f9fa';
+    });
+    cancelBtn.addEventListener('mouseleave', () => {
+      cancelBtn.style.background = 'white';
+    });
+    
+    saveBtn.addEventListener('mouseenter', () => {
+      saveBtn.style.background = '#0d8a6a';
+    });
+    saveBtn.addEventListener('mouseleave', () => {
+      saveBtn.style.background = '#10a37f';
+    });
+    
+    // Handle input focus
+    const inputs = dialog.querySelectorAll('input');
+    inputs.forEach(input => {
+      input.addEventListener('focus', () => {
+        input.style.borderColor = '#10a37f';
+        input.style.outline = 'none';
+      });
+      input.addEventListener('blur', () => {
+        input.style.borderColor = '#dadce0';
+      });
+    });
+    
+    // Handle cancel
+    const closeDialog = () => {
+      overlay.remove();
+      resolve();
+    };
+    
+    cancelBtn.addEventListener('click', closeDialog);
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closeDialog();
+    });
+    
+    // Handle save
+    saveBtn.addEventListener('click', async () => {
+      const nameInput = document.getElementById('pin-name');
+      const tagsInput = document.getElementById('pin-tags');
+      
+      const name = nameInput.value.trim();
+      const tagsText = tagsInput.value.trim();
+      const tags = tagsText ? tagsText.split(',').map(t => t.trim()).filter(Boolean) : [];
+      
+      const pin = {
+        id: crypto.randomUUID(),
+        messageText: messageText.trim(),
+        name: name,
+        tags: tags,
+        pageUrl: window.location.href,
+        site: 'ChatGPT',
+        pinnedAt: Date.now(),
+        xpath: getXPath(element),
+        anchors: getTextAnchors(element)
+      };
+      
+      try {
+        if (typeof idbAdd === 'function') {
+          await idbAdd(pin);
+          console.log('Pin saved successfully:', pin);
+          overlay.remove();
+          showNotification('✅ Message pinned successfully!');
+          resolve();
+        } else {
+          throw new Error('idbAdd function not available');
+        }
+      } catch (err) {
+        console.error('Failed to pin:', err);
+        showNotification('❌ Failed to save pin: ' + err.message);
+        overlay.remove();
+        resolve();
+      }
+    });
+    
+    // Handle Enter key to save
+    inputs.forEach(input => {
+      input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          saveBtn.click();
+        }
+      });
+    });
+    
+    // Handle Escape key to cancel
+    document.addEventListener('keydown', function escapeHandler(e) {
+      if (e.key === 'Escape') {
+        closeDialog();
+        document.removeEventListener('keydown', escapeHandler);
+      }
+    });
+  });
+}
+
+// Helper function to escape HTML
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// Pin a message (legacy function for context menu)
+async function pinMessage(element) {
+  // Just call the dialog
+  return openPinDialog(element);
 }
 
 // Show temporary notification
@@ -257,24 +551,38 @@ function findByTextAnchors(anchors) {
   
   // Try to find in main content area first
   const mainContent = document.querySelector('main') || document.body;
-  const allElements = mainContent.querySelectorAll('[data-message-author-role], [data-message-id], article, .markdown');
+  const allElements = mainContent.querySelectorAll('[data-message-author-role], [data-message-id], article, .markdown, [class*="group"]');
+  
+  // Normalize text for better matching
+  const normalizeText = (text) => text.trim().replace(/\s+/g, ' ');
   
   for (const el of allElements) {
-    const text = (el.innerText || el.textContent || '').trim();
+    const text = normalizeText(el.innerText || el.textContent || '');
+    
+    if (text.length < 10) continue; // Skip empty elements
     
     // Try exact match with full anchor text
-    if (anchors.full && text.includes(anchors.full.trim())) {
-      return el;
+    if (anchors.full) {
+      const normalizedFull = normalizeText(anchors.full);
+      if (text.includes(normalizedFull)) {
+        return el;
+      }
     }
     
     // Try prefix match (first 100 chars)
-    if (anchors.prefix && text.includes(anchors.prefix.trim())) {
-      return el;
+    if (anchors.prefix) {
+      const normalizedPrefix = normalizeText(anchors.prefix);
+      if (text.includes(normalizedPrefix)) {
+        return el;
+      }
     }
     
     // Try suffix match
-    if (anchors.suffix && text.includes(anchors.suffix.trim())) {
-      return el;
+    if (anchors.suffix) {
+      const normalizedSuffix = normalizeText(anchors.suffix);
+      if (text.includes(normalizedSuffix)) {
+        return el;
+      }
     }
   }
   
@@ -440,6 +748,22 @@ function addManualPinButton() {
       manualBtn.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
     });
     
+    // Function to check and toggle button visibility
+    const updateButtonVisibility = () => {
+      const mainContent = document.querySelector('main') || document.body;
+      const messages = mainContent.querySelectorAll('[data-message-author-role], article');
+      const hasMessages = Array.from(messages).some(el => (el.innerText || '').trim().length > 10);
+      manualBtn.style.display = hasMessages ? 'block' : 'none';
+    };
+    
+    // Initial check
+    updateButtonVisibility();
+    
+    // Observe DOM changes to show/hide button
+    const observer = new MutationObserver(updateButtonVisibility);
+    const mainContent = document.querySelector('main') || document.body;
+    observer.observe(mainContent, { childList: true, subtree: true });
+    
     manualBtn.addEventListener('click', async () => {
       // Find all assistant messages in the main conversation area
       const mainContent = document.querySelector('main') || document.body;
@@ -467,7 +791,7 @@ function addManualPinButton() {
       
       // Get the last message
       const lastMessage = messages[messages.length - 1];
-      await pinMessage(lastMessage);
+      await openPinDialog(lastMessage);
     });
     
     document.body.appendChild(manualBtn);
@@ -509,6 +833,7 @@ if (typeof idbGetAll === 'function') {
     };
     
     console.log('%c✅ PinGPT Debug: Run this command to check database:', 'color: #10a37f; font-weight: bold');
+    console.log('✅ PinGPT Debug: Run this command to check database:', 'color: #10a37f; font-weight: bold');
     console.log('%cawait PinGPT_CheckDB()', 'color: #10a37f; font-size: 14px; background: #f0f0f0; padding: 4px');
   `;
   document.documentElement.appendChild(script);
@@ -541,7 +866,6 @@ if (typeof idbGetAll === 'function') {
 }
 
 attachHoverListeners();
-addManualPinButton();
 
 // Add CSS animation
 const style = document.createElement('style');
@@ -555,6 +879,20 @@ style.textContent = `
       transform: translateX(0);
       opacity: 1;
     }
+  }
+  
+  .pingpt-pin-button {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .pingpt-pin-button:hover {
+    background: rgba(0, 0, 0, 0.1) !important;
+  }
+  
+  .pingpt-pin-button svg {
+    pointer-events: none;
   }
 `;
 document.head.appendChild(style);
