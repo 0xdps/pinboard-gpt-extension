@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', async () => {
-  console.log('PinGPT popup loaded');
   const listEl = document.getElementById('list');
   const search = document.getElementById('search');
   const exportBtn = document.getElementById('exportBtn');
@@ -9,10 +8,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function getPins() { 
     try {
       const pins = await idbGetAll();
-      console.log('Fetched pins from DB:', pins);
       return pins;
     } catch (err) {
-      console.error('Error fetching pins:', err);
       return [];
     }
   }
@@ -40,10 +37,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   async function render() {
-    console.log('Rendering pins...');
     const pins = await getPins();
-    console.log('Total pins to render:', pins.length);
-    console.log('Pin details:', pins);
     const q = search.value.trim().toLowerCase();
     listEl.innerHTML = '';
     const filtered = pins.filter(p => {
@@ -54,7 +48,6 @@ document.addEventListener('DOMContentLoaded', async () => {
           || (p.site && p.site.toLowerCase().includes(q));
     }).sort((a,b)=>b.pinnedAt - a.pinnedAt);
     
-    console.log('Filtered pins:', filtered.length);
     
     if (!filtered.length) {
       listEl.innerHTML = '<div style="color:#666;padding:20px;text-align:center;">No pins yet. Visit ChatGPT and click the "📌 Pin Last Message" button!</div>';
@@ -62,7 +55,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     
     filtered.forEach(p => {
-      console.log('Rendering pin:', p.name || p.messageText.slice(0, 30));
       const el = renderPin(p);
       listEl.appendChild(el);
     });
@@ -81,11 +73,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (stored?.pageUrl) {
           chrome.runtime.sendMessage({ action: 'open-and-highlight', pin: stored }, (resp) => {
             if (chrome.runtime.lastError) {
-              console.error('Error sending message:', chrome.runtime.lastError);
               // Fallback: just open the URL
               chrome.tabs.create({ url: stored.pageUrl });
             } else {
-              console.log('Message sent successfully:', resp);
               // Close popup after opening
               window.close();
             }

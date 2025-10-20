@@ -21,7 +21,6 @@ async function idbAdd(pin) {
     await chrome.storage.local.set({ [STORAGE_KEY]: pins });
     return pin;
   } catch (err) {
-    console.error('Error adding pin:', err);
     throw err;
   }
 }
@@ -31,7 +30,6 @@ async function idbGetAll() {
     const result = await chrome.storage.local.get([STORAGE_KEY]);
     return result[STORAGE_KEY] || [];
   } catch (err) {
-    console.error('Error getting pins:', err);
     return [];
   }
 }
@@ -43,7 +41,6 @@ async function idbDelete(id) {
     const filtered = pins.filter(p => p.id !== id);
     await chrome.storage.local.set({ [STORAGE_KEY]: filtered });
   } catch (err) {
-    console.error('Error deleting pin:', err);
     throw err;
   }
 }
@@ -52,7 +49,6 @@ async function idbClear() {
   try {
     await chrome.storage.local.set({ [STORAGE_KEY]: [] });
   } catch (err) {
-    console.error('Error clearing pins:', err);
     throw err;
   }
 }

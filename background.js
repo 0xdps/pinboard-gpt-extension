@@ -31,11 +31,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       
       // Check if active tab is already on the target URL
       if (activeTab && activeTab.url && activeTab.url.startsWith(targetUrl.split('?')[0])) {
-        console.log('Already on the correct conversation, just highlighting...');
         // Just highlight without reloading
         chrome.tabs.sendMessage(activeTab.id, { action: 'highlight-pin', pin }, (resp) => {
           if (chrome.runtime.lastError) {
-            console.error('Error sending message:', chrome.runtime.lastError);
             sendResponse({ ok: false, error: chrome.runtime.lastError.message });
           } else {
             sendResponse({ ok: true, resp });
@@ -54,14 +52,12 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         // If we found the exact conversation tab, use it
         if (exactTabs && exactTabs.length > 0) {
           const t = exactTabs[0];
-          console.log('Found existing tab with exact URL:', t.id);
           chrome.windows.update(t.windowId, { focused: true }, () => {
             chrome.tabs.update(t.id, { active: true }, () => {
               // Don't reload, just wait a bit and highlight
               setTimeout(() => {
                 chrome.tabs.sendMessage(t.id, { action: 'highlight-pin', pin }, (resp) => {
                   if (chrome.runtime.lastError) {
-                    console.error('Error sending message:', chrome.runtime.lastError);
                     sendResponse({ ok: false, error: chrome.runtime.lastError.message });
                   } else {
                     sendResponse({ ok: true, resp });
@@ -76,7 +72,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             if (chatTabs && chatTabs.length > 0) {
               // Use existing ChatGPT tab but navigate to the correct URL
               const t = chatTabs[0];
-              console.log('Navigating existing ChatGPT tab to:', targetUrl);
               chrome.windows.update(t.windowId, { focused: true }, () => {
                 chrome.tabs.update(t.id, { active: true, url: targetUrl }, () => {
                   // Wait for navigation to complete
@@ -88,10 +83,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
                     setTimeout(() => {
                       chrome.tabs.sendMessage(t.id, { action: 'highlight-pin', pin }, (resp) => {
                         if (chrome.runtime.lastError) {
-                          console.log('Retry', attemptsLeft, ':', chrome.runtime.lastError.message);
                           trySend(attemptsLeft - 1);
                         } else {
-                          console.log('Successfully highlighted on navigation');
                           sendResponse({ ok: true, resp });
                         }
                       });
@@ -102,7 +95,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
               });
             } else {
               // No ChatGPT tab open, create a new one
-              console.log('Creating new tab with URL:', targetUrl);
               chrome.tabs.create({ url: targetUrl }, (newTab) => {
                 const trySend = (attemptsLeft = 20) => {
                   if (attemptsLeft <= 0) {
@@ -112,10 +104,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
                   setTimeout(() => {
                     chrome.tabs.sendMessage(newTab.id, { action: 'highlight-pin', pin }, (resp) => {
                       if (chrome.runtime.lastError) {
-                        console.log('Retry', attemptsLeft, ':', chrome.runtime.lastError.message);
                         trySend(attemptsLeft - 1);
                       } else {
-                        console.log('Successfully highlighted on new tab');
                         sendResponse({ ok: true, resp });
                       }
                     });

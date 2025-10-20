@@ -80,7 +80,6 @@ function findMessageContainer(element) {
 
 // Add pin buttons to all existing messages and observe for new ones
 function initializePinButtons() {
-  console.log('PinGPT: Initializing pin buttons');
   
   // Find all message containers
   function findAllMessages() {
@@ -91,7 +90,6 @@ function initializePinButtons() {
   // Add buttons to existing messages
   function addButtonsToExistingMessages() {
     const messages = findAllMessages();
-    console.log(`PinGPT: Found ${messages.length} messages`);
     messages.forEach(msg => {
       const text = (msg.innerText || '').trim();
       // Only add button to messages with meaningful content
@@ -135,7 +133,6 @@ function initializePinButtons() {
     });
     
     if (shouldUpdate) {
-      console.log('PinGPT: New messages detected, buttons added');
     }
   });
   
@@ -146,7 +143,6 @@ function initializePinButtons() {
       childList: true,
       subtree: true
     });
-    console.log('PinGPT: Observer attached to main content');
   }
   
   // Re-scan periodically for any missed messages
@@ -274,6 +270,9 @@ function openPinDialog(element) {
             border: 1px solid #dadce0;
             border-radius: 6px;
             font-size: 14px;
+            color: #202124;
+            background: white;
+            font-family: system-ui, -apple-system, sans-serif;
             box-sizing: border-box;
             transition: border-color 0.2s;
           "
@@ -294,6 +293,9 @@ function openPinDialog(element) {
             border: 1px solid #dadce0;
             border-radius: 6px;
             font-size: 14px;
+            color: #202124;
+            background: white;
+            font-family: system-ui, -apple-system, sans-serif;
             box-sizing: border-box;
             transition: border-color 0.2s;
           "
@@ -409,7 +411,6 @@ function openPinDialog(element) {
       try {
         if (typeof idbAdd === 'function') {
           await idbAdd(pin);
-          console.log('Pin saved successfully:', pin);
           overlay.remove();
           showNotification('✅ Message pinned successfully!');
           resolve();
@@ -417,7 +418,6 @@ function openPinDialog(element) {
           throw new Error('idbAdd function not available');
         }
       } catch (err) {
-        console.error('Failed to pin:', err);
         showNotification('❌ Failed to save pin: ' + err.message);
         overlay.remove();
         resolve();
@@ -490,7 +490,6 @@ function findByXPath(xpath) {
     const result = document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
     return result.singleNodeValue;
   } catch (err) {
-    console.warn('XPath lookup failed:', err);
     return null;
   }
 }
@@ -541,8 +540,6 @@ function findByTextAnchors(anchors) {
 
 // Highlight a pinned message
 async function highlightPin(pin) {
-  console.log('Attempting to highlight pin:', pin);
-  console.log('Pin text preview:', pin.messageText?.slice(0, 100));
   
   // Wait for page to be fully loaded and rendered
   await new Promise(resolve => {
@@ -562,67 +559,90 @@ async function highlightPin(pin) {
   
   // Try text anchors first (most reliable for ChatGPT)
   if (pin.anchors) {
-    console.log('Trying text anchor search...');
     element = findByTextAnchors(pin.anchors);
   }
   
   // Fallback to XPath
   if (!element && pin.xpath) {
-    console.log('Trying XPath search...');
     element = findByXPath(pin.xpath);
   }
   
   // Last resort: search by partial text match
   if (!element && pin.messageText) {
-    console.log('Trying direct text search...');
     const searchText = pin.messageText.slice(0, 100).trim();
     const mainContent = document.querySelector('main') || document.body;
-    const allElements = mainContent.querySelectorAll('[data-message-author-role], article, [data-testid*="conversation"]');
+    // Look specifically for message containers, not large wrapper divs
+    const allElements = mainContent.querySelectorAll('[data-message-author-role]');
     
     for (const el of allElements) {
       const text = (el.innerText || el.textContent || '').trim();
       if (text.includes(searchText)) {
         element = el;
-        console.log('Found via direct text search');
         break;
       }
     }
   }
   
   if (!element) {
-    console.warn('Could not find element for pin after all attempts');
     showNotification('⚠️ Could not find the pinned message on this page');
     return { found: false };
   }
   
-  console.log('Found element, scrolling and highlighting...');
+  // Verify we found a reasonably-sized element, not the whole page
+  const elementHeight = element.offsetHeight;
+  const viewportHeight = window.innerHeight;
+  
+  // If the element is larger than the viewport, try to find a more specific child
+  if (elementHeight > viewportHeight * 0.8) {
+    // Look for a more specific message container within this element
+    const messageContent = element.querySelector('.markdown, [class*="message"], [class*="content"]');
+    if (messageContent) {
+      element = messageContent;
+    }
+  }
   
   // Scroll to element with retries
   try {
     element.scrollIntoView({ behavior: 'smooth', block: 'center' });
   } catch (err) {
-    console.error('Scroll error:', err);
   }
   
   // Wait for scroll to complete
   await new Promise(resolve => setTimeout(resolve, 500));
   
-  // Highlight effect
+  // Highlight effect with subtle, non-blinding colors
   const originalBg = element.style.background;
-  const originalOutline = element.style.outline;
+  const originalBoxShadow = element.style.boxShadow;
   const originalTransition = element.style.transition;
   const originalBorderRadius = element.style.borderRadius;
+  const originalBorder = element.style.border;
+  const originalMaxWidth = element.style.maxWidth;
   
-  element.style.transition = 'background 0.3s ease';
-  element.style.background = '#fffacd';
-  element.style.outline = '3px solid #10a37f';
-  element.style.borderRadius = '8px';
+  // Use a very subtle highlight that's easy on the eyes
+  element.style.transition = 'all 0.4s ease';
+  element.style.background = 'rgba(16, 163, 127, 0.06)'; // Even more subtle green tint
+  element.style.border = '2px solid rgba(16, 163, 127, 0.4)'; // Lighter border
+  element.style.boxShadow = '0 0 0 3px rgba(16, 163, 127, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08)'; // Softer glow
+  element.style.borderRadius = '12px';
   
+  // Ensure the element doesn't expand too wide
+  if (!originalMaxWidth) {
+    element.style.maxWidth = 'min(100%, 800px)';
+  }
+  
+  // Fade out the highlight after 3 seconds
   setTimeout(() => {
+    element.style.transition = 'all 0.6s ease';
     element.style.background = originalBg;
-    element.style.outline = originalOutline;
-    element.style.transition = originalTransition;
+    element.style.boxShadow = originalBoxShadow;
+    element.style.border = originalBorder;
     element.style.borderRadius = originalBorderRadius;
+    element.style.maxWidth = originalMaxWidth;
+    
+    // Clean up transition after animation completes
+    setTimeout(() => {
+      element.style.transition = originalTransition;
+    }, 600);
   }, 3000);
   
   showNotification('📌 Found pinned message!');
@@ -631,7 +651,6 @@ async function highlightPin(pin) {
 
 // Listen for messages from background script
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  console.log('Content script received message:', msg);
   
   if (msg.action === 'pin-selection' && msg.text) {
     // Find element containing this text
@@ -646,12 +665,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     sendResponse({ ok: true });
     return true;
   } else if (msg.action === 'highlight-pin' && msg.pin) {
-    console.log('Highlighting pin...');
     highlightPin(msg.pin).then(result => {
-      console.log('Highlight result:', result);
       sendResponse(result);
     }).catch(err => {
-      console.error('Error highlighting:', err);
       sendResponse({ found: false, error: err.message });
     });
     return true; // Will respond asynchronously
@@ -745,76 +761,10 @@ function addManualPinButton() {
     });
     
     document.body.appendChild(manualBtn);
-    console.log('PinGPT: Manual pin button added');
   }, 1500);
 }
 
 // Initialize
-console.log('PinGPT content script loaded on:', window.location.href);
-console.log('PinGPT: idbAdd function available:', typeof idbAdd === 'function');
-console.log('PinGPT: idbGetAll function available:', typeof idbGetAll === 'function');
-
-// Expose debug functions to global window object
-if (typeof idbGetAll === 'function') {
-  // Create a script tag to inject functions into page context
-  const script = document.createElement('script');
-  script.textContent = `
-    // Inject DB access into page context
-    window.PinGPT_CheckDB = async function() {
-      const DB_NAME = 'chat_pinner_db';
-      const STORE = 'pins';
-      
-      return new Promise((resolve, reject) => {
-        const req = indexedDB.open(DB_NAME);
-        req.onsuccess = () => {
-          const db = req.result;
-          const tx = db.transaction(STORE, 'readonly');
-          const store = tx.objectStore(STORE);
-          const r = store.getAll();
-          r.onsuccess = () => {
-            console.log('📌 All pins in database:', r.result);
-            console.log('📊 Total pins:', r.result.length);
-            resolve(r.result);
-          };
-          r.onerror = () => reject(r.error);
-        };
-        req.onerror = () => reject(req.error);
-      });
-    };
-    
-    console.log('%c✅ PinGPT Debug: Run this command to check database:', 'color: #10a37f; font-weight: bold');
-    console.log('✅ PinGPT Debug: Run this command to check database:', 'color: #10a37f; font-weight: bold');
-    console.log('%cawait PinGPT_CheckDB()', 'color: #10a37f; font-size: 14px; background: #f0f0f0; padding: 4px');
-  `;
-  document.documentElement.appendChild(script);
-  script.remove();
-
-  // Also keep content script debug tools
-  window.PinGPT_ContentDebug = {
-    getAllPins: async function() {
-      const pins = await idbGetAll();
-      console.log('All pins in database (content script):', pins);
-      return pins;
-    },
-    addTestPin: async function() {
-      const pin = {
-        id: crypto.randomUUID(),
-        messageText: 'This is a test pin created from console',
-        name: 'Console Test Pin',
-        tags: ['test', 'debug'],
-        pageUrl: window.location.href,
-        site: 'ChatGPT',
-        pinnedAt: Date.now()
-      };
-      await idbAdd(pin);
-      console.log('Test pin added:', pin);
-      return pin;
-    }
-  };
-} else {
-  console.error('❌ PinGPT: idb.js not loaded properly!');
-}
-
 initializePinButtons();
 
 // Add CSS for pin button hover effects
