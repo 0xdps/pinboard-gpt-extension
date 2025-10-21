@@ -3,10 +3,6 @@
   "name": "PinGPT — ChatGPT Message Pinner",
   "description": "Pin messages in ChatGPT, add notes, and jump back to them.",
   "version": "1.0.0",
-  "developer": {
-    "name": "Devendra Pratap Singh",
-    "email": "devendra@example.com"
-  },
   "permissions": [
     "storage",
     "contextMenus",
