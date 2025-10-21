@@ -103,8 +103,8 @@ def create_pin_icon(size):
     
     return create_png(size, size, pixels)
 
-# Generate icons
-sizes = [16, 48, 128]
+# Generate icons - including high resolution versions
+sizes = [16, 48, 128, 256, 512]
 for size in sizes:
     print(f"Generating icon{size}.png...")
     png_data = create_pin_icon(size)

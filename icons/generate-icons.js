@@ -1,7 +1,7 @@
 const fs = require('fs');
 const { createCanvas, loadImage } = require('canvas');
 
-const sizes = [16, 48, 128];
+const sizes = [16, 48, 128, 256, 512];
 const svgContent = fs.readFileSync('icon.svg', 'utf8');
 
 async function generatePNGs() {
