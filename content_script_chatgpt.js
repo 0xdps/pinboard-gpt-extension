@@ -500,7 +500,8 @@ function findByTextAnchors(anchors) {
   
   // Try to find in main content area first
   const mainContent = document.querySelector('main') || document.body;
-  const allElements = mainContent.querySelectorAll('[data-message-author-role], [data-message-id], article, .markdown, [class*="group"]');
+  // ONLY search actual message containers - be very specific
+  const allElements = mainContent.querySelectorAll('[data-message-author-role]');
   
   // Normalize text for better matching
   const normalizeText = (text) => text.trim().replace(/\s+/g, ' ');
@@ -601,9 +602,19 @@ async function highlightPin(pin) {
     }
   }
   
+  // Store reference to ensure we're highlighting the same element we scroll to
+  const targetElement = element;
+  
+  // Ensure element is visible and in DOM before scrolling
+  if (!document.body.contains(targetElement)) {
+    showNotification('⚠️ Element no longer in page');
+    return { found: false };
+  }
+  
+  // Get element position before scroll
   // Scroll to element with retries
   try {
-    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
   } catch (err) {
   }
   
@@ -615,14 +626,12 @@ async function highlightPin(pin) {
   const originalBoxShadow = element.style.boxShadow;
   const originalTransition = element.style.transition;
   const originalBorderRadius = element.style.borderRadius;
-  const originalBorder = element.style.border;
   const originalMaxWidth = element.style.maxWidth;
   
-  // Use a very subtle highlight that's easy on the eyes
+  // Use a very subtle highlight that's easy on the eyes - no border, no margin/padding
   element.style.transition = 'all 0.4s ease';
-  element.style.background = 'rgba(16, 163, 127, 0.06)'; // Even more subtle green tint
-  element.style.border = '2px solid rgba(16, 163, 127, 0.4)'; // Lighter border
-  element.style.boxShadow = '0 0 0 3px rgba(16, 163, 127, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08)'; // Softer glow
+  element.style.background = 'rgba(16, 163, 127, 0.08)'; // Slightly more visible green tint
+  element.style.boxShadow = '0 2px 12px rgba(16, 163, 127, 0.2)'; // Soft shadow glow, no border effect
   element.style.borderRadius = '12px';
   
   // Ensure the element doesn't expand too wide
@@ -635,7 +644,6 @@ async function highlightPin(pin) {
     element.style.transition = 'all 0.6s ease';
     element.style.background = originalBg;
     element.style.boxShadow = originalBoxShadow;
-    element.style.border = originalBorder;
     element.style.borderRadius = originalBorderRadius;
     element.style.maxWidth = originalMaxWidth;
     
