@@ -1,14 +1,19 @@
 {
-  "name": "pingpt-chrome-extension",
-  "version": "1.0.1",
+  "name": "pingpt-extension",
+  "version": "1.1.0",
   "description": "Pin messages in ChatGPT, add notes, and jump back to them",
   "scripts": {
-    "build:icons": "cd icons && node generate-icons.js",
+    "clean": "rm -rf dist",
+    "build:chrome": "rm -rf dist/chrome && mkdir -p dist/chrome && cp -r src/common/* dist/chrome/ && cp src/chrome/manifest.json dist/chrome/",
+    "build:firefox": "rm -rf dist/firefox && mkdir -p dist/firefox && cp -r src/common/* dist/firefox/ && cp src/firefox/manifest.json dist/firefox/",
+    "build": "npm run clean && npm run build:chrome && npm run build:firefox",
+    "build:icons": "cd src/common/icons && node generate-icons.js",
     "build:assets": "cd assets && node generate-assets.js",
-    "pack": "zip -r pingpt-v$(node -p \"require('./manifest.json').version\").zip manifest.json background.js content_script_chatgpt.js idb.js popup.html popup.js styles.css icons/*.png -x '*.DS_Store' '*node_modules*'",
-    "pack:full": "zip -r pingpt-v$(node -p \"require('./manifest.json').version\")-full.zip manifest.json background.js content_script_chatgpt.js idb.js popup.html popup.js styles.css icons/*.png assets/*.png STORE_COPY.md PRIVACY_JUSTIFICATIONS.md -x '*.DS_Store' '*node_modules*'",
-    "build": "npm run build:icons && npm run build:assets",
-    "package": "npm run pack",
+    "pack:chrome": "cd dist/chrome && zip -r ../../pingpt-chrome-v$(node -p \"require('./manifest.json').version\").zip . -x '*.DS_Store' '*node_modules*'",
+    "pack:firefox": "cd dist/firefox && zip -r ../../pingpt-firefox-v$(node -p \"require('./manifest.json').version\").zip . -x '*.DS_Store' '*node_modules*'",
+    "pack": "npm run pack:chrome && npm run pack:firefox",
+    "dev:chrome": "npm run build:chrome && echo 'Load dist/chrome in Chrome'",
+    "dev:firefox": "npm run build:firefox && echo 'Load dist/firefox in Firefox'",
     "release": "npm run build && npm run pack"
   },
   "dependencies": {
