@@ -2,12 +2,15 @@
   "manifest_version": 3,
   "name": "PinGPT — ChatGPT Message Pinner",
   "description": "Pin messages in ChatGPT, add notes, and jump back to them.",
-  "version": "1.0.0",
+  "version": "1.0.1",
+  "developer": {
+    "name": "Devendra Pratap Singh",
+    "email": "dps.manit@gmail.com"
+  },
   "permissions": [
     "storage",
     "contextMenus",
     "activeTab",
-    "scripting",
     "tabs"
   ],
   "host_permissions": [
