@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2025-10-23
+
+### Added
+- **Chrome Sync Support**: Pins now sync across Chrome devices on the same account
+  - Automatic fallback to local storage when sync quota exceeded
+  - Smart quota management (102,400 bytes total, 8,192 bytes per item)
+  - Sync status indicator in popup showing quota usage
+  - Toggle button to enable/disable sync with data migration
+  - Visual indicators: 🔄 Syncing, 💾 Local storage, ⚠️ Quota exceeded
+
+### Changed
+- **Storage Optimization**: Reduced stored text from full paragraph to 120 characters maximum
+  - `messageText` field truncated to 120 characters
+  - `anchors.full` field reduced from 500 to 120 characters
+  - Significantly improved storage efficiency for sync compatibility
+
 ### Documentation
 - Merged CHROME_WEB_STORE_GUIDE.md and STORE_COPY.md into RELEASE.md
 - Created DEVELOPMENT.md - comprehensive developer guide

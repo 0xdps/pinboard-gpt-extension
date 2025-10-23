@@ -17,6 +17,35 @@ body {
     gap: 4px;
 }
 
+.sync-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 10px;
+    background: #f0f9f6;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    font-size: 12px;
+}
+
+.sync-status #syncText {
+    color: #10a37f;
+    font-weight: 500;
+}
+
+.sync-toggle {
+    padding: 4px 8px;
+    font-size: 11px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.sync-toggle:hover {
+    background: #f7f7f7;
+}
+
 #search {
     width: 100%;
     padding: 8px;

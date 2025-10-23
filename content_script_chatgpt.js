@@ -189,7 +189,7 @@ function getTextAnchors(element) {
   return {
     prefix: words.slice(0, 10).join(' ').slice(0, 100),
     suffix: words.slice(-10).join(' ').slice(-100),
-    full: text.slice(0, 500)
+    full: text.slice(0, 120)
   };
 }
 
@@ -398,7 +398,7 @@ function openPinDialog(element) {
       
       const pin = {
         id: crypto.randomUUID(),
-        messageText: messageText.trim(),
+        messageText: messageText.trim().slice(0, 120),
         name: name,
         tags: tags,
         pageUrl: window.location.href,

@@ -4,6 +4,49 @@ document.addEventListener('DOMContentLoaded', async () => {
   const exportBtn = document.getElementById('exportBtn');
   const importBtn = document.getElementById('importBtn');
   const importFile = document.getElementById('importFile');
+  const syncStatus = document.getElementById('syncStatus');
+  const syncText = document.getElementById('syncText');
+  const syncToggle = document.getElementById('syncToggle');
+
+  async function updateSyncStatus() {
+    try {
+      const status = await getSyncStatus();
+      if (status) {
+        if (status.enabled) {
+          syncText.textContent = `🔄 Syncing (${status.pinCount} pins, ${status.quotaUsed}% quota)`;
+          syncText.style.color = status.canSync ? '#10a37f' : '#ff6b6b';
+          if (!status.canSync) {
+            syncText.textContent = `⚠️ Sync disabled (quota exceeded)`;
+          }
+        } else {
+          syncText.textContent = '💾 Local storage only';
+          syncText.style.color = '#666';
+        }
+      }
+    } catch (err) {
+      syncText.textContent = '💾 Local storage';
+    }
+  }
+
+  syncToggle.onclick = async () => {
+    const status = await getSyncStatus();
+    const shouldEnable = !status.enabled;
+    
+    const message = shouldEnable 
+      ? 'Enable sync to automatically sync pins across all your Chrome devices?\n\nNote: Chrome Sync has a 100KB limit. If you have many pins, some may not sync.'
+      : 'Disable sync? Pins will only be stored locally on this device.';
+    
+    if (confirm(message)) {
+      try {
+        await toggleSync(shouldEnable);
+        await updateSyncStatus();
+        await render();
+        alert(shouldEnable ? 'Sync enabled! Your pins will sync across devices.' : 'Sync disabled. Pins are now local only.');
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    }
+  };
 
   async function getPins() { 
     try {
@@ -119,5 +162,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   };
 
+  await updateSyncStatus();
   await render();
 });
