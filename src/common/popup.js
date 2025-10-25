@@ -4,14 +4,45 @@ document.addEventListener('DOMContentLoaded', async () => {
   const exportBtn = document.getElementById('exportBtn');
   const importBtn = document.getElementById('importBtn');
   const importFile = document.getElementById('importFile');
-  const syncStatus = document.getElementById('syncStatus');
   const syncText = document.getElementById('syncText');
   const syncToggle = document.getElementById('syncToggle');
+  
+  // Settings Modal Elements
+  const settingsBtn = document.getElementById('settingsBtn');
+  const settingsModal = document.getElementById('settingsModal');
+  const closeSettings = document.getElementById('closeSettings');
+
+  // Settings Modal Handlers
+  settingsBtn.onclick = () => {
+    settingsModal.style.display = 'flex';
+    updateSyncStatus(); // Refresh sync status when opening settings
+  };
+
+  closeSettings.onclick = () => {
+    settingsModal.style.display = 'none';
+  };
+
+  // Close modal when clicking outside
+  settingsModal.onclick = (e) => {
+    if (e.target === settingsModal) {
+      settingsModal.style.display = 'none';
+    }
+  };
+
+  // Close modal with Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && settingsModal.style.display === 'flex') {
+      settingsModal.style.display = 'none';
+    }
+  });
 
   async function updateSyncStatus() {
     try {
       const status = await getSyncStatus();
       if (status) {
+        // Update checkbox state
+        syncToggle.checked = status.enabled;
+        
         if (status.enabled) {
           syncText.textContent = `🔄 Syncing (${status.pinCount} pins, ${status.quotaUsed}% quota)`;
           syncText.style.color = status.canSync ? '#10a37f' : '#ff6b6b';
@@ -25,26 +56,21 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     } catch (err) {
       syncText.textContent = '💾 Local storage';
+      syncToggle.checked = false;
     }
   }
 
-  syncToggle.onclick = async () => {
-    const status = await getSyncStatus();
-    const shouldEnable = !status.enabled;
+  syncToggle.onchange = async () => {
+    const shouldEnable = syncToggle.checked;
     
-    const message = shouldEnable 
-      ? 'Enable sync to automatically sync pins across all your Chrome devices?\n\nNote: Chrome Sync has a 100KB limit. If you have many pins, some may not sync.'
-      : 'Disable sync? Pins will only be stored locally on this device.';
-    
-    if (confirm(message)) {
-      try {
-        await toggleSync(shouldEnable);
-        await updateSyncStatus();
-        await render();
-        alert(shouldEnable ? 'Sync enabled! Your pins will sync across devices.' : 'Sync disabled. Pins are now local only.');
-      } catch (err) {
-        alert('Error: ' + err.message);
-      }
+    try {
+      await toggleSync(shouldEnable);
+      await updateSyncStatus();
+      await render();
+    } catch (err) {
+      // Revert toggle state on error
+      syncToggle.checked = !shouldEnable;
+      alert('Error toggling sync: ' + err.message);
     }
   };
 
@@ -93,7 +119,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     
     if (!filtered.length) {
-      listEl.innerHTML = '<div style="color:#666;padding:20px;text-align:center;">No pins yet. Visit ChatGPT and click the "📌 Pin Last Message" button!</div>';
+      listEl.innerHTML = `
+        <div style="color:#666;padding:20px;text-align:center;">
+          <div style="margin-bottom:12px;">
+            <img src="PinGPT-Icon.svg" width="32" height="32" style="opacity:0.7;" alt="PinGPT"/>
+          </div>
+          No pins yet. Visit ChatGPT and click the "Pin Last Message" button!
+        </div>
+      `;
       return; // Add return here to prevent further execution
     }
     

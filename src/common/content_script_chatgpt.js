@@ -235,7 +235,14 @@ function openPinDialog(element) {
     const messagePreview = messageText.length > 300 ? messageText.slice(0, 300) + '...' : messageText;
     
     dialog.innerHTML = `
-      <h2 style="margin: 0 0 20px 0; font-size: 20px; color: #202124;">📌 Pin Message</h2>
+      <h2 style="margin: 0 0 20px 0; font-size: 20px; color: #202124; display: flex; align-items: center; gap: 8px;">
+        <svg width="20" height="20" viewBox="0 0 24 24">
+          <ellipse cx="12" cy="8" rx="6" ry="5" fill="#febf00" stroke="#999" stroke-width="0.5" opacity="0.9"/>
+          <path d="M 12 13 L 10 20 L 14 20 Z" fill="#333"/>
+          <text x="12" y="9.5" text-anchor="middle" font-family="Arial, sans-serif" font-size="3.5" font-weight="bold" fill="#4a71f6">PIN</text>
+        </svg>
+        Pin Message
+      </h2>
       
       <div style="margin-bottom: 16px;">
         <label style="display: block; font-weight: 600; margin-bottom: 6px; color: #5f6368; font-size: 14px;">
@@ -652,7 +659,7 @@ async function highlightPin(pin) {
     }, 600);
   }, 3000);
   
-  showNotification('📌 Found pinned message!');
+  showNotification('✅ Found pinned message!');
   return { found: true };
 }
 
@@ -692,7 +699,14 @@ function addManualPinButton() {
     
     const manualBtn = document.createElement('button');
     manualBtn.id = 'pingpt-manual-pin';
-    manualBtn.innerHTML = '📌 Pin Last Message';
+    manualBtn.innerHTML = `
+      <svg width="16" height="16" viewBox="0 0 24 24" style="margin-right: 6px; vertical-align: middle;">
+        <ellipse cx="12" cy="8" rx="6" ry="5" fill="#febf00" stroke="#fff" stroke-width="0.5" opacity="0.9"/>
+        <path d="M 12 13 L 10 20 L 14 20 Z" fill="#fff"/>
+        <text x="12" y="9.5" text-anchor="middle" font-family="Arial, sans-serif" font-size="3.5" font-weight="bold" fill="#4a71f6">PIN</text>
+      </svg>
+      Pin Last Message
+    `;
     manualBtn.title = 'Pin the last assistant message';
     manualBtn.style.cssText = `
       position: fixed;

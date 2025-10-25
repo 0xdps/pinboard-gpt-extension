@@ -10,25 +10,56 @@
   <div class="header">
     <div class="header-logo">
       <img src="PinGPT-Logo.svg" alt="PinGPT" class="logo" />
-      <h3>PinGPT</h3>
     </div>
     <div>
-      <button id="exportBtn">Export</button>
-      <button id="importBtn">Import</button>
+      <button id="settingsBtn" class="settings-btn" title="Settings">⚙️</button>
     </div>
   </div>
-  <div class="sync-status" id="syncStatus">
-    <span id="syncText">🔄 Syncing across devices</span>
-    <button id="syncToggle" class="sync-toggle">Settings</button>
-  </div>
+  
   <input id="search" placeholder="Search pins or tags..." />
   <div id="list"></div>
+
+  <!-- Settings Modal -->
+  <div id="settingsModal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Settings</h3>
+        <button id="closeSettings" class="close-btn">×</button>
+      </div>
+      
+      <div class="settings-section">
+        <h4>Sync</h4>
+        <div class="sync-setting">
+          <div class="sync-info">
+            <span id="syncText">🔄 Syncing across devices</span>
+            <small id="syncDesc">Automatically sync pins across your Chrome devices</small>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="syncToggle" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+      
+      <div class="settings-section">
+        <h4>Data Management</h4>
+        <div class="data-buttons">
+          <button id="exportBtn" class="data-btn">📤 Export Pins</button>
+          <button id="importBtn" class="data-btn">📥 Import Pins</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Coffee Button -->
+  <div class="coffee-section">
+    <a href="https://www.buymeacoffee.com/0xdps" target="_blank" class="coffee-btn">
+      ☕ Buy me a coffee
+    </a>
+  </div>
 
   <input type="file" id="importFile" style="display:none" accept="application/json" />
   <script src="idb.js"></script>
   <script src="popup.js"></script>
-  <a href="https://www.buymeacoffee.com/devendrapratap02" target="_blank" style="width: fit-content; margin-top: 10px; display: block;">
-    <img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=devendrapratap02&button_colour=40DCA5&font_colour=ffffff&font_family=Cookie&outline_colour=000000&coffee_colour=FFDD00" />
-  </a>
 </body>
 </html>
