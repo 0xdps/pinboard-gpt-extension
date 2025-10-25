@@ -4,10 +4,6 @@
   "description": "Pin messages in ChatGPT, add notes, and jump back to them.",
   "version": "1.1.0",
   "author": "Devendra Pratap Singh",
-  "developer": {
-    "name": "Devendra Pratap Singh",
-    "url": "mailto:dps.manit@gmail.com"
-  },
   "browser_specific_settings": {
     "gecko": {
       "id": "pingpt@devendrapratap.dev",

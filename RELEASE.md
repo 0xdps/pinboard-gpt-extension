@@ -53,7 +53,9 @@ Works with both chatgpt.com and chat.openai.com
 
 ### Contact & Support
 - **Email**: dps.manit@gmail.com
-- **Website**: https://github.com/devendrapratap02/pingpt-chrome-extension
+- **Website**: https://0xdps.xyz/pingpt
+- **Privacy Policy**: https://0xdps.xyz/pingpt?model=privacy
+- **Support**: https://0xdps.xyz/pingpt?model=support
 
 ---
 
@@ -164,7 +166,7 @@ All pin data is stored locally in the browser and is not sent to any external se
 
 **Privacy Policy**: 
 ```
-https://github.com/devendrapratap02/pingpt-chrome-extension/blob/trunk/PRIVACY.md
+https://0xdps.xyz/pingpt/privacy
 ```
 
 #### Distribution Tab
