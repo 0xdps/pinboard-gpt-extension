@@ -8,13 +8,12 @@ function createPinButtonForMessage(messageContainer) {
   }
   
   const pinButton = document.createElement('button');
-  // SVG pin icon matching ChatGPT's style
+  // Use PinGPT-Icon.svg - cross-browser compatible
+  const runtime = typeof chrome !== 'undefined' ? chrome.runtime : browser.runtime;
   pinButton.innerHTML = `
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M16 12V4H17V2H7V4H8V12L6 14V16H11V22H13V16H18V14L16 12Z" fill="currentColor"/>
-    </svg>
+    <img src="${runtime.getURL('PinGPT-Icon.svg')}" width="16" height="16" style="display: block;" alt="PinGPT"/>
   `;
-  pinButton.title = 'Pin this message';
+  pinButton.title = 'Pin this message with PinGPT';
   pinButton.className = 'pingpt-pin-button';
   pinButton.style.cssText = `
     position: absolute;
@@ -31,7 +30,7 @@ function createPinButtonForMessage(messageContainer) {
     transition: opacity 0.15s, background 0.15s, color 0.15s;
     pointer-events: auto;
     left: -36px;
-    top: 8px;
+    top: 2px;
   `;
   
   pinButton.addEventListener('mouseenter', () => {
