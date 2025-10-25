@@ -1,6 +1,8 @@
 document.addEventListener('DOMContentLoaded', async () => {
   const listEl = document.getElementById('list');
   const search = document.getElementById('search');
+  const clearSearchBtn = document.getElementById('clearSearch');
+  const searchContainer = document.querySelector('.search-container');
   const exportBtn = document.getElementById('exportBtn');
   const importBtn = document.getElementById('importBtn');
   const importFile = document.getElementById('importFile');
@@ -93,10 +95,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       : escapeHtml(pin.messageText);
     const title = pin.name ? escapeHtml(pin.name) : (escapeHtml(pin.messageText.slice(0, 60)) + (pin.messageText.length > 60 ? '…' : ''));
     
+    // Create clickable tags
+    const tagsHtml = pin.tags?.length 
+      ? ' • ' + pin.tags.map(tag => `<span class="tag-link" data-tag="${escapeHtml(tag)}">${escapeHtml(tag)}</span>`).join(' • ')
+      : '';
+    
     div.innerHTML = `
       <div style="font-weight:600">${title}</div>
       <div style="color:#555; margin-top:6px; font-size:13px;">${messagePreview}</div>
-      <div class="meta">${new Date(pin.pinnedAt).toLocaleString()} • ${pin.site} ${pin.tags?.length ? ' • ' + pin.tags.join(', '):''}</div>
+      <div class="meta">${new Date(pin.pinnedAt).toLocaleString()} • ${pin.site}${tagsHtml}</div>
       <div class="actions">
         <button data-id="${pin.id}" class="openBtn">Open</button>
         <button data-id="${pin.id}" class="deleteBtn">Delete</button>
@@ -109,8 +116,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     const pins = await getPins();
     const q = search.value.trim().toLowerCase();
     listEl.innerHTML = '';
+    
     const filtered = pins.filter(p => {
       if (!q) return true;
+      
+      // Handle tag-specific search
+      if (q.startsWith('tag:')) {
+        const tagQuery = q.substring(4).trim();
+        return p.tags && p.tags.some(tag => tag.toLowerCase().includes(tagQuery));
+      }
+      
+      // Regular search
       return (p.name && p.name.toLowerCase().includes(q))
           || (p.messageText && p.messageText.toLowerCase().includes(q))
           || (p.tags && p.tags.join(' ').toLowerCase().includes(q))
@@ -133,6 +149,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     filtered.forEach(p => {
       const el = renderPin(p);
       listEl.appendChild(el);
+    });
+
+    // Add event listeners for tag links
+    document.querySelectorAll('.tag-link').forEach(tagEl => {
+      tagEl.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const tag = e.target.dataset.tag;
+        search.value = `tag:${tag}`;
+        updateClearButton();
+        render(); // Re-render with new search
+      };
     });
 
     document.querySelectorAll('.deleteBtn').forEach(btn=>{
@@ -163,7 +191,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  search.addEventListener('input', render);
+  // Function to update clear button visibility
+  function updateClearButton() {
+    if (search.value.trim()) {
+      searchContainer.classList.add('has-content');
+    } else {
+      searchContainer.classList.remove('has-content');
+    }
+  }
+
+  // Clear search functionality
+  clearSearchBtn.onclick = () => {
+    search.value = '';
+    updateClearButton();
+    render();
+  };
+
+  search.addEventListener('input', () => {
+    updateClearButton();
+    render();
+  });
 
   exportBtn.onclick = async () => {
     const pins = await getPins();
@@ -196,5 +243,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   };
 
   await updateSyncStatus();
+  updateClearButton();
   await render();
 });

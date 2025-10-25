@@ -286,28 +286,39 @@ function openPinDialog(element) {
       </div>
       
       <div style="margin-bottom: 24px;">
-        <label for="pin-tags" style="display: block; font-weight: 600; margin-bottom: 6px; color: #5f6368; font-size: 14px;">
-          Tags (optional)
+        <label style="display: block; font-weight: 600; margin-bottom: 6px; color: #5f6368; font-size: 14px;">
+          Tags (optional, max 3)
         </label>
-        <input 
-          type="text" 
-          id="pin-tags" 
-          placeholder="python, tutorial, code (comma-separated)"
-          style="
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid #dadce0;
-            border-radius: 6px;
-            font-size: 14px;
-            color: #202124;
-            background: white;
-            font-family: system-ui, -apple-system, sans-serif;
-            box-sizing: border-box;
-            transition: border-color 0.2s;
-          "
-        />
-        <div style="font-size: 12px; color: #80868b; margin-top: 4px;">
-          Separate tags with commas
+        <div id="tags-container" style="
+          min-height: 40px;
+          border: 1px solid #dadce0;
+          border-radius: 6px;
+          padding: 8px;
+          background: white;
+          margin-bottom: 8px;
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+          align-items: flex-start;
+        ">
+          <input 
+            type="text" 
+            id="tag-input" 
+            placeholder="Add a tag..."
+            style="
+              border: none;
+              outline: none;
+              flex: 1;
+              min-width: 100px;
+              font-size: 14px;
+              color: #202124;
+              background: transparent;
+              font-family: system-ui, -apple-system, sans-serif;
+            "
+          />
+        </div>
+        <div style="font-size: 12px; color: #80868b;">
+          Press Enter to add tags or type and press Enter
         </div>
       </div>
       
@@ -382,6 +393,133 @@ function openPinDialog(element) {
       });
     });
     
+    // Tag management functionality
+    const tagsContainer = document.getElementById('tags-container');
+    const tagInput = document.getElementById('tag-input');
+    let currentTags = [];
+    
+    function createTagElement(tagText) {
+      const tagEl = document.createElement('span');
+      tagEl.style.cssText = `
+        display: inline-flex;
+        align-items: center;
+        background: #e8f0fe;
+        color: #1a73e8;
+        padding: 4px 8px;
+        border-radius: 16px;
+        font-size: 12px;
+        font-weight: 500;
+        gap: 4px;
+        margin: 2px 0;
+      `;
+      
+      const textSpan = document.createElement('span');
+      textSpan.textContent = tagText;
+      
+      const removeBtn = document.createElement('button');
+      removeBtn.innerHTML = '×';
+      removeBtn.style.cssText = `
+        background: none;
+        border: none;
+        color: #1a73e8;
+        cursor: pointer;
+        font-size: 14px;
+        line-height: 1;
+        padding: 0;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      `;
+      
+      removeBtn.addEventListener('mouseenter', () => {
+        removeBtn.style.background = 'rgba(26, 115, 232, 0.1)';
+      });
+      
+      removeBtn.addEventListener('mouseleave', () => {
+        removeBtn.style.background = 'none';
+      });
+      
+      removeBtn.addEventListener('click', () => {
+        removeTag(tagText);
+      });
+      
+      tagEl.appendChild(textSpan);
+      tagEl.appendChild(removeBtn);
+      return tagEl;
+    }
+    
+    function addTag(tagText) {
+      const trimmed = tagText.trim().toLowerCase();
+      if (!trimmed || currentTags.includes(trimmed) || currentTags.length >= 3) {
+        return false;
+      }
+      
+      currentTags.push(trimmed);
+      renderTags();
+      tagInput.value = '';
+      return true;
+    }
+    
+    function removeTag(tagText) {
+      const index = currentTags.indexOf(tagText.toLowerCase());
+      if (index > -1) {
+        currentTags.splice(index, 1);
+        renderTags();
+      }
+    }
+    
+    function renderTags() {
+      // Clear existing tags
+      const existingTags = tagsContainer.querySelectorAll('span');
+      existingTags.forEach(tag => tag.remove());
+      
+      // Add current tags before input
+      currentTags.forEach(tag => {
+        const tagEl = createTagElement(tag);
+        tagsContainer.insertBefore(tagEl, tagInput);
+      });
+      
+      // Update input placeholder and state
+      if (currentTags.length >= 3) {
+        tagInput.placeholder = 'Maximum 3 tags';
+        tagInput.disabled = true;
+        tagInput.style.opacity = '0.5';
+      } else {
+        tagInput.placeholder = 'Add a tag...';
+        tagInput.disabled = false;
+        tagInput.style.opacity = '1';
+      }
+    }
+    
+    // Tag input handlers
+    tagInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const value = tagInput.value.trim();
+        if (value) {
+          if (!addTag(value)) {
+            // Flash border red if couldn't add tag
+            tagsContainer.style.borderColor = '#ea4335';
+            setTimeout(() => {
+              tagsContainer.style.borderColor = '#dadce0';
+            }, 500);
+          }
+        }
+      }
+    });
+    
+    // Focus border handling for tags container
+    tagInput.addEventListener('focus', () => {
+      tagsContainer.style.borderColor = '#10a37f';
+    });
+    
+    tagInput.addEventListener('blur', () => {
+      tagsContainer.style.borderColor = '#dadce0';
+    });
+    
     // Handle cancel
     const closeDialog = () => {
       overlay.remove();
@@ -396,17 +534,19 @@ function openPinDialog(element) {
     // Handle save
     saveBtn.addEventListener('click', async () => {
       const nameInput = document.getElementById('pin-name');
-      const tagsInput = document.getElementById('pin-tags');
       
       const name = nameInput.value.trim();
-      const tagsText = tagsInput.value.trim();
-      const tags = tagsText ? tagsText.split(',').map(t => t.trim()).filter(Boolean) : [];
+      // Add any remaining text in tag input
+      const remainingTag = tagInput.value.trim();
+      if (remainingTag && currentTags.length < 3) {
+        addTag(remainingTag);
+      }
       
       const pin = {
         id: crypto.randomUUID(),
         messageText: messageText.trim().slice(0, 120),
         name: name,
-        tags: tags,
+        tags: currentTags,
         pageUrl: window.location.href,
         site: 'ChatGPT',
         pinnedAt: Date.now(),
@@ -430,13 +570,12 @@ function openPinDialog(element) {
       }
     });
     
-    // Handle Enter key to save
-    inputs.forEach(input => {
-      input.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-          saveBtn.click();
-        }
-      });
+    // Handle Enter key to save (only for name input)
+    const nameInput = document.getElementById('pin-name');
+    nameInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        saveBtn.click();
+      }
     });
     
     // Handle Escape key to cancel
