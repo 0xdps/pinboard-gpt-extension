@@ -1,7 +1,7 @@
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({
     id: "pin-selection",
-    title: "Pin selection to PinGPT",
+    title: "Pin selection to GPT Pinboard",
     contexts: ["selection"],
     documentUrlPatterns: ["https://chatgpt.com/*", "https://chat.openai.com/*"]
   });

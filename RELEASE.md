@@ -1,6 +1,6 @@
 # Release Guide
 
-> **Purpose**: Complete guide for releasing PinGPT to the Chrome Web Store, including store listing copy and publishing steps.
+> **Purpose**: Complete guide for releasing GPT Pinboard to the Chrome Web Store, including store listing copy and publishing steps.
 
 ## 📋 Store Listing Copy
 
@@ -8,41 +8,42 @@ Use these pre-written texts when filling out the Chrome Web Store listing form.
 
 ### Short Description (Single-Purpose)
 ```
-Pin important ChatGPT messages, add notes, and jump back to them instantly.
+Pin individual ChatGPT messages, not the entire chat. Add custom names and tags, search instantly, and jump back to the original conversation.
 ```
 
 ### Detailed Description
 ```
-📌 Never lose important ChatGPT conversations again!
+🚀 GPT Pinboard — Pin the messages that matter
 
-PinGPT lets you pin, organize, and quickly access important messages from your ChatGPT conversations.
+Ever had a perfect ChatGPT answer, buried deep in a long chat? You remember what it said, maybe even which chat it was in — but scrolling through hundreds of messages to find it again is a nightmare. GPT Pinboard fixes that.
 
 ✨ KEY FEATURES:
-• Pin any ChatGPT message with one click
-• Add custom names and tags for easy organization
-• Search pins by content, name, or tags
-• Jump back to the original conversation instantly
-• Export/Import your pins for backup
-• 100% private - all data stored locally on your device
+
+📌 Pin individual ChatGPT messages — not the entire chat
+🏷️ Add custom names and tags for easy organization
+🔍 Search through pinned messages by text, name, or tag
+⚡ Jump back to the original conversation instantly
+💾 Local-first — your data stays on your device
 
 🎯 HOW IT WORKS:
-1. While chatting with ChatGPT, click the "📌 Pin Message" button
-2. Add a custom name and tags (optional)
-3. Access your pins anytime from the extension popup
-4. Click any pin to jump back to that conversation
+1. While chatting with ChatGPT, hover over any message and click "📌 Pin"
+2. Add a custom name and tags (optional) for easy finding later
+3. Access all your pins anytime from the extension icon
+4. Click any pin to jump directly back to that conversation
 
 🔒 PRIVACY FIRST:
+No accounts. No sync drama. Just fast access to what you actually need.
 • All pins stored locally using IndexedDB
 • No data sent to external servers
 • No tracking or analytics
-• Your conversations stay private
+• Your conversations stay 100% private
 
 Perfect for:
 • Developers saving code snippets and solutions
-• Researchers organizing information
+• Researchers organizing key information
 • Writers collecting ideas and references
 • Students keeping track of study materials
-• Anyone who wants to remember important ChatGPT responses
+• Anyone who wants to remember important ChatGPT responses without the hassle
 
 Works with both chatgpt.com and chat.openai.com
 ```
@@ -114,7 +115,7 @@ unzip -l pingpt-v1.0.1.zip
 
 | Field | Value |
 |-------|-------|
-| **Name** | PinGPT — ChatGPT Message Pinner |
+| **Name** | GPT Pinboard — ChatGPT Message Pinner |
 | **Short description** | See "Short Description" above |
 | **Detailed description** | See "Detailed Description" above |
 | **Category** | Productivity |
@@ -140,20 +141,20 @@ unzip -l pingpt-v1.0.1.zip
 
 **Single Purpose Description**:
 ```
-Pin important ChatGPT messages, add notes, and jump back to them instantly.
+Pin individual ChatGPT messages for instant access later. Never lose that perfect answer buried in a long chat.
 ```
 
 **Permission Justifications**:
 
 Copy from [PRIVACY.md](PRIVACY.md):
 
-- **activeTab**: Allows PinGPT to access the currently active ChatGPT tab to navigate and highlight messages when users click a pin.
+- **activeTab**: Allows GPT Pinboard to access the currently active ChatGPT tab to navigate and highlight messages when users click a pin.
 
 - **contextMenus**: Enables right-click context menu to quickly pin selected text from ChatGPT conversations.
 
 - **host permissions**: Required to interact with ChatGPT pages for pinning and highlighting functionality. Only works on chatgpt.com and chat.openai.com domains.
 
-- **remote code**: PinGPT does not load or execute any remote code. All scripts are bundled with the extension.
+- **remote code**: GPT Pinboard does not load or execute any remote code. All scripts are bundled with the extension.
 
 - **storage**: Used to save user pins locally in IndexedDB. No data is transmitted off-device.
 

@@ -49,23 +49,23 @@ async function generateAssets() {
   console.log('🎨 Generating SVG files from PNG assets...\n');
 
   await generateSVGWithEmbeddedImage(
-    'gpt-dashboard-icon-background.png',
+    'gpt-icon-pinboard-background.png',
     '../src/common/icons/GPT-Pinboard-Icon.svg',
-    388,
-    388
+    675,
+    675
   );
 
   await generateSVGWithEmbeddedImage(
-    'gpt-dashboard-logo-background.png',
+    'gpt-logo-pinboard-background.png',
     '../src/common/GPT-Pinboard-Logo.svg',
-    1536,
-    1024
+    150,
+    75
   );
 
   console.log('\n🎨 Generating PNG icons in different sizes...\n');
 
   await generatePNGIcons(
-    'gpt-dashboard-icon-background.png',
+    'gpt-icon-pinboard-background.png',
     '../src/common/icons',
     'icon'
   );
