@@ -1,15 +1,14 @@
 # Build outputs
 build/
 extension/
-scripts/
 
 # Development files
 node_modules/
 .git/
 .DS_Store
 
-# Assets (only need the website folder)
-assets/
+# Generated assets (exclude from deployment, but keep source files for build)
+assets/icons/
 
 # Documentation
 *.md

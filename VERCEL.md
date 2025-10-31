@@ -91,14 +91,16 @@ Simply push to your main branch - Vercel will automatically redeploy.
 ## Troubleshooting
 
 ### Build Issues
+- **"Cannot find module 'scripts/generate-assets.js'"**: Ensure `scripts/` directory is not excluded in `.vercelignore`
 - Ensure all dependencies are in `package.json`
 - Check that `npm run build:website` works locally
 - Verify `website/` directory contains all necessary files
 
 ### Asset Issues
-- Run `npm run build:assets` locally first
-- Ensure source PNG files exist in `assets/` directory
+- **Missing source assets**: Ensure `assets/` directory contains source PNG files
+- Run `npm run build:assets` locally first to test
 - Check that icons are copied to `website/images/`
+- Verify `.vercelignore` allows `scripts/` and `assets/` directories for build
 
 ## Vercel Configuration Details
 
