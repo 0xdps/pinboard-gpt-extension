@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPT Pinboard - Sitemap Viewer</title>
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 14px;
+            color: #1a1a1a;
+            background: #f8fafc;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #10a37f, #0d9488);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        
+        .header p {
+            margin: 0.5rem 0 0;
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .info-box {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            border-left: 4px solid #10a37f;
+        }
+        
+        .info-box h2 {
+            margin: 0 0 1rem;
+            color: #1a1a1a;
+            font-size: 1.3rem;
+        }
+        
+        .info-box p {
+            margin: 0.5rem 0;
+            line-height: 1.6;
+            color: #64748b;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        
+        .stat-box {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #10a37f;
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-top: 0.5rem;
+        }
+        
+        .sitemap-table {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th {
+            background: #f1f5f9;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: #374151;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: top;
+        }
+        
+        tr:hover {
+            background: #f8fafc;
+        }
+        
+        .url-link {
+            color: #10a37f;
+            text-decoration: none;
+            font-weight: 500;
+            word-break: break-all;
+        }
+        
+        .url-link:hover {
+            color: #0d9488;
+            text-decoration: underline;
+        }
+        
+        .priority {
+            font-weight: 600;
+        }
+        
+        .priority-high { color: #059669; }
+        .priority-medium { color: #d97706; }
+        .priority-low { color: #dc2626; }
+        
+        .changefreq {
+            background: #f1f5f9;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #475569;
+        }
+        
+        .lastmod {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+        
+        .footer {
+            background: #1e293b;
+            color: white;
+            padding: 2rem;
+            margin-top: 3rem;
+            text-align: center;
+        }
+        
+        .footer a {
+            color: #60a5fa;
+            text-decoration: none;
+        }
+        
+        .footer a:hover {
+            color: #93c5fd;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .header {
+                padding: 1.5rem;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            th, td {
+                padding: 0.75rem 0.5rem;
+            }
+            
+            .url-link {
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><img src="images/icon.svg" alt="GPT Pinboard" style="width: 24px; height: 24px; vertical-align: text-bottom; margin-right: 8px;">GPT Pinboard - Sitemap</h1>
+        <p>Pin the Messages That Matter - Website Structure</p>
+    </div>
+    
+    <div class="container">
+        <div class="info-box">
+            <h2>About This Sitemap</h2>
+            <p>This sitemap contains <span id="url-count">10</span> URLs for the GPT Pinboard website and related documentation.</p>
+            <p>It helps search engines discover and index our content more efficiently, improving our visibility in search results.</p>
+            <p>📄 <a href="./sitemap.xml">View Raw XML Sitemap</a> | 🤖 <a href="./robots.txt">View robots.txt</a></p>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-box">
+                <span class="stat-number" id="total-urls">10</span>
+                <div class="stat-label">Total URLs</div>
+            </div>
+            <div class="stat-box">
+                <span class="stat-number" id="high-priority">3</span>
+                <div class="stat-label">High Priority</div>
+            </div>
+            <div class="stat-box">
+                <span class="stat-number" id="weekly-updates">5</span>
+                <div class="stat-label">Weekly Updates</div>
+            </div>
+            <div class="stat-box">
+                <span class="stat-number">2025-11-01</span>
+                <div class="stat-label">Last Generated</div>
+            </div>
+        </div>
+        
+        <div class="sitemap-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>URL</th>
+                        <th>Priority</th>
+                        <th>Change Frequency</th>
+                        <th>Last Modified</th>
+                    </tr>
+                </thead>
+                <tbody id="sitemap-body">
+                    <!-- URLs will be loaded here via JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>
+            Generated for <a href="./">GPT Pinboard</a> | 
+            <a href="https://github.com/0xdps/gpt-pinboard-extension">GitHub Repository</a> | 
+            Made with ❤️ by <a href="https://github.com/0xdps">Devendra Pratap Singh</a>
+        </p>
+    </div>
+
+    <script>
+        // Sitemap data (extracted from sitemap.xml)
+        const sitemapData = [
+            {
+                url: "https://gpt-pinboard.com/",
+                priority: "1.0",
+                changefreq: "weekly",
+                lastmod: "2025-10-31"
+            },
+            {
+                url: "https://gpt-pinboard.com/#features",
+                priority: "0.8",
+                changefreq: "monthly",
+                lastmod: "2025-10-31"
+            },
+            {
+                url: "https://gpt-pinboard.com/#how-it-works",
+                priority: "0.8",
+                changefreq: "monthly",
+                lastmod: "2025-10-31"
+            },
+            {
+                url: "https://gpt-pinboard.com/#install",
+                priority: "0.9",
+                changefreq: "weekly",
+                lastmod: "2025-10-31"
+            },
+            {
+                url: "https://github.com/0xdps/gpt-pinboard-extension",
+                priority: "0.7",
+                changefreq: "weekly",
+                lastmod: "2025-10-31"
+            },
+            {
+                url: "https://github.com/0xdps/gpt-pinboard-extension/blob/main/README.md",
+                priority: "0.6",
+                changefreq: "weekly",
+                lastmod: "2025-10-31"
+            },
+            {
+                url: "https://github.com/0xdps/gpt-pinboard-extension/blob/main/DEVELOPMENT.md",
+                priority: "0.5",
+                changefreq: "monthly",
+                lastmod: "2025-10-31"
+            },
+            {
+                url: "https://github.com/0xdps/gpt-pinboard-extension/blob/main/CHANGELOG.md",
+                priority: "0.4",
+                changefreq: "weekly",
+                lastmod: "2025-10-31"
+            },
+            {
+                url: "https://github.com/0xdps/gpt-pinboard-extension/blob/main/PRIVACY.md",
+                priority: "0.3",
+                changefreq: "monthly",
+                lastmod: "2025-10-31"
+            },
+            {
+                url: "https://github.com/0xdps/gpt-pinboard-extension/blob/main/RELEASE.md",
+                priority: "0.3",
+                changefreq: "monthly",
+                lastmod: "2025-10-31"
+            }
+        ];
+
+        // Function to get priority class
+        function getPriorityClass(priority) {
+            const p = parseFloat(priority);
+            if (p >= 0.8) return 'priority-high';
+            if (p >= 0.5) return 'priority-medium';
+            return 'priority-low';
+        }
+
+        // Populate the sitemap table
+        function populateSitemap() {
+            const tbody = document.getElementById('sitemap-body');
+            
+            // Sort by priority (highest first)
+            const sortedData = [...sitemapData].sort((a, b) => parseFloat(b.priority) - parseFloat(a.priority));
+            
+            sortedData.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>
+                        <a href="${item.url}" class="url-link" target="_blank">
+                            ${item.url}
+                        </a>
+                    </td>
+                    <td>
+                        <span class="priority ${getPriorityClass(item.priority)}">
+                            ${item.priority}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="changefreq">
+                            ${item.changefreq}
+                        </span>
+                    </td>
+                    <td class="lastmod">
+                        ${item.lastmod}
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            // Update stats
+            const totalUrls = sitemapData.length;
+            const highPriority = sitemapData.filter(item => parseFloat(item.priority) >= 0.8).length;
+            const weeklyUpdates = sitemapData.filter(item => item.changefreq === 'weekly').length;
+
+            document.getElementById('url-count').textContent = totalUrls;
+            document.getElementById('total-urls').textContent = totalUrls;
+            document.getElementById('high-priority').textContent = highPriority;
+            document.getElementById('weekly-updates').textContent = weeklyUpdates;
+        }
+
+        // Load sitemap when page loads
+        document.addEventListener('DOMContentLoaded', populateSitemap);
+    </script>
+</body>
+</html>

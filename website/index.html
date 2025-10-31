@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPT Pinboard - Pin the Messages That Matter</title>
+    <meta name="description" content="Never lose important ChatGPT responses again. Pin, organize, and instantly find the messages that matter.">
+    <meta name="keywords" content="ChatGPT, pinboard, Chrome extension, AI, productivity">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="GPT Pinboard - Pin the Messages That Matter">
+    <meta property="og:description" content="Never lose important ChatGPT responses again. Pin, organize, and instantly find the messages that matter.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://gpt-pinboard.com">
+    <meta property="og:image" content="./images/og-image.png">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="./images/icon.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="./images/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="./images/favicon-16x16.png">
+    <link rel="shortcut icon" href="./images/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="./images/favicon-48x48.png">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="./css/styles.css">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <img src="./images/icon.svg" alt="GPT Pinboard" class="nav-logo">
+                <span class="nav-title">GPT Pinboard</span>
+            </div>
+            <div class="nav-links">
+                <a href="#features" class="nav-link">Features</a>
+                <a href="#how-it-works" class="nav-link">How it Works</a>
+                <a href="#install" class="nav-link">Install</a>
+                <a href="https://github.com/0xdps/gpt-pinboard-extension" class="nav-link" target="_blank">GitHub</a>
+            </div>
+            <div class="nav-mobile">
+                <button class="mobile-menu-btn" aria-label="Toggle menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <h1 class="hero-title">
+                        Pin the Messages That <span class="highlight">Matter</span> <img src="images/icon.svg" alt="GPT Pinboard" class="inline-logo">
+                    </h1>
+                    <p class="hero-subtitle">
+                        Ever had a perfect ChatGPT answer buried deep in a long chat? 
+                        You remember what it said, maybe even which chat it was in — 
+                        but scrolling through hundreds of messages to find it again is a nightmare. 
+                        <strong>GPT Pinboard fixes that.</strong>
+                    </p>
+                    <div class="hero-buttons">
+                        <a href="#install" class="btn btn-primary">
+                            <span>🚀</span> Get Started
+                        </a>
+                        <a href="#features" class="btn btn-secondary">
+                            <span>✨</span> See Features
+                        </a>
+                    </div>
+                    <div class="hero-badges">
+                        <span class="badge">🔒 Local-first</span>
+                        <span class="badge">⚡ Instant search</span>
+                        <span class="badge">🆓 Free & Open Source</span>
+                    </div>
+                </div>
+                <div class="hero-demo">
+                    <div class="demo-browser">
+                        <div class="browser-header">
+                            <div class="browser-dots">
+                                <span class="dot red"></span>
+                                <span class="dot yellow"></span>
+                                <span class="dot green"></span>
+                            </div>
+                            <div class="browser-url">chatgpt.com</div>
+                        </div>
+                        <div class="browser-content">
+                            <img src="./images/demo-screenshot.svg" alt="GPT Pinboard Demo" class="demo-image">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Why GPT Pinboard?</h2>
+                <p class="section-subtitle">Stop losing important ChatGPT responses. Start organizing them.</p>
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon"><img src="images/icon.svg" alt="Pin" class="feature-icon-img"></div>
+                    <h3 class="feature-title">Pin Individual Messages</h3>
+                    <p class="feature-description">
+                        Not the entire chat, just the messages that matter. 
+                        Hover over any response and click pin.
+                    </p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🏷️</div>
+                    <h3 class="feature-title">Smart Organization</h3>
+                    <p class="feature-description">
+                        Add custom names and tags for easy categorization. 
+                        Perfect for code snippets, study notes, or research.
+                    </p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🔍</div>
+                    <h3 class="feature-title">Instant Search</h3>
+                    <p class="feature-description">
+                        Filter by text, name, or tags. Find exactly what you're 
+                        looking for in seconds, not minutes.
+                    </p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3 class="feature-title">Jump Back</h3>
+                    <p class="feature-description">
+                        Click to instantly return to the original conversation 
+                        with your message highlighted.
+                    </p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">💾</div>
+                    <h3 class="feature-title">Local-first</h3>
+                    <p class="feature-description">
+                        Your data stays on your device. No accounts, no sync drama, 
+                        no privacy concerns.
+                    </p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3 class="feature-title">Export & Backup</h3>
+                    <p class="feature-description">
+                        Export your pins to JSON. Share with colleagues or 
+                        backup across devices.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How it Works Section -->
+    <section id="how-it-works" class="how-it-works">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">How It Works</h2>
+                <p class="section-subtitle">Three simple ways to pin messages</p>
+            </div>
+            
+            <div class="steps-grid">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3 class="step-title">Hover Method</h3>
+                        <p class="step-description">
+                            Move your mouse over any ChatGPT message → 
+                            Click the "Pin" button that appears
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3 class="step-title">Right-Click</h3>
+                        <p class="step-description">
+                            Select any text → Right-click → 
+                            Choose "Pin selection to GPT Pinboard"
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3 class="step-title">Quick Pin</h3>
+                        <p class="step-description">
+                            Click the "Pin Message" button in the 
+                            bottom-right corner of ChatGPT
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="manage-pins">
+                <h3 class="manage-title">Manage Your Pins</h3>
+                <div class="manage-grid">
+                    <div class="manage-item">
+                        <span class="manage-icon">👀</span>
+                        <span>View all pins by clicking the extension icon</span>
+                    </div>
+                    <div class="manage-item">
+                        <span class="manage-icon">🔍</span>
+                        <span>Search and filter by name, content, or tags</span>
+                    </div>
+                    <div class="manage-item">
+                        <span class="manage-icon">🎯</span>
+                        <span>Jump to original message with one click</span>
+                    </div>
+                    <div class="manage-item">
+                        <span class="manage-icon">💾</span>
+                        <span>Export/import for backup and sharing</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Use Cases Section -->
+    <section class="use-cases">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Perfect For</h2>
+                <p class="section-subtitle">Whether you're learning, working, or researching</p>
+            </div>
+            
+            <div class="use-cases-grid">
+                <div class="use-case">
+                    <div class="use-case-icon">👩‍💻</div>
+                    <h3 class="use-case-title">Developers</h3>
+                    <p class="use-case-description">
+                        Code snippets, debugging solutions, API examples, 
+                        and architectural advice
+                    </p>
+                </div>
+                
+                <div class="use-case">
+                    <div class="use-case-icon">🔬</div>
+                    <h3 class="use-case-title">Researchers</h3>
+                    <p class="use-case-description">
+                        Knowledge organization, insight tracking, 
+                        and topic categorization
+                    </p>
+                </div>
+                
+                <div class="use-case">
+                    <div class="use-case-icon">🎓</div>
+                    <h3 class="use-case-title">Students</h3>
+                    <p class="use-case-description">
+                        Study notes, homework help, exam preparation, 
+                        and learning resources
+                    </p>
+                </div>
+                
+                <div class="use-case">
+                    <div class="use-case-icon">✍️</div>
+                    <h3 class="use-case-title">Writers</h3>
+                    <p class="use-case-description">
+                        Creative ideas, style guides, research references, 
+                        and writing tips
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Installation Section -->
+    <section id="install" class="install">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Get Started Today</h2>
+                <p class="section-subtitle">Free installation, works immediately</p>
+            </div>
+            
+            <div class="install-options">
+                <div class="install-option primary">
+                    <div class="install-header">
+                        <h3 class="install-title">Chrome Web Store</h3>
+                        <span class="install-badge">Recommended</span>
+                    </div>
+                    <p class="install-description">
+                        One-click install with automatic updates
+                    </p>
+                    <a href="#" class="btn btn-primary btn-large coming-soon">
+                        🚀 Coming Soon
+                    </a>
+                </div>
+                
+                <div class="install-option">
+                    <div class="install-header">
+                        <h3 class="install-title">Install from Source</h3>
+                        <span class="install-badge">Advanced</span>
+                    </div>
+                    <p class="install-description">
+                        For developers and early adopters
+                    </p>
+                    <a href="https://github.com/0xdps/gpt-pinboard-extension#install-from-source" class="btn btn-secondary btn-large" target="_blank">
+                        📦 GitHub Instructions
+                    </a>
+                </div>
+            </div>
+            
+            <div class="install-steps">
+                <h4 class="steps-title">Quick Install from Source:</h4>
+                <ol class="steps-list">
+                    <li>Download from <a href="https://github.com/0xdps/gpt-pinboard-extension" target="_blank">GitHub</a></li>
+                    <li>Go to <code>chrome://extensions/</code></li>
+                    <li>Enable "Developer Mode"</li>
+                    <li>Click "Load unpacked" → Select folder</li>
+                    <li>Visit <a href="https://chatgpt.com" target="_blank">ChatGPT</a> and start pinning!</li>
+                </ol>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <img src="./images/icon.svg" alt="GPT Pinboard" class="footer-logo">
+                    <span class="footer-title">GPT Pinboard</span>
+                </div>
+                
+                <div class="footer-links">
+                    <div class="footer-column">
+                        <h4 class="footer-heading">Product</h4>
+                        <a href="#features" class="footer-link">Features</a>
+                        <a href="#how-it-works" class="footer-link">How it Works</a>
+                        <a href="#install" class="footer-link">Installation</a>
+                    </div>
+                    
+                    <div class="footer-column">
+                        <h4 class="footer-heading">Support</h4>
+                        <a href="https://github.com/0xdps/gpt-pinboard-extension/issues" class="footer-link" target="_blank">Report Bug</a>
+                        <a href="https://github.com/0xdps/gpt-pinboard-extension/discussions" class="footer-link" target="_blank">Discussions</a>
+                        <a href="mailto:dps.manit@gmail.com" class="footer-link">Contact</a>
+                    </div>
+                    
+                    <div class="footer-column">
+                        <h4 class="footer-heading">Development</h4>
+                        <a href="https://github.com/0xdps/gpt-pinboard-extension" class="footer-link" target="_blank">Source Code</a>
+                        <a href="https://github.com/0xdps/gpt-pinboard-extension/blob/main/DEVELOPMENT.md" class="footer-link" target="_blank">Contributing</a>
+                        <a href="https://github.com/0xdps/gpt-pinboard-extension/blob/main/CHANGELOG.md" class="footer-link" target="_blank">Changelog</a>
+                        <a href="./sitemap.html" class="footer-link">Sitemap</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p class="footer-text">
+                    Made with ❤️ by <a href="https://github.com/0xdps" target="_blank">Devendra Pratap Singh</a>
+                </p>
+                <p class="footer-text">
+                    Licensed under MIT • <a href="https://github.com/0xdps/gpt-pinboard-extension/blob/main/LICENSE" target="_blank">View License</a>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="./js/main.js"></script>
+</body>
+</html>

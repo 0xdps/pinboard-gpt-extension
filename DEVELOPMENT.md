@@ -36,11 +36,22 @@ This project supports both **Chrome** and **Firefox** from a single codebase.
 #### Directory Structure
 
 ```
-pingpt-extension/
-├── src/
-│   ├── common/          # Shared code (JS, HTML, CSS, icons)
+gpt-pinboard-extension/
+├── assets/                # Source images for icon generation
+├── scripts/               # Build scripts and tools
+│   └── generate-assets.js # Icon generation from PNG sources
+├── extension/             # Extension source code
+│   ├── common/          # Shared extension code (JS, HTML, CSS, icons)
 │   ├── chrome/          # Chrome-specific manifest.json
 │   └── firefox/         # Firefox-specific manifest.json
+├── website/             # Static website for the extension
+│   ├── index.html       # Main website page
+│   ├── sitemap.xml      # XML sitemap for SEO
+│   ├── sitemap.xsl      # XSL stylesheet for visual sitemap
+│   ├── robots.txt       # Web crawler directives
+│   ├── css/             # Website styles
+│   ├── js/              # Website JavaScript
+│   └── images/          # Website assets
 ├── dist/                # Build output (gitignored)
 │   ├── chrome/          # Chrome extension build
 │   └── firefox/         # Firefox extension build
@@ -48,35 +59,47 @@ pingpt-extension/
 └── docs/                # Documentation files
 ```
 
-#### Build Commands
+#### Build Process
+
+The build system automatically:
+- Creates separate builds for Chrome and Firefox
+- Copies all necessary files to `build/chrome/` and `build/firefox/`
+- Handles manifest differences between browsers
+- Packages extensions for distribution
+- **Copies icons from `assets/icons/` to appropriate locations during build**
+
+### Commands
 
 ```bash
-# Build for Chrome
-npm run build:chrome
+npm run build        # Build both Chrome and Firefox versions
+npm run dev:chrome   # Development build for Chrome  
+npm run dev:firefox  # Development build for Firefox
+npm run pack         # Create distribution ZIP files
+npm run copy:icons   # Copy icons from assets/ to extension/ and website/
+npm run clean        # Remove all generated files (keeps source assets)
+```
 
-# Build for Firefox
-npm run build:firefox
+### Asset Management
 
-# Build both browsers
-npm run build
+Icons and images are generated from source PNG files and automatically copied during builds:
+- **Sources**: `assets/*.png` (version controlled - source images)
+- **Generated**: `assets/icons/` (generated from sources, gitignored)
+- **Extension**: `extension/common/icons/` (copied from generated, gitignored)
+- **Website**: `website/images/` (copied from generated, gitignored)
+- **Distribution**: `build/chrome/` and `build/firefox/` (build outputs, gitignored)
 
-# Generate icons from SVG
-npm run build:icons
+#### Icon Names (Generic)
+- `icon.svg` - Main extension icon (675x675)
+- `logo.svg` - Brand logo (150x75) 
+- `icon-16.png`, `icon-32.png`, `icon-48.png`, `icon-128.png` - Extension manifest icons
+- `favicon-16x16.png`, `favicon-32x32.png`, `favicon-48x48.png` - Website favicon variants
+- `favicon.ico` - Website favicon (32x32)
+- `demo-screenshot.svg` - Website demo image
 
-# Generate promotional assets
-npm run build:assets
-
-# Package for stores
-npm run pack
-
-# Package Chrome only
-npm run pack:chrome
-
-# Package Firefox only
-npm run pack:firefox
-
-# Full build and package
-npm run release
+#### Asset Generation
+Assets are generated from source PNG files using:
+```bash
+npm run build:assets  # Generate all icons from source PNG files
 ```
 
 #### Testing Locally
@@ -107,12 +130,38 @@ npm run release
 
 #### Making Changes
 
-1. **Common code**: Edit files in `src/common/`
-2. **Browser-specific**: Edit manifests in `src/chrome/` or `src/firefox/`
-3. **Rebuild**: Run `npm run build`
-4. **Test**: Load from `dist/chrome/` or `dist/firefox/`
+1. **Extension code**: Edit files in `extension/common/`
+2. **Browser-specific**: Edit manifests in `extension/chrome/` or `extension/firefox/`
+3. **Website**: Edit files in `website/` directory
+4. **Rebuild**: Run `npm run build` (for extension) or `npm run dev:website` (for website)
+5. **Test**: Load from `dist/chrome/` or `dist/firefox/` for extension, visit localhost:8080 for website
 
-All changes to shared code automatically apply to both browsers!
+All changes to shared extension code automatically apply to both browsers!
+
+#### Website Development
+
+The project now includes a static website in the `website/` directory.
+
+**Running the website locally:**
+```bash
+# From project root
+npm run dev:website
+
+# Or manually
+cd website
+python3 -m http.server 8080
+```
+
+**Website structure:**
+- `index.html` - Main single-page website
+- `sitemap.xml` - XML sitemap for search engines
+- `sitemap.xsl` - Visual stylesheet for sitemap
+- `robots.txt` - Web crawler directives
+- `css/styles.css` - Modern, responsive styles
+- `js/main.js` - Interactive functionality
+- `images/` - Website assets and icons
+
+The website showcases the extension features, installation instructions, and usage guides in a professional, modern design with comprehensive SEO optimization.
 
 ## 🔍 Debugging
 

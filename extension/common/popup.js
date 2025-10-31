@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       listEl.innerHTML = `
         <div style="color:#666;padding:20px;text-align:center;">
           <div style="margin-bottom:12px;">
-            <img src="GPT-Pinboard-Icon.svg" width="32" height="32" style="opacity:0.7;" alt="GPT Pinboard"/>
+            <img src="icons/icon.svg" width="32" height="32" style="opacity:0.7;" alt="GPT Pinboard"/>
           </div>
           No pins yet. Visit ChatGPT and click the "Pin Last Message" button!
         </div>

@@ -19,14 +19,14 @@ Ever had a perfect ChatGPT answer, buried deep in a long chat? You remember what
 
 ✨ KEY FEATURES:
 
-📌 Pin individual ChatGPT messages — not the entire chat
+Pin individual ChatGPT messages — not the entire chat
 🏷️ Add custom names and tags for easy organization
 🔍 Search through pinned messages by text, name, or tag
 ⚡ Jump back to the original conversation instantly
 💾 Local-first — your data stays on your device
 
 🎯 HOW IT WORKS:
-1. While chatting with ChatGPT, hover over any message and click "📌 Pin"
+1. While chatting with ChatGPT, hover over any message and click "Pin"
 2. Add a custom name and tags (optional) for easy finding later
 3. Access all your pins anytime from the extension icon
 4. Click any pin to jump directly back to that conversation

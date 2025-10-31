@@ -8,10 +8,10 @@ function createPinButtonForMessage(messageContainer) {
   }
   
   const pinButton = document.createElement('button');
-  // Use GPT-Pinboard-Icon.svg - cross-browser compatible
+  // Use icon.svg - cross-browser compatible
   const runtime = typeof chrome !== 'undefined' ? chrome.runtime : browser.runtime;
   pinButton.innerHTML = `
-    <img src="${runtime.getURL('GPT-Pinboard-Icon.svg')}" width="16" height="16" style="display: block;" alt="GPT Pinboard"/>
+    <img src="${runtime.getURL('icons/icon.svg')}" width="16" height="16" style="display: block;" alt="GPT Pinboard"/>
   `;
   pinButton.title = 'Pin this message with GPT Pinboard';
   pinButton.className = 'pingpt-pin-button';

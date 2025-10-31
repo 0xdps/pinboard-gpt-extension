@@ -3,6 +3,13 @@
   "name": "GPT Pinboard — ChatGPT Message Pinner",
   "description": "Pin individual ChatGPT messages, not the entire chat. Add custom names and tags, search instantly, and jump back to the original conversation. Local-first storage for complete privacy.",
   "version": "1.1.0",
+  "author": "Devendra Pratap Singh",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "pingpt@devendrapratap.dev",
+      "strict_min_version": "109.0"
+    }
+  },
   "permissions": [
     "storage",
     "contextMenus",
@@ -16,13 +23,14 @@
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
+      "16": "icons/icon-16.png",
       "32": "icons/icon-32.png",
       "48": "icons/icon-48.png",
       "128": "icons/icon-128.png"
     }
   },
   "background": {
-    "service_worker": "background.js"
+    "scripts": ["background.js"]
   },
   "content_scripts": [
     {
@@ -36,11 +44,12 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["GPT-Pinboard-Icon.svg"],
+      "resources": ["icons/icon.svg"],
       "matches": ["https://chatgpt.com/*", "https://chat.openai.com/*"]
     }
   ],
   "icons": {
+    "16": "icons/icon-16.png",
     "32": "icons/icon-32.png",
     "48": "icons/icon-48.png",
     "128": "icons/icon-128.png"

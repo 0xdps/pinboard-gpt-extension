@@ -1,0 +1,83 @@
+# Robots.txt for GPT Pinboard Website
+# https://gpt-pinboard.com/robots.txt
+
+# Allow all web crawlers to access the site
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://gpt-pinboard.com/sitemap.xml
+
+# Specific rules for major search engines
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Slurp
+Allow: /
+Crawl-delay: 2
+
+User-agent: DuckDuckBot
+Allow: /
+Crawl-delay: 1
+
+# Allow social media crawlers for rich previews
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+User-agent: LinkedInBot
+Allow: /
+
+User-agent: WhatsApp
+Allow: /
+
+# Disallow common paths that don't exist but crawlers might try
+Disallow: /admin/
+Disallow: /private/
+Disallow: /api/
+Disallow: /wp-admin/
+Disallow: /wp-content/
+Disallow: /cgi-bin/
+Disallow: /.git/
+Disallow: /node_modules/
+Disallow: /dist/
+Disallow: /.env
+Disallow: /config/
+Disallow: /tmp/
+Disallow: /logs/
+
+# Prevent crawling of common file types that shouldn't be indexed
+Disallow: *.log
+Disallow: *.sql
+Disallow: *.zip
+Disallow: *.tar
+Disallow: *.gz
+Disallow: *.bak
+Disallow: *.swp
+Disallow: *.tmp
+
+# Allow crawling of important file types
+Allow: *.css
+Allow: *.js
+Allow: *.png
+Allow: *.jpg
+Allow: *.jpeg
+Allow: *.gif
+Allow: *.svg
+Allow: *.webp
+Allow: *.ico
+Allow: *.pdf
+
+# Crawl delay for general bots (1 second between requests)
+Crawl-delay: 1
+
+# Additional sitemaps (if we add more in the future)
+# Sitemap: https://gpt-pinboard.com/sitemap-images.xml
+# Sitemap: https://gpt-pinboard.com/sitemap-news.xml

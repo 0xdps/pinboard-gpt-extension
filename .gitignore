@@ -212,7 +212,8 @@ nohup.out
 __MACOSX/
 .AppleDouble
 .LSOverride
-Icon[]
+Icon[
+]
 
 # Thumbnails
 ._*
@@ -756,3 +757,16 @@ http-client.private.env.json
 # Apifox Helper cache
 .idea/.cache/.Apifox_Helper
 .idea/ApifoxUploaderProjectSetting.xml
+
+# GPT Pinboard - Generated/Copied Icons
+# Generated icons (from source PNG files)
+assets/icons/
+
+# Extension icons (copied from assets/icons/ during build)
+extension/common/icons/*.svg
+extension/common/icons/*.png
+
+# Website icons (copied from assets/icons/ during build)
+website/images/icon.svg
+website/images/favicon-*.png
+website/images/favicon.ico

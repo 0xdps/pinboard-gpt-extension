@@ -1,14 +1,15 @@
-# GPT Pinboard — Pin the Messages That Matter 📌
+# GPT Pinboard — Pin the Messages That Matter
 
 > Ever had a perfect ChatGPT answer, buried deep in a long chat? You remember what it said, maybe even which chat it was in — but scrolling through hundreds of messages to find it again is a nightmare. GPT Pinboard fixes that.
 
 [![Chrome Web Store](https://img.shields.io/badge/Chrome-Web%20Store-blue)](https://chrome.google.com/webstore)
 [![Version](https://img.shields.io/badge/version-1.0.1-green)](CHANGELOG.md)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![Website](https://img.shields.io/badge/Website-gpt--pinboard.com-green)](https://gpt-pinboard.com)
 
 ## ✨ Features
 
-- **📌 Pin individual ChatGPT messages** - Not the entire chat, just the messages that matter
+- **Pin individual ChatGPT messages** - Not the entire chat, just the messages that matter
 - **🏷️ Add custom names and tags** - Easy organization and categorization
 - **🔍 Search instantly** - Filter by text, name, or tags
 - **⚡ Jump back** - Instantly return to the original conversation
@@ -42,9 +43,9 @@ npm install
 
 ### Pin a Message (3 Ways)
 
-1. **Hover Method** - Move mouse over any message → Click "📌 Pin" button
+1. **Hover Method** - Move mouse over any message → Click "Pin" button
 2. **Right-Click** - Select text → Right-click → "Pin selection to GPT Pinboard"
-3. **Quick Pin** - Click the "📌 Pin Message" button (bottom-right of ChatGPT)
+3. **Quick Pin** - Click the "Pin Message" button (bottom-right of ChatGPT)
 
 ### Manage Pins
 
@@ -53,6 +54,22 @@ npm install
 - **Jump to message** - Click "Open" to navigate and highlight
 - **Export/Import** - Backup pins or sync across devices
 - **Delete** - Click "Delete" to remove unwanted pins
+
+## 🌐 Website
+
+Visit our official website: **[gpt-pinboard.com](https://gpt-pinboard.com)**
+
+The website includes:
+- Interactive feature showcase
+- Installation guides
+- Usage tutorials  
+- Developer documentation
+
+### Run Website Locally
+```bash
+npm run dev:website
+# Visit: http://localhost:8080
+```
 
 ## 🛠️ Development
 
@@ -68,6 +85,7 @@ See [DEVELOPMENT.md](DEVELOPMENT.md) for:
 ```bash
 npm run build        # Generate icons and assets
 npm run pack         # Package extension for Chrome Web Store
+npm run dev:website  # Run website locally
 npm run release      # Build and package in one step
 ```
 
