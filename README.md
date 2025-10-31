@@ -5,7 +5,8 @@
 [![Chrome Web Store](https://img.shields.io/badge/Chrome-Web%20Store-blue)](https://chrome.google.com/webstore)
 [![Version](https://img.shields.io/badge/version-1.0.1-green)](CHANGELOG.md)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
-[![Website](https://img.shields.io/badge/Website-gpt--pinboard.com-green)](https://gpt-pinboard.com)
+[![Website](https://img.shields.io/badge/Website-Live-green)](https://gpt-pinboard.vercel.app)
+[![Deploy](https://img.shields.io/badge/Deploy%20to-Vercel-black)](VERCEL.md)
 
 ## ✨ Features
 
@@ -178,7 +179,24 @@ MIT License - see [LICENSE](LICENSE) file
 
 For more help, check out our [GitHub Issues](https://github.com/devendrapratap02/pingpt-chrome-extension/issues) or email us directly.
 
-## 🙏 Acknowledgments
+## � Website Deployment
+
+The project includes a promotional website that can be deployed to Vercel:
+
+```bash
+# Deploy to production
+npm run deploy
+
+# Preview deployment  
+npm run deploy:preview
+
+# Build website locally
+npm run build:website
+```
+
+See [VERCEL.md](VERCEL.md) for complete deployment instructions.
+
+## �🙏 Acknowledgments
 
 Built for the ChatGPT community. Special thanks to all contributors and users providing feedback!
 

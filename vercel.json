@@ -1,0 +1,6 @@
+{
+  "buildCommand": "npm run build:website",
+  "outputDirectory": "website",
+  "installCommand": "npm install",
+  "devCommand": "npm run dev:website"
+}

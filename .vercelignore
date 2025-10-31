@@ -1,0 +1,23 @@
+# Build outputs
+build/
+extension/
+scripts/
+
+# Development files
+node_modules/
+.git/
+.DS_Store
+
+# Assets (only need the website folder)
+assets/
+
+# Documentation
+*.md
+!website/README.md
+
+# Logs
+*.log
+npm-debug.log*
+
+# Package files
+package-lock.json

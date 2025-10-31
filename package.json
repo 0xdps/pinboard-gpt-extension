@@ -17,8 +17,11 @@
     "pack": "npm run pack:chrome && npm run pack:firefox",
     "dev:chrome": "npm run build:chrome && echo 'Load build/chrome in Chrome'",
     "dev:firefox": "npm run build:firefox && echo 'Load build/firefox in Firefox'",
+    "build:website": "npm run build:assets && npm run copy:website-icons",
     "dev:website": "npm run copy:website-icons && cd website && python3 -m http.server 8080",
     "validate:seo": "echo 'Validating SEO files...' && echo 'Sitemap: http://localhost:8080/sitemap.xml' && echo 'Robots: http://localhost:8080/robots.txt'",
+    "deploy": "vercel --prod",
+    "deploy:preview": "vercel",
     "release": "npm run build && npm run pack"
   },
   "dependencies": {
