@@ -3,9 +3,9 @@
   "version": "1.1.0",
   "description": "Pin individual ChatGPT messages, not the entire chat. Add custom names and tags, search instantly, and jump back to the original conversation.",
   "scripts": {
-    "clean": "rm -rf build && rm -rf extension/common/icons/*.svg && rm -rf extension/common/icons/*.png && rm -rf website/images/*.svg && rm -rf website/images/*.png && rm -rf website/images/favicon.ico && rm -rf assets/icons/",
-    "copy:extension-icons": "mkdir -p extension/common/icons && cp assets/icons/icon.svg assets/icons/icon-*.png extension/common/icons/",
-    "copy:website-icons": "mkdir -p website/images && cp assets/icons/icon.svg assets/icons/favicon-*.png assets/icons/favicon.ico website/images/",
+    "clean": "rm -rf build && rm -rf extension/common/icons/*.png && rm -rf website/images/*.png && rm -rf website/images/favicon.ico && rm -rf assets/icons/",
+    "copy:extension-icons": "mkdir -p extension/common/icons && cp assets/icons/icon-*.png extension/common/icons/",
+    "copy:website-icons": "mkdir -p website/images && cp assets/icons/favicon-*.png assets/icons/favicon.ico website/images/",
     "copy:icons": "npm run copy:extension-icons && npm run copy:website-icons",
     "build:chrome": "npm run build:assets && npm run copy:icons && rm -rf build/chrome && mkdir -p build/chrome && cp -r extension/common/* build/chrome/ && cp extension/chrome/manifest.json build/chrome/",
     "build:firefox": "npm run build:assets && npm run copy:icons && rm -rf build/firefox && mkdir -p build/firefox && cp -r extension/common/* build/firefox/ && cp extension/firefox/manifest.json build/firefox/",

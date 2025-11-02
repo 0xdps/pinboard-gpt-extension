@@ -4,24 +4,14 @@ const path = require('path');
 
 const sizes = [16, 32, 48, 128];
 
-async function copySVG(sourceSvgPath, outputSvgPath) {
-  try {
-    fs.mkdirSync(path.dirname(outputSvgPath), { recursive: true });
-    fs.copyFileSync(sourceSvgPath, outputSvgPath);
-    console.log(`✓ Copied ${outputSvgPath}`);
-  } catch (err) {
-    console.error(`❌ Error copying ${outputSvgPath}:`, err.message);
-  }
-}
-
-async function generatePNGIcons(svgPath, outputDir, baseName) {
+async function generatePNGIcons(sourcePath, outputDir, baseName) {
   try {
     fs.mkdirSync(outputDir, { recursive: true });
-    const svgBuffer = fs.readFileSync(svgPath);
+    const sourceBuffer = fs.readFileSync(sourcePath);
 
     for (const size of sizes) {
       const outputPath = `${outputDir}/icon-${size}.png`;
-      await sharp(svgBuffer)
+      await sharp(sourceBuffer)
         .resize(size, size, {
           fit: 'contain',
           background: { r: 0, g: 0, b: 0, alpha: 0 },
@@ -35,15 +25,15 @@ async function generatePNGIcons(svgPath, outputDir, baseName) {
   }
 }
 
-async function generateFavicons(svgPath, outputDir) {
+async function generateFavicons(sourcePath, outputDir) {
   try {
     fs.mkdirSync(outputDir, { recursive: true });
-    const svgBuffer = fs.readFileSync(svgPath);
+    const sourceBuffer = fs.readFileSync(sourcePath);
     
     const faviconSizes = [16, 32, 48];
     for (const size of faviconSizes) {
       const outputPath = `${outputDir}/favicon-${size}x${size}.png`;
-      await sharp(svgBuffer)
+      await sharp(sourceBuffer)
         .resize(size, size, {
           fit: 'contain',
           background: { r: 0, g: 0, b: 0, alpha: 0 },
@@ -55,7 +45,7 @@ async function generateFavicons(svgPath, outputDir) {
 
     // Generate favicon.ico (32x32)
     const icoPath = `${outputDir}/favicon.ico`;
-    await sharp(svgBuffer)
+    await sharp(sourceBuffer)
       .resize(32, 32, {
         fit: 'contain',
         background: { r: 0, g: 0, b: 0, alpha: 0 },
@@ -69,24 +59,21 @@ async function generateFavicons(svgPath, outputDir) {
 }
 
 async function generateAssets() {
-  console.log('🎨 Generating assets from icon-transparent.svg...\n');
+  console.log('🎨 Generating assets from icon-transparent.png...\n');
 
   const assetsDir = path.join(__dirname, '..', 'assets');
   const iconsDir = path.join(assetsDir, 'icons');
-  const sourceSvg = path.join(assetsDir, 'icon-transaparent.svg'); // Note: actual filename has typo
-  
-  // Copy the transparent SVG as the main icon
-  await copySVG(sourceSvg, path.join(iconsDir, 'icon.svg'));
+  const sourcePng = path.join(assetsDir, 'icon-transparent.png');
 
-  console.log('\n🎨 Generating PNG icons in different sizes...\n');
+  console.log('🎨 Generating PNG icons in different sizes...\n');
 
-  // Generate PNG icons from SVG
-  await generatePNGIcons(sourceSvg, iconsDir);
+  // Generate PNG icons from PNG
+  await generatePNGIcons(sourcePng, iconsDir);
 
   console.log('\n🎨 Generating favicon variants...\n');
 
-  // Generate favicon variants from SVG
-  await generateFavicons(sourceSvg, iconsDir);
+  // Generate favicon variants from PNG
+  await generateFavicons(sourcePng, iconsDir);
 
   console.log('\n🎉 All assets generated successfully!');
 }

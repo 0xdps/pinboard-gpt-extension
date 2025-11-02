@@ -36,7 +36,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["icons/icon.svg"],
+      "resources": ["icons/icon-16.png", "icons/icon-32.png"],
       "matches": ["https://chatgpt.com/*", "https://chat.openai.com/*"]
     }
   ],
