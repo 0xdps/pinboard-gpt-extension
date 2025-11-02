@@ -194,13 +194,74 @@ function getTextAnchors(element) {
 
 // Create and show pin dialog
 function openPinDialog(element) {
-  return new Promise((resolve) => {
+  return new Promise(async (resolve) => {
     const messageText = element.innerText || element.textContent || '';
     if (!messageText.trim()) {
       showNotification('⚠️ No text found to pin');
       resolve();
       return;
     }
+    
+    // Get theme setting from storage
+    let isDarkMode = false;
+    try {
+      const runtime = typeof chrome !== 'undefined' ? chrome : browser;
+      const result = await runtime.storage.local.get(['theme']);
+      isDarkMode = result.theme === 'dark';
+    } catch (err) {
+      console.log('Could not load theme setting:', err);
+    }
+    
+    // Theme colors
+    const colors = isDarkMode ? {
+      overlay: 'rgba(0, 0, 0, 0.7)',
+      dialogBg: '#2d2d2d',
+      dialogText: '#e4e4e4',
+      headingText: '#ffffff',
+      labelText: '#b8b8b8',
+      previewBg: '#1a1a1a',
+      previewBorder: '#404040',
+      previewText: '#b8b8b8',
+      inputBg: '#1a1a1a',
+      inputBorder: '#404040',
+      inputText: '#e4e4e4',
+      inputPlaceholder: '#808080',
+      tagBg: '#1a3d5f',
+      tagText: '#5da5da',
+      cancelBg: '#1a1a1a',
+      cancelBorder: '#404040',
+      cancelText: '#b8b8b8',
+      cancelHover: '#2d2d2d',
+      saveBg: '#10a37f',
+      saveText: '#ffffff',
+      saveHover: '#0d8a6a',
+      focusBorder: '#10a37f',
+      helpText: '#808080'
+    } : {
+      overlay: 'rgba(0, 0, 0, 0.5)',
+      dialogBg: '#ffffff',
+      dialogText: '#202124',
+      headingText: '#202124',
+      labelText: '#5f6368',
+      previewBg: '#f8f9fa',
+      previewBorder: '#e8eaed',
+      previewText: '#5f6368',
+      inputBg: '#ffffff',
+      inputBorder: '#dadce0',
+      inputText: '#202124',
+      inputPlaceholder: '#80868b',
+      tagBg: '#e8f0fe',
+      tagText: '#1a73e8',
+      cancelBg: '#ffffff',
+      cancelBorder: '#dadce0',
+      cancelText: '#5f6368',
+      cancelHover: '#f8f9fa',
+      saveBg: '#10a37f',
+      saveText: '#ffffff',
+      saveHover: '#0d8a6a',
+      focusBorder: '#10a37f',
+      helpText: '#80868b'
+    };
     
     // Create modal overlay
     const overlay = document.createElement('div');
@@ -210,7 +271,7 @@ function openPinDialog(element) {
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0, 0, 0, 0.5);
+      background: ${colors.overlay};
       z-index: 100000;
       display: flex;
       align-items: center;
@@ -221,7 +282,7 @@ function openPinDialog(element) {
     // Create dialog
     const dialog = document.createElement('div');
     dialog.style.cssText = `
-      background: white;
+      background: ${colors.dialogBg};
       border-radius: 12px;
       padding: 24px;
       max-width: 500px;
@@ -230,12 +291,13 @@ function openPinDialog(element) {
       overflow-y: auto;
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
       font-family: system-ui, -apple-system, sans-serif;
+      color: ${colors.dialogText};
     `;
     
     const messagePreview = messageText.length > 300 ? messageText.slice(0, 300) + '...' : messageText;
     
     dialog.innerHTML = `
-      <h2 style="margin: 0 0 20px 0; font-size: 20px; color: #202124; display: flex; align-items: center; gap: 8px;">
+      <h2 style="margin: 0 0 20px 0; font-size: 20px; color: ${colors.headingText}; display: flex; align-items: center; gap: 8px;">
         <svg width="20" height="20" viewBox="0 0 24 24">
           <ellipse cx="12" cy="8" rx="6" ry="5" fill="#febf00" stroke="#999" stroke-width="0.5" opacity="0.9"/>
           <path d="M 12 13 L 10 20 L 14 20 Z" fill="#333"/>
@@ -245,25 +307,25 @@ function openPinDialog(element) {
       </h2>
       
       <div style="margin-bottom: 16px;">
-        <label style="display: block; font-weight: 600; margin-bottom: 6px; color: #5f6368; font-size: 14px;">
+        <label style="display: block; font-weight: 600; margin-bottom: 6px; color: ${colors.labelText}; font-size: 14px;">
           Preview
         </label>
         <div style="
-          background: #f8f9fa;
-          border: 1px solid #e8eaed;
+          background: ${colors.previewBg};
+          border: 1px solid ${colors.previewBorder};
           border-radius: 6px;
           padding: 12px;
           max-height: 150px;
           overflow-y: auto;
           font-size: 13px;
-          color: #5f6368;
+          color: ${colors.previewText};
           white-space: pre-wrap;
           line-height: 1.5;
         ">${escapeHtml(messagePreview)}</div>
       </div>
       
       <div style="margin-bottom: 16px;">
-        <label for="pin-name" style="display: block; font-weight: 600; margin-bottom: 6px; color: #5f6368; font-size: 14px;">
+        <label for="pin-name" style="display: block; font-weight: 600; margin-bottom: 6px; color: ${colors.labelText}; font-size: 14px;">
           Name (optional)
         </label>
         <input 
@@ -273,11 +335,11 @@ function openPinDialog(element) {
           style="
             width: 100%;
             padding: 10px 12px;
-            border: 1px solid #dadce0;
+            border: 1px solid ${colors.inputBorder};
             border-radius: 6px;
             font-size: 14px;
-            color: #202124;
-            background: white;
+            color: ${colors.inputText};
+            background: ${colors.inputBg};
             font-family: system-ui, -apple-system, sans-serif;
             box-sizing: border-box;
             transition: border-color 0.2s;
@@ -286,15 +348,15 @@ function openPinDialog(element) {
       </div>
       
       <div style="margin-bottom: 24px;">
-        <label style="display: block; font-weight: 600; margin-bottom: 6px; color: #5f6368; font-size: 14px;">
+        <label style="display: block; font-weight: 600; margin-bottom: 6px; color: ${colors.labelText}; font-size: 14px;">
           Tags (optional, max 3)
         </label>
         <div id="tags-container" style="
           min-height: 40px;
-          border: 1px solid #dadce0;
+          border: 1px solid ${colors.inputBorder};
           border-radius: 6px;
           padding: 8px;
-          background: white;
+          background: ${colors.inputBg};
           margin-bottom: 8px;
           display: flex;
           flex-wrap: wrap;
@@ -311,13 +373,13 @@ function openPinDialog(element) {
               flex: 1;
               min-width: 100px;
               font-size: 14px;
-              color: #202124;
+              color: ${colors.inputText};
               background: transparent;
               font-family: system-ui, -apple-system, sans-serif;
             "
           />
         </div>
-        <div style="font-size: 12px; color: #80868b;">
+        <div style="font-size: 12px; color: ${colors.helpText};">
           Press Enter to add tags or type and press Enter
         </div>
       </div>
@@ -327,10 +389,10 @@ function openPinDialog(element) {
           id="pin-cancel" 
           style="
             padding: 10px 20px;
-            border: 1px solid #dadce0;
+            border: 1px solid ${colors.cancelBorder};
             border-radius: 6px;
-            background: white;
-            color: #5f6368;
+            background: ${colors.cancelBg};
+            color: ${colors.cancelText};
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
@@ -343,8 +405,8 @@ function openPinDialog(element) {
             padding: 10px 20px;
             border: none;
             border-radius: 6px;
-            background: #10a37f;
-            color: white;
+            background: ${colors.saveBg};
+            color: ${colors.saveText};
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
@@ -368,28 +430,28 @@ function openPinDialog(element) {
     const saveBtn = dialog.querySelector('#pin-save');
     
     cancelBtn.addEventListener('mouseenter', () => {
-      cancelBtn.style.background = '#f8f9fa';
+      cancelBtn.style.background = colors.cancelHover;
     });
     cancelBtn.addEventListener('mouseleave', () => {
-      cancelBtn.style.background = 'white';
+      cancelBtn.style.background = colors.cancelBg;
     });
     
     saveBtn.addEventListener('mouseenter', () => {
-      saveBtn.style.background = '#0d8a6a';
+      saveBtn.style.background = colors.saveHover;
     });
     saveBtn.addEventListener('mouseleave', () => {
-      saveBtn.style.background = '#10a37f';
+      saveBtn.style.background = colors.saveBg;
     });
     
     // Handle input focus
     const inputs = dialog.querySelectorAll('input');
     inputs.forEach(input => {
       input.addEventListener('focus', () => {
-        input.style.borderColor = '#10a37f';
+        input.style.borderColor = colors.focusBorder;
         input.style.outline = 'none';
       });
       input.addEventListener('blur', () => {
-        input.style.borderColor = '#dadce0';
+        input.style.borderColor = colors.inputBorder;
       });
     });
     
@@ -403,8 +465,8 @@ function openPinDialog(element) {
       tagEl.style.cssText = `
         display: inline-flex;
         align-items: center;
-        background: #e8f0fe;
-        color: #1a73e8;
+        background: ${colors.tagBg};
+        color: ${colors.tagText};
         padding: 4px 8px;
         border-radius: 16px;
         font-size: 12px;
@@ -421,7 +483,7 @@ function openPinDialog(element) {
       removeBtn.style.cssText = `
         background: none;
         border: none;
-        color: #1a73e8;
+        color: ${colors.tagText};
         cursor: pointer;
         font-size: 14px;
         line-height: 1;
@@ -435,7 +497,7 @@ function openPinDialog(element) {
       `;
       
       removeBtn.addEventListener('mouseenter', () => {
-        removeBtn.style.background = 'rgba(26, 115, 232, 0.1)';
+        removeBtn.style.background = isDarkMode ? 'rgba(93, 165, 218, 0.15)' : 'rgba(26, 115, 232, 0.1)';
       });
       
       removeBtn.addEventListener('mouseleave', () => {

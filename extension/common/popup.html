@@ -8,8 +8,12 @@
 </head>
 <body>
   <div class="header">
-    <div class="header-logo">
-      <img src="GPT-Pinboard-Logo.svg" alt="GPT Pinboard" class="logo" />
+    <div class="header-branding">
+      <img src="icons/icon-32.png" alt="GPT Pinboard" class="logo" />
+      <div class="header-text">
+        <h1 class="header-title">GPT Pinboard</h1>
+        <p class="header-subtitle">Pin the messages that matter</p>
+      </div>
     </div>
     <div>
       <button id="settingsBtn" class="settings-btn" title="Settings">⚙️</button>
@@ -30,6 +34,20 @@
         <button id="closeSettings" class="close-btn">×</button>
       </div>
       
+      <div class="settings-section">
+        <h4>Appearance</h4>
+        <div class="theme-setting">
+          <div class="theme-info">
+            <span id="themeText">🌙 Dark mode</span>
+            <small id="themeDesc">Switch between light and dark themes</small>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="themeToggle">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+
       <div class="settings-section">
         <h4>Sync</h4>
         <div class="sync-setting">

@@ -8,11 +8,52 @@ document.addEventListener('DOMContentLoaded', async () => {
   const importFile = document.getElementById('importFile');
   const syncText = document.getElementById('syncText');
   const syncToggle = document.getElementById('syncToggle');
+  const themeText = document.getElementById('themeText');
+  const themeToggle = document.getElementById('themeToggle');
   
   // Settings Modal Elements
   const settingsBtn = document.getElementById('settingsBtn');
   const settingsModal = document.getElementById('settingsModal');
   const closeSettings = document.getElementById('closeSettings');
+
+  // Initialize theme
+  async function initializeTheme() {
+    try {
+      const { theme } = await chrome.storage.local.get(['theme']);
+      const isDark = theme === 'dark';
+      themeToggle.checked = isDark;
+      document.body.classList.toggle('dark-mode', isDark);
+      updateThemeText(isDark);
+    } catch (err) {
+      console.error('Error loading theme:', err);
+    }
+  }
+
+  function updateThemeText(isDark) {
+    if (isDark) {
+      themeText.textContent = '🌙 Dark mode';
+      themeText.style.color = '#19c37d';
+    } else {
+      themeText.textContent = '☀️ Light mode';
+      themeText.style.color = '#10a37f';
+    }
+  }
+
+  // Theme toggle handler
+  themeToggle.onchange = async () => {
+    const isDark = themeToggle.checked;
+    document.body.classList.toggle('dark-mode', isDark);
+    updateThemeText(isDark);
+    
+    try {
+      await chrome.storage.local.set({ theme: isDark ? 'dark' : 'light' });
+    } catch (err) {
+      console.error('Error saving theme:', err);
+    }
+  };
+
+  // Initialize theme on load
+  await initializeTheme();
 
   // Settings Modal Handlers
   settingsBtn.onclick = () => {
@@ -90,23 +131,29 @@ document.addEventListener('DOMContentLoaded', async () => {
   function renderPin(pin) {
     const div = document.createElement('div');
     div.className = 'pin';
-    const messagePreview = pin.messageText.length > 100 
-      ? escapeHtml(pin.messageText.slice(0, 100)) + '…' 
+    const messagePreview = pin.messageText.length > 150 
+      ? escapeHtml(pin.messageText.slice(0, 150)) + '…' 
       : escapeHtml(pin.messageText);
-    const title = pin.name ? escapeHtml(pin.name) : (escapeHtml(pin.messageText.slice(0, 60)) + (pin.messageText.length > 60 ? '…' : ''));
+    const title = pin.name ? escapeHtml(pin.name) : '';
     
     // Create clickable tags
     const tagsHtml = pin.tags?.length 
-      ? ' • ' + pin.tags.map(tag => `<span class="tag-link" data-tag="${escapeHtml(tag)}">${escapeHtml(tag)}</span>`).join(' • ')
+      ? pin.tags.map(tag => `<span class="tag-link" data-tag="${escapeHtml(tag)}">${escapeHtml(tag)}</span>`).join(' ')
       : '';
     
+    const dateTime = new Date(pin.pinnedAt).toLocaleString();
+    const site = pin.site || 'ChatGPT';
+    
     div.innerHTML = `
-      <div style="font-weight:600">${title}</div>
-      <div style="color:#555; margin-top:6px; font-size:13px;">${messagePreview}</div>
-      <div class="meta">${new Date(pin.pinnedAt).toLocaleString()} • ${pin.site}${tagsHtml}</div>
-      <div class="actions">
-        <button data-id="${pin.id}" class="openBtn">Open</button>
-        <button data-id="${pin.id}" class="deleteBtn">Delete</button>
+      <div class="pin-content">
+        ${title ? `<div class="pin-title">${title}</div>` : ''}
+        <div class="pin-message">${messagePreview}</div>
+        ${tagsHtml ? `<div class="pin-tags">${tagsHtml}</div>` : ''}
+      </div>
+      <div class="pin-actions">
+        <button data-id="${pin.id}" class="iconBtn openBtn" title="Open pin">→</button>
+        <button data-id="${pin.id}" class="iconBtn deleteBtn" title="Delete pin">✕</button>
+        <button class="iconBtn infoBtn" title="${dateTime}">ⓘ</button>
       </div>
     `;
     return div;

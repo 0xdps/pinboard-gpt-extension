@@ -10,9 +10,23 @@ const SYNC_QUOTA_BYTES = 102400; // 100KB total
 const SYNC_QUOTA_BYTES_PER_ITEM = 8192; // 8KB per item
 const SYNC_MAX_ITEMS = 512;
 
+// Check if Chrome Storage API is available
+function isStorageAvailable() {
+  return typeof chrome !== 'undefined' && 
+         chrome.storage && 
+         chrome.storage.local;
+}
+
+// Check if sync storage is available
+function isSyncStorageAvailable() {
+  return isStorageAvailable() && 
+         chrome.storage.sync;
+}
+
 // Check if sync is enabled (default: true)
 async function isSyncEnabled() {
   try {
+    if (!isStorageAvailable()) return false;
     const result = await chrome.storage.local.get([SYNC_ENABLED_KEY]);
     return result[SYNC_ENABLED_KEY] !== false; // Default to true
   } catch (err) {
@@ -22,8 +36,12 @@ async function isSyncEnabled() {
 
 // Get the appropriate storage area (sync or local)
 async function getStorageArea() {
+  if (!isStorageAvailable()) {
+    throw new Error('Chrome storage API not available');
+  }
   const syncEnabled = await isSyncEnabled();
-  return syncEnabled ? chrome.storage.sync : chrome.storage.local;
+  const usingSyncStorage = syncEnabled && isSyncStorageAvailable();
+  return usingSyncStorage ? chrome.storage.sync : chrome.storage.local;
 }
 
 // Check if data fits within sync quota
@@ -112,9 +130,18 @@ async function idbClear() {
 // Toggle sync on/off
 async function toggleSync(enabled) {
   try {
+    if (!isStorageAvailable()) {
+      throw new Error('Chrome storage API not available');
+    }
+    
     await chrome.storage.local.set({ [SYNC_ENABLED_KEY]: enabled });
     
     if (enabled) {
+      // Check if sync is available
+      if (!isSyncStorageAvailable()) {
+        throw new Error('Sync storage not available');
+      }
+      
       // Migrate from local to sync
       const localResult = await chrome.storage.local.get([STORAGE_KEY]);
       const pins = localResult[STORAGE_KEY] || [];
@@ -140,8 +167,20 @@ async function toggleSync(enabled) {
 // Get sync status and quota info
 async function getSyncStatus() {
   try {
+    if (!isStorageAvailable()) {
+      return {
+        enabled: false,
+        pinCount: 0,
+        dataSize: 0,
+        quotaUsed: 0,
+        canUseSync: false,
+        error: 'Storage API not available'
+      };
+    }
+    
     const enabled = await isSyncEnabled();
-    const storage = enabled ? chrome.storage.sync : chrome.storage.local;
+    const usingSyncStorage = enabled && isSyncStorageAvailable();
+    const storage = usingSyncStorage ? chrome.storage.sync : chrome.storage.local;
     const result = await storage.get([STORAGE_KEY]);
     const pins = result[STORAGE_KEY] || [];
     const dataSize = new Blob([JSON.stringify(pins)]).size;
@@ -153,10 +192,19 @@ async function getSyncStatus() {
       quotaUsed: ((dataSize / SYNC_QUOTA_BYTES) * 100).toFixed(2),
       canSync: canUseSync(pins),
       maxPins: SYNC_MAX_ITEMS,
-      maxSize: SYNC_QUOTA_BYTES
+      maxSize: SYNC_QUOTA_BYTES,
+      usingSync: usingSyncStorage
     };
   } catch (err) {
-    return null;
+    console.error('Error getting sync status:', err);
+    return {
+      enabled: false,
+      pinCount: 0,
+      dataSize: 0,
+      quotaUsed: 0,
+      canUseSync: false,
+      error: err.message
+    };
   }
 }
 
