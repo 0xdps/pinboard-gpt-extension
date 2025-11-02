@@ -706,9 +706,13 @@ function showNotification(message) {
 // Find element by XPath
 function findByXPath(xpath) {
   try {
+    console.log('GPT Pinboard: Evaluating XPath:', xpath);
     const result = document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
-    return result.singleNodeValue;
+    const element = result.singleNodeValue;
+    console.log('GPT Pinboard: XPath result:', element);
+    return element;
   } catch (err) {
+    console.log('GPT Pinboard: XPath evaluation failed:', err);
     return null;
   }
 }
@@ -777,14 +781,22 @@ async function highlightPin(pin) {
   
   let element = null;
   
-  // Try text anchors first (most reliable for ChatGPT)
-  if (pin.anchors) {
-    element = findByTextAnchors(pin.anchors);
+  // Try XPath first (most direct and reliable when available)
+  if (pin.xpath) {
+    console.log('GPT Pinboard: Trying XPath:', pin.xpath);
+    element = findByXPath(pin.xpath);
+    if (element) {
+      console.log('GPT Pinboard: Found element using XPath');
+    }
   }
   
-  // Fallback to XPath
-  if (!element && pin.xpath) {
-    element = findByXPath(pin.xpath);
+  // Fallback to text anchors if XPath fails
+  if (!element && pin.anchors) {
+    console.log('GPT Pinboard: XPath failed, trying text anchors');
+    element = findByTextAnchors(pin.anchors);
+    if (element) {
+      console.log('GPT Pinboard: Found element using text anchors');
+    }
   }
   
   // Last resort: search by partial text match
