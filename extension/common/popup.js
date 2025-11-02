@@ -164,11 +164,27 @@ document.addEventListener('DOMContentLoaded', async () => {
       ? pin.messageText.slice(0, 150) + '…' 
       : pin.messageText;
     
-    // Set tags
+    // Set tags using safe DOM manipulation
     if (pin.tags?.length) {
-      tagsEl.innerHTML = pin.tags.map(tag => 
-        `<span class="tag-link" data-tag="${escapeHtml(tag)}">${escapeHtml(tag)}</span>`
-      ).join(' ');
+      // Clear existing tags safely
+      while (tagsEl.firstChild) {
+        tagsEl.removeChild(tagsEl.firstChild);
+      }
+      
+      // Create tag elements safely
+      pin.tags.forEach(tag => {
+        const tagSpan = document.createElement('span');
+        tagSpan.className = 'tag-link';
+        tagSpan.setAttribute('data-tag', tag);
+        tagSpan.textContent = tag;
+        tagsEl.appendChild(tagSpan);
+        
+        // Add space between tags
+        if (tag !== pin.tags[pin.tags.length - 1]) {
+          tagsEl.appendChild(document.createTextNode(' '));
+        }
+      });
+      
       tagsEl.style.display = 'flex';
     } else {
       tagsEl.style.display = 'none';
@@ -188,7 +204,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function render() {
     const pins = await getPins();
     const q = search.value.trim().toLowerCase();
-    listEl.innerHTML = '';
+    
+    // Clear list safely
+    while (listEl.firstChild) {
+      listEl.removeChild(listEl.firstChild);
+    }
     
     const filtered = pins.filter(p => {
       if (!q) return true;
@@ -208,14 +228,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     
     if (!filtered.length) {
-      listEl.innerHTML = `
-        <div style="color:#666;padding:20px;text-align:center;">
-          <div style="margin-bottom:12px;">
-            <img src="icons/icon-32.png" width="32" height="32" style="opacity:0.7;" alt="GPT Pinboard"/>
-          </div>
-          No pins yet. Visit ChatGPT and click the "Pin Last Message" button!
-        </div>
-      `;
+      // Create empty state safely
+      const emptyDiv = document.createElement('div');
+      emptyDiv.style.cssText = 'color:#666;padding:20px;text-align:center;';
+      
+      const iconDiv = document.createElement('div');
+      iconDiv.style.cssText = 'margin-bottom:12px;';
+      
+      const img = document.createElement('img');
+      img.src = 'icons/icon-32.png';
+      img.width = 32;
+      img.height = 32;  
+      img.style.opacity = '0.7';
+      img.alt = 'GPT Pinboard';
+      
+      iconDiv.appendChild(img);
+      emptyDiv.appendChild(iconDiv);
+      emptyDiv.appendChild(document.createTextNode('No pins yet. Visit ChatGPT and click the "Pin Last Message" button!'));
+      
+      listEl.appendChild(emptyDiv);
       return; // Add return here to prevent further execution
     }
     

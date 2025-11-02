@@ -17,10 +17,14 @@ function createPinButtonForMessage(messageContainer) {
     }
     
     pinButton = document.createElement('button');
-    // Use PNG icon for compatibility
-    pinButton.innerHTML = `
-      <img src="${runtime.getURL('icons/icon-16.png')}" width="16" height="16" style="display: block;" alt="GPT Pinboard"/>
-    `;
+    // Use PNG icon for compatibility - create image element safely
+    const img = document.createElement('img');
+    img.src = runtime.getURL('icons/icon-16.png');
+    img.width = 16;
+    img.height = 16;
+    img.style.display = 'block';
+    img.alt = 'GPT Pinboard';
+    pinButton.appendChild(img);
     pinButton.title = 'Pin this message with GPT Pinboard';
     pinButton.className = 'pingpt-pin-button';
   } catch (error) {
@@ -308,7 +312,8 @@ function openPinDialog(element) {
     
     const messagePreview = messageText.length > 300 ? messageText.slice(0, 300) + '...' : messageText;
     
-    dialog.innerHTML = `
+    // Use insertAdjacentHTML instead of innerHTML for better security
+    dialog.insertAdjacentHTML('afterbegin', `
       <h2 style="margin: 0 0 20px 0; font-size: 20px; color: ${colors.headingText}; display: flex; align-items: center; gap: 8px;">
         <svg width="20" height="20" viewBox="0 0 24 24">
           <ellipse cx="12" cy="8" rx="6" ry="5" fill="#febf00" stroke="#999" stroke-width="0.5" opacity="0.9"/>
@@ -426,7 +431,7 @@ function openPinDialog(element) {
           "
         >Save Pin</button>
       </div>
-    `;
+    `);
     
     overlay.appendChild(dialog);
     document.body.appendChild(overlay);
@@ -491,7 +496,7 @@ function openPinDialog(element) {
       textSpan.textContent = tagText;
       
       const removeBtn = document.createElement('button');
-      removeBtn.innerHTML = '×';
+      removeBtn.textContent = '×';
       removeBtn.style.cssText = `
         background: none;
         border: none;
@@ -931,14 +936,44 @@ function addManualPinButton() {
     
     const manualBtn = document.createElement('button');
     manualBtn.id = 'pingpt-manual-pin';
-    manualBtn.innerHTML = `
-      <svg width="16" height="16" viewBox="0 0 24 24" style="margin-right: 6px; vertical-align: middle;">
-        <ellipse cx="12" cy="8" rx="6" ry="5" fill="#febf00" stroke="#fff" stroke-width="0.5" opacity="0.9"/>
-        <path d="M 12 13 L 10 20 L 14 20 Z" fill="#fff"/>
-        <text x="12" y="9.5" text-anchor="middle" font-family="Arial, sans-serif" font-size="3.5" font-weight="bold" fill="#4a71f6">PIN</text>
-      </svg>
-      Pin Last Message
-    `;
+    
+    // Create SVG element safely
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('width', '16');
+    svg.setAttribute('height', '16');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.style.cssText = 'margin-right: 6px; vertical-align: middle;';
+    
+    const ellipse = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
+    ellipse.setAttribute('cx', '12');
+    ellipse.setAttribute('cy', '8');  
+    ellipse.setAttribute('rx', '6');
+    ellipse.setAttribute('ry', '5');
+    ellipse.setAttribute('fill', '#febf00');
+    ellipse.setAttribute('stroke', '#fff');
+    ellipse.setAttribute('stroke-width', '0.5');
+    ellipse.setAttribute('opacity', '0.9');
+    
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', 'M 12 13 L 10 20 L 14 20 Z');
+    path.setAttribute('fill', '#fff');
+    
+    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    text.setAttribute('x', '12');
+    text.setAttribute('y', '9.5');
+    text.setAttribute('text-anchor', 'middle');
+    text.setAttribute('font-family', 'Arial, sans-serif');
+    text.setAttribute('font-size', '3.5');
+    text.setAttribute('font-weight', 'bold');
+    text.setAttribute('fill', '#4a71f6');
+    text.textContent = 'PIN';
+    
+    svg.appendChild(ellipse);
+    svg.appendChild(path);
+    svg.appendChild(text);
+    
+    manualBtn.appendChild(svg);
+    manualBtn.appendChild(document.createTextNode('Pin Last Message'));
     manualBtn.title = 'Pin the last assistant message';
     manualBtn.style.cssText = `
       position: fixed;
