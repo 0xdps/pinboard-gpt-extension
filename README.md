@@ -2,10 +2,10 @@
 
 > Ever had a perfect ChatGPT answer, buried deep in a long chat? You remember what it said, maybe even which chat it was in — but scrolling through hundreds of messages to find it again is a nightmare. GPT Pinboard fixes that.
 
-[![Chrome Web Store](https://img.shields.io/badge/Chrome-Web%20Store-blue)](https://chrome.google.com/webstore)
-[![Version](https://img.shields.io/badge/version-1.0.1-green)](CHANGELOG.md)
+[![Chrome Web Store](https://img.shields.io/badge/Chrome-Web%20Store-blue)](https://chromewebstore.google.com/detail/pingpt-%E2%80%94-chatgpt-message/hdhoaialemjelcfjjmjkkhkffiggbnap)
+[![Version](https://img.shields.io/badge/version-1.1.1-green)](CHANGELOG.md)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
-[![Website](https://img.shields.io/badge/Website-Live-green)](https://gpt-pinboard.vercel.app)
+[![Website](https://img.shields.io/badge/Website-Live-green)](https://gptpins.dps.codes)
 [![Deploy](https://img.shields.io/badge/Deploy%20to-Vercel-black)](VERCEL.md)
 
 ## ✨ Features
@@ -21,7 +21,9 @@ No accounts. No sync drama. Just fast access to what you actually need.
 ## 🚀 Quick Start
 
 ### Install from Chrome Web Store
-Coming soon!
+**[🚀 Install GPT Pinboard from Chrome Web Store](https://chromewebstore.google.com/detail/pingpt-%E2%80%94-chatgpt-message/hdhoaialemjelcfjjmjkkhkffiggbnap)**
+
+One-click install with automatic updates.
 
 ### Install from Source
 
