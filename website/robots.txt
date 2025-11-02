@@ -1,12 +1,12 @@
 # Robots.txt for GPT Pinboard Website
-# https://gpt-pinboard.com/robots.txt
+# https://gptpins.dps.codes/robots.txt
 
 # Allow all web crawlers to access the site
 User-agent: *
 Allow: /
 
 # Sitemap location
-Sitemap: https://gpt-pinboard.com/sitemap.xml
+Sitemap: https://gptpins.dps.codes/sitemap.xml
 
 # Specific rules for major search engines
 User-agent: Googlebot

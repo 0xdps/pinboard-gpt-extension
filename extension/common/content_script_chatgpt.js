@@ -373,7 +373,7 @@ function openPinDialog(element) {
           display: flex;
           flex-wrap: wrap;
           gap: 6px;
-          align-items: flex-start;
+          align-items: center;
         ">
           <input 
             type="text" 
