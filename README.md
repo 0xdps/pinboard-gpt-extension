@@ -64,7 +64,7 @@ npm install
 
 ## 🌐 Website
 
-Visit our official website: **[gpt-pinboard.com](https://gpt-pinboard.com)**
+Visit our official website: **[gptpins.dps.codes](https://gptpins.dps.codes)**
 
 The website includes:
 - Interactive feature showcase

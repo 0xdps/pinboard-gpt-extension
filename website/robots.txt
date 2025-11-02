@@ -79,5 +79,5 @@ Allow: *.pdf
 Crawl-delay: 1
 
 # Additional sitemaps (if we add more in the future)
-# Sitemap: https://gpt-pinboard.com/sitemap-images.xml
-# Sitemap: https://gpt-pinboard.com/sitemap-news.xml
+# Sitemap: https://gptpins.dps.codes/sitemap-images.xml
+# Sitemap: https://gptpins.dps.codes/sitemap-news.xml

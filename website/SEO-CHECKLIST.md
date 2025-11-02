@@ -50,7 +50,7 @@
 ### Search Console Setup (Post-Deployment)
 - [ ] Add property to Google Search Console
 - [ ] Verify ownership (HTML file method recommended)
-- [ ] Submit sitemap: `https://gpt-pinboard.com/sitemap.xml`
+- [ ] Submit sitemap: `https://gptpins.dps.codes/sitemap.xml`
 - [ ] Monitor crawl errors
 - [ ] Check search appearance
 
@@ -98,7 +98,7 @@
 ## Deployment Notes
 
 ### Domain Setup
-- [ ] Configure DNS for gpt-pinboard.com
+- [ ] Configure DNS for gptpins.dps.codes
 - [ ] Set up SSL certificate
 - [ ] Configure CDN (optional)
 - [ ] Test all URLs work correctly

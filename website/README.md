@@ -135,7 +135,7 @@ open http://localhost:8080/robots.txt       # Crawler directives
 open http://localhost:8080/test.html        # Development test page
 
 # Validate sitemap (when deployed)
-curl -s "https://www.google.com/ping?sitemap=https://gpt-pinboard.com/sitemap.xml"
+curl -s "https://www.google.com/ping?sitemap=https://gptpins.dps.codes/sitemap.xml"
 ```
 
 ## Browser Support
