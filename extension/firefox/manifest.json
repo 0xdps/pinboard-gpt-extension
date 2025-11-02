@@ -1,13 +1,16 @@
 {
   "manifest_version": 3,
-  "name": "GPT Pinboard — ChatGPT Message Pinner",
+  "name": "GPT Pinboard",
   "description": "Pin individual ChatGPT messages. Add names and tags, search instantly, jump back to conversations. Local storage.",
   "version": "1.1.1",
   "author": "Devendra Pratap Singh",
   "browser_specific_settings": {
     "gecko": {
       "id": "pingpt@devendrapratap.dev",
-      "strict_min_version": "109.0"
+      "strict_min_version": "109.0",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
     }
   },
   "permissions": [

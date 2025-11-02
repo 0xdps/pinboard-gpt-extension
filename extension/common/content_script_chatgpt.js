@@ -312,126 +312,194 @@ function openPinDialog(element) {
     
     const messagePreview = messageText.length > 300 ? messageText.slice(0, 300) + '...' : messageText;
     
-    // Use insertAdjacentHTML instead of innerHTML for better security
-    dialog.insertAdjacentHTML('afterbegin', `
-      <h2 style="margin: 0 0 20px 0; font-size: 20px; color: ${colors.headingText}; display: flex; align-items: center; gap: 8px;">
-        <svg width="20" height="20" viewBox="0 0 24 24">
-          <ellipse cx="12" cy="8" rx="6" ry="5" fill="#febf00" stroke="#999" stroke-width="0.5" opacity="0.9"/>
-          <path d="M 12 13 L 10 20 L 14 20 Z" fill="#333"/>
-          <text x="12" y="9.5" text-anchor="middle" font-family="Arial, sans-serif" font-size="3.5" font-weight="bold" fill="#4a71f6">PIN</text>
-        </svg>
-        Pin Message
-      </h2>
-      
-      <div style="margin-bottom: 16px;">
-        <label style="display: block; font-weight: 600; margin-bottom: 6px; color: ${colors.labelText}; font-size: 14px;">
-          Preview
-        </label>
-        <div style="
-          background: ${colors.previewBg};
-          border: 1px solid ${colors.previewBorder};
-          border-radius: 6px;
-          padding: 12px;
-          max-height: 150px;
-          overflow-y: auto;
-          font-size: 13px;
-          color: ${colors.previewText};
-          white-space: pre-wrap;
-          line-height: 1.5;
-        ">${escapeHtml(messagePreview)}</div>
-      </div>
-      
-      <div style="margin-bottom: 16px;">
-        <label for="pin-name" style="display: block; font-weight: 600; margin-bottom: 6px; color: ${colors.labelText}; font-size: 14px;">
-          Name (optional)
-        </label>
-        <input 
-          type="text" 
-          id="pin-name" 
-          placeholder="Give this pin a memorable name..."
-          style="
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid ${colors.inputBorder};
-            border-radius: 6px;
-            font-size: 14px;
-            color: ${colors.inputText};
-            background: ${colors.inputBg};
-            font-family: system-ui, -apple-system, sans-serif;
-            box-sizing: border-box;
-            transition: border-color 0.2s;
-          "
-        />
-      </div>
-      
-      <div style="margin-bottom: 24px;">
-        <label style="display: block; font-weight: 600; margin-bottom: 6px; color: ${colors.labelText}; font-size: 14px;">
-          Tags (optional, max 3)
-        </label>
-        <div id="tags-container" style="
-          min-height: 40px;
-          border: 1px solid ${colors.inputBorder};
-          border-radius: 6px;
-          padding: 8px;
-          background: ${colors.inputBg};
-          margin-bottom: 8px;
-          display: flex;
-          flex-wrap: wrap;
-          gap: 6px;
-          align-items: center;
-        ">
-          <input 
-            type="text" 
-            id="tag-input" 
-            placeholder="Add a tag..."
-            style="
-              border: none;
-              outline: none;
-              flex: 1;
-              min-width: 100px;
-              font-size: 14px;
-              color: ${colors.inputText};
-              background: transparent;
-              font-family: system-ui, -apple-system, sans-serif;
-            "
-          />
-        </div>
-        <div style="font-size: 12px; color: ${colors.helpText};">
-          Press Enter to add tags or type and press Enter
-        </div>
-      </div>
-      
-      <div style="display: flex; gap: 10px; justify-content: flex-end;">
-        <button 
-          id="pin-cancel" 
-          style="
-            padding: 10px 20px;
-            border: 1px solid ${colors.cancelBorder};
-            border-radius: 6px;
-            background: ${colors.cancelBg};
-            color: ${colors.cancelText};
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-          "
-        >Cancel</button>
-        <button 
-          id="pin-save" 
-          style="
-            padding: 10px 20px;
-            border: none;
-            border-radius: 6px;
-            background: ${colors.saveBg};
-            color: ${colors.saveText};
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-          "
-        >Save Pin</button>
-      </div>
-    `);
+    // Create dialog elements safely with DOM methods
+    
+    // Header with SVG icon
+    const header = document.createElement('h2');
+    header.style.cssText = `margin: 0 0 20px 0; font-size: 20px; color: ${colors.headingText}; display: flex; align-items: center; gap: 8px;`;
+    
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('width', '20');
+    svg.setAttribute('height', '20');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    
+    const ellipse = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
+    ellipse.setAttribute('cx', '12');
+    ellipse.setAttribute('cy', '8');
+    ellipse.setAttribute('rx', '6');
+    ellipse.setAttribute('ry', '5');
+    ellipse.setAttribute('fill', '#febf00');
+    ellipse.setAttribute('stroke', '#999');
+    ellipse.setAttribute('stroke-width', '0.5');
+    ellipse.setAttribute('opacity', '0.9');
+    
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', 'M 12 13 L 10 20 L 14 20 Z');
+    path.setAttribute('fill', '#333');
+    
+    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    text.setAttribute('x', '12');
+    text.setAttribute('y', '9.5');
+    text.setAttribute('text-anchor', 'middle');
+    text.setAttribute('font-family', 'Arial, sans-serif');
+    text.setAttribute('font-size', '3.5');
+    text.setAttribute('font-weight', 'bold');
+    text.setAttribute('fill', '#4a71f6');
+    text.textContent = 'PIN';
+    
+    svg.appendChild(ellipse);
+    svg.appendChild(path);
+    svg.appendChild(text);
+    
+    header.appendChild(svg);
+    header.appendChild(document.createTextNode('Pin Message'));
+    
+    // Preview section
+    const previewSection = document.createElement('div');
+    previewSection.style.cssText = 'margin-bottom: 16px;';
+    
+    const previewLabel = document.createElement('label');
+    previewLabel.style.cssText = `display: block; font-weight: 600; margin-bottom: 6px; color: ${colors.labelText}; font-size: 14px;`;
+    previewLabel.textContent = 'Preview';
+    
+    const previewDiv = document.createElement('div');
+    previewDiv.style.cssText = `
+      background: ${colors.previewBg};
+      border: 1px solid ${colors.previewBorder};
+      border-radius: 6px;
+      padding: 12px;
+      max-height: 150px;
+      overflow-y: auto;
+      font-size: 13px;
+      color: ${colors.previewText};
+      white-space: pre-wrap;
+      line-height: 1.5;
+    `;
+    previewDiv.textContent = messagePreview;
+    
+    previewSection.appendChild(previewLabel);
+    previewSection.appendChild(previewDiv);
+    
+    // Name input section
+    const nameSection = document.createElement('div');
+    nameSection.style.cssText = 'margin-bottom: 16px;';
+    
+    const nameLabel = document.createElement('label');
+    nameLabel.setAttribute('for', 'pin-name');
+    nameLabel.style.cssText = `display: block; font-weight: 600; margin-bottom: 6px; color: ${colors.labelText}; font-size: 14px;`;
+    nameLabel.textContent = 'Name (optional)';
+    
+    const nameInputEl = document.createElement('input');
+    nameInputEl.type = 'text';
+    nameInputEl.id = 'pin-name';
+    nameInputEl.placeholder = 'Give this pin a memorable name...';
+    nameInputEl.style.cssText = `
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid ${colors.inputBorder};
+      border-radius: 6px;
+      font-size: 14px;
+      color: ${colors.inputText};
+      background: ${colors.inputBg};
+      font-family: system-ui, -apple-system, sans-serif;
+      box-sizing: border-box;
+      transition: border-color 0.2s;
+    `;
+    
+    nameSection.appendChild(nameLabel);
+    nameSection.appendChild(nameInputEl);
+    
+    // Tags section
+    const tagsSection = document.createElement('div');
+    tagsSection.style.cssText = 'margin-bottom: 24px;';
+    
+    const tagsLabel = document.createElement('label');
+    tagsLabel.style.cssText = `display: block; font-weight: 600; margin-bottom: 6px; color: ${colors.labelText}; font-size: 14px;`;
+    tagsLabel.textContent = 'Tags (optional, max 3)';
+    
+    const tagsContainerEl = document.createElement('div');
+    tagsContainerEl.id = 'tags-container';
+    tagsContainerEl.style.cssText = `
+      min-height: 40px;
+      border: 1px solid ${colors.inputBorder};
+      border-radius: 6px;
+      padding: 8px;
+      background: ${colors.inputBg};
+      margin-bottom: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    `;
+    
+    const tagInputEl = document.createElement('input');
+    tagInputEl.type = 'text';
+    tagInputEl.id = 'tag-input';
+    tagInputEl.placeholder = 'Add a tag...';
+    tagInputEl.style.cssText = `
+      border: none;
+      outline: none;
+      flex: 1;
+      min-width: 100px;
+      font-size: 14px;
+      color: ${colors.inputText};
+      background: transparent;
+      font-family: system-ui, -apple-system, sans-serif;
+    `;
+    
+    tagsContainerEl.appendChild(tagInputEl);
+    
+    const tagsHelp = document.createElement('div');
+    tagsHelp.style.cssText = `font-size: 12px; color: ${colors.helpText};`;
+    tagsHelp.textContent = 'Press Enter to add tags or type and press Enter';
+    
+    tagsSection.appendChild(tagsLabel);
+    tagsSection.appendChild(tagsContainerEl);
+    tagsSection.appendChild(tagsHelp);
+    
+    // Buttons section
+    const buttonsSection = document.createElement('div');
+    buttonsSection.style.cssText = 'display: flex; gap: 10px; justify-content: flex-end;';
+    
+    const cancelBtnEl = document.createElement('button');
+    cancelBtnEl.id = 'pin-cancel';
+    cancelBtnEl.textContent = 'Cancel';
+    cancelBtnEl.style.cssText = `
+      padding: 10px 20px;
+      border: 1px solid ${colors.cancelBorder};
+      border-radius: 6px;
+      background: ${colors.cancelBg};
+      color: ${colors.cancelText};
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    `;
+    
+    const saveBtnEl = document.createElement('button');
+    saveBtnEl.id = 'pin-save';
+    saveBtnEl.textContent = 'Save Pin';
+    saveBtnEl.style.cssText = `
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      background: ${colors.saveBg};
+      color: ${colors.saveText};
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    `;
+    
+    buttonsSection.appendChild(cancelBtnEl);
+    buttonsSection.appendChild(saveBtnEl);
+    
+    // Append all sections to dialog
+    dialog.appendChild(header);
+    dialog.appendChild(previewSection);
+    dialog.appendChild(nameSection);
+    dialog.appendChild(tagsSection);
+    dialog.appendChild(buttonsSection);
     
     overlay.appendChild(dialog);
     document.body.appendChild(overlay);
