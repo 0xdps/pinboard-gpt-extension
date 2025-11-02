@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initSmoothScroll();
     initScrollAnimations();
     initScrollSpy();
+    initBrowserDetection();
     
     console.log('GPT Pinboard website loaded successfully!');
 });
@@ -128,6 +129,291 @@ function initScrollSpy() {
     
     window.addEventListener('scroll', updateActiveLink);
     updateActiveLink(); // Call once on load
+}
+
+// Browser Detection and Install Button Optimization
+function initBrowserDetection() {
+    const userAgent = navigator.userAgent.toLowerCase();
+    let detectedBrowser = 'unknown';
+    
+    // Detect browser
+    if (userAgent.includes('firefox')) {
+        detectedBrowser = 'firefox';
+    } else if (userAgent.includes('chrome') && !userAgent.includes('edg')) {
+        detectedBrowser = 'chrome';
+    } else if (userAgent.includes('safari') && !userAgent.includes('chrome')) {
+        detectedBrowser = 'safari';
+    } else if (userAgent.includes('edg')) {
+        detectedBrowser = 'edge';
+    }
+    
+    // Update install section based on detected browser
+    updateInstallSection(detectedBrowser);
+    
+    // Track browser detection for analytics
+    trackEvent('browser_detected', { browser: detectedBrowser });
+}
+
+function updateInstallSection(browser) {
+    const chromeOption = document.querySelector('.install-option[data-browser="chrome"]');
+    const firefoxOption = document.querySelector('.install-option[data-browser="firefox"]');
+    const sourceOption = document.querySelector('.install-option[data-browser="source"]');
+    
+    if (!chromeOption || !firefoxOption) return;
+    
+    // Reset all options to secondary
+    chromeOption.classList.remove('primary');
+    firefoxOption.classList.remove('primary');
+    if (sourceOption) sourceOption.classList.remove('primary');
+    
+    // Show appropriate primary option based on browser
+    if (browser === 'firefox') {
+        firefoxOption.classList.add('primary');
+        // Reorder: Firefox first, then Chrome, then Source
+        const installOptions = document.querySelector('.install-options');
+        if (installOptions) {
+            installOptions.insertBefore(firefoxOption, chromeOption);
+        }
+    } else if (browser === 'chrome' || browser === 'edge') {
+        chromeOption.classList.add('primary');
+        // Keep Chrome first (default order)
+    } else if (browser === 'safari') {
+        // For Safari, show source option as primary since no browser extension available
+        if (sourceOption) {
+            sourceOption.classList.add('primary');
+        }
+        // Show a helpful message for Safari users
+        showSafariMessage();
+    } else {
+        // Unknown browser - default to Chrome first
+        chromeOption.classList.add('primary');
+    }
+    
+    // Update install steps based on browser
+    updateInstallSteps(browser);
+    
+    // Update hero CTA button based on browser
+    updateHeroCTA(browser);
+}
+
+function updateInstallSteps(browser) {
+    const stepsContainer = document.querySelector('.install-steps .steps-content');
+    const stepsTitle = document.querySelector('.install-steps .steps-title');
+    
+    if (!stepsContainer) return;
+    
+    let stepsHTML = '';
+    let title = '';
+    
+    if (browser === 'chrome' || browser === 'edge') {
+        title = 'Chrome Installation Steps:';
+        stepsHTML = `
+            <ol class="steps-list">
+                <li>Click "🚀 Install for Chrome" above</li>
+                <li>Click "Add to Chrome" on the Chrome Web Store</li>
+                <li>Click "Add extension" to confirm</li>
+                <li>Visit <a href="https://chatgpt.com" target="_blank">ChatGPT</a> and start pinning!</li>
+            </ol>
+            <div class="steps-alt">
+                <p><strong>Alternative - Install from Source:</strong></p>
+                <ol class="steps-list">
+                    <li>Download from <a href="https://github.com/0xdps/gpt-pinboard-extension" target="_blank">GitHub</a></li>
+                    <li>Go to <code>chrome://extensions/</code></li>
+                    <li>Enable "Developer Mode"</li>
+                    <li>Click "Load unpacked" → Select the extension folder</li>
+                </ol>
+            </div>
+        `;
+    } else if (browser === 'firefox') {
+        title = 'Firefox Installation Steps:';
+        stepsHTML = `
+            <ol class="steps-list">
+                <li>Click "🦊 Install for Firefox" above</li>
+                <li>Click "Add to Firefox" on the Firefox Add-ons page</li>
+                <li>Click "Add" when prompted</li>
+                <li>Visit <a href="https://chatgpt.com" target="_blank">ChatGPT</a> and start pinning!</li>
+            </ol>
+            <div class="steps-alt">
+                <p><strong>Alternative - Install from Source:</strong></p>
+                <ol class="steps-list">
+                    <li>Download from <a href="https://github.com/0xdps/gpt-pinboard-extension" target="_blank">GitHub</a></li>
+                    <li>Go to <code>about:debugging</code></li>
+                    <li>Click "This Firefox"</li>
+                    <li>Click "Load Temporary Add-on" → Select the manifest.json from firefox folder</li>
+                </ol>
+            </div>
+        `;
+    } else if (browser === 'safari') {
+        title = 'Safari Installation (Source Only):';
+        stepsHTML = `
+            <div class="safari-notice-inline">
+                <p><strong>Note:</strong> Safari doesn't support Chrome/Firefox extensions. Please use source installation or switch to Chrome/Firefox.</p>
+            </div>
+            <ol class="steps-list">
+                <li>Download from <a href="https://github.com/0xdps/gpt-pinboard-extension" target="_blank">GitHub</a></li>
+                <li>Safari extensions require conversion to Safari Web Extension format</li>
+                <li>Consider using <strong>Chrome</strong> or <strong>Firefox</strong> for the best experience</li>
+                <li>Or follow the detailed guide in our <a href="https://github.com/0xdps/gpt-pinboard-extension#safari-installation" target="_blank">documentation</a></li>
+            </ol>
+        `;
+    } else {
+        // Default/unknown browser
+        title = 'Installation Steps:';
+        stepsHTML = `
+            <ol class="steps-list">
+                <li>Choose your browser above (Chrome or Firefox recommended)</li>
+                <li>Click the install button for your browser</li>
+                <li>Follow the browser-specific installation prompts</li>
+                <li>Visit <a href="https://chatgpt.com" target="_blank">ChatGPT</a> and start pinning!</li>
+            </ol>
+            <div class="steps-alt">
+                <p><strong>Install from Source (All Browsers):</strong></p>
+                <ol class="steps-list">
+                    <li>Download from <a href="https://github.com/0xdps/gpt-pinboard-extension" target="_blank">GitHub</a></li>
+                    <li>Follow browser-specific instructions in the README</li>
+                    <li>Chrome: <code>chrome://extensions/</code> → Developer Mode → Load unpacked</li>
+                    <li>Firefox: <code>about:debugging</code> → Load Temporary Add-on</li>
+                </ol>
+            </div>
+        `;
+    }
+    
+    // Update title and content
+    if (stepsTitle) stepsTitle.textContent = title;
+    stepsContainer.innerHTML = stepsHTML;
+}
+
+function updateHeroCTA(browser) {
+    const heroCTA = document.querySelector('.hero-buttons .btn-primary');
+    if (!heroCTA) return;
+    
+    const originalHref = heroCTA.getAttribute('href');
+    
+    if (browser === 'firefox') {
+        heroCTA.innerHTML = '<span>🦊</span> Install for Firefox';
+        // Update href to go directly to Firefox section or addon store
+        heroCTA.setAttribute('data-original-href', originalHref);
+        heroCTA.addEventListener('click', function(e) {
+            e.preventDefault();
+            // Scroll to install section and highlight Firefox option
+            const installSection = document.getElementById('install');
+            if (installSection) {
+                const navHeight = document.querySelector('.navbar').offsetHeight;
+                const targetPosition = installSection.offsetTop - navHeight - 20;
+                
+                window.scrollTo({
+                    top: targetPosition,
+                    behavior: 'smooth'
+                });
+                
+                // Highlight Firefox option briefly
+                setTimeout(() => {
+                    const firefoxOption = document.querySelector('.install-option[data-browser="firefox"]');
+                    if (firefoxOption) {
+                        firefoxOption.style.transform = 'scale(1.02)';
+                        firefoxOption.style.boxShadow = '0 0 30px rgba(255, 140, 0, 0.3)';
+                        setTimeout(() => {
+                            firefoxOption.style.transform = '';
+                            firefoxOption.style.boxShadow = '';
+                        }, 1500);
+                    }
+                }, 500);
+            }
+        });
+    } else if (browser === 'chrome' || browser === 'edge') {
+        heroCTA.innerHTML = '<span>🚀</span> Install for Chrome';
+        // Keep original install section scroll behavior
+    } else if (browser === 'safari') {
+        heroCTA.innerHTML = '<span>📦</span> Get from Source';
+        heroCTA.addEventListener('click', function(e) {
+            e.preventDefault();
+            // Direct to GitHub or show install instructions
+            window.open('https://github.com/0xdps/gpt-pinboard-extension#install-from-source', '_blank');
+        });
+    }
+}
+
+function showSafariMessage() {
+    // Show a friendly message for Safari users
+    const safariMessage = document.createElement('div');
+    safariMessage.className = 'safari-notice';
+    safariMessage.innerHTML = `
+        <div class="notice-content">
+            <span class="notice-icon">🍎</span>
+            <div class="notice-text">
+                <strong>Safari User?</strong> Since Safari doesn't support Chrome/Firefox extensions, 
+                you can install from source or use Chrome/Firefox for the best experience.
+            </div>
+        </div>
+    `;
+    
+    // Style the notice
+    Object.assign(safariMessage.style, {
+        position: 'fixed',
+        bottom: '20px',
+        right: '20px',
+        maxWidth: '350px',
+        backgroundColor: '#f59e0b',
+        color: 'white',
+        padding: '1rem',
+        borderRadius: '0.75rem',
+        boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+        zIndex: '9998',
+        transform: 'translateY(100%)',
+        transition: 'transform 0.3s ease',
+        fontSize: '0.9rem'
+    });
+    
+    safariMessage.querySelector('.notice-content').style.display = 'flex';
+    safariMessage.querySelector('.notice-content').style.alignItems = 'center';
+    safariMessage.querySelector('.notice-content').style.gap = '0.75rem';
+    safariMessage.querySelector('.notice-icon').style.fontSize = '1.5rem';
+    
+    document.body.appendChild(safariMessage);
+    
+    // Animate in
+    setTimeout(() => {
+        safariMessage.style.transform = 'translateY(0)';
+    }, 1000);
+    
+    // Auto-hide after 8 seconds
+    setTimeout(() => {
+        safariMessage.style.transform = 'translateY(100%)';
+        setTimeout(() => {
+            if (document.body.contains(safariMessage)) {
+                document.body.removeChild(safariMessage);
+            }
+        }, 300);
+    }, 8000);
+    
+    // Add close button
+    const closeBtn = document.createElement('button');
+    closeBtn.innerHTML = '×';
+    closeBtn.style.cssText = `
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        background: rgba(255,255,255,0.2);
+        border: none;
+        color: white;
+        width: 1.5rem;
+        height: 1.5rem;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 1rem;
+        line-height: 1;
+    `;
+    
+    closeBtn.addEventListener('click', () => {
+        safariMessage.style.transform = 'translateY(100%)';
+        setTimeout(() => {
+            if (document.body.contains(safariMessage)) {
+                document.body.removeChild(safariMessage);
+            }
+        }, 300);
+    });
+    
+    safariMessage.appendChild(closeBtn);
 }
 
 // Navbar Background on Scroll

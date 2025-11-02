@@ -524,39 +524,87 @@ section {
     border-radius: 1rem;
     padding: 2rem;
     text-align: center;
+    transition: all 0.3s ease;
+    transform: translateY(0);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 240px;
+}
+
+.install-option:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
 .install-option.primary {
     background: rgba(59, 130, 246, 0.1);
     border-color: rgba(59, 130, 246, 0.3);
+    transform: scale(1.02);
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.15);
+}
+
+.install-option.primary:hover {
+    transform: scale(1.02) translateY(-2px);
+    box-shadow: 0 12px 35px rgba(59, 130, 246, 0.25);
+}
+
+/* Browser-specific styling */
+.install-option[data-browser="firefox"].primary {
+    background: rgba(255, 140, 0, 0.1);
+    border-color: rgba(255, 140, 0, 0.3);
+    box-shadow: 0 8px 25px rgba(255, 140, 0, 0.15);
+}
+
+.install-option[data-browser="firefox"].primary:hover {
+    box-shadow: 0 12px 35px rgba(255, 140, 0, 0.25);
+}
+
+.install-option[data-browser="source"].primary {
+    background: rgba(16, 185, 129, 0.1);
+    border-color: rgba(16, 185, 129, 0.3);
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.15);
+}
+
+.install-option[data-browser="source"].primary:hover {
+    box-shadow: 0 12px 35px rgba(16, 185, 129, 0.25);
 }
 
 .install-header {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 1rem;
     margin-bottom: 1rem;
+    min-height: 60px;
 }
 
 .install-title {
     font-size: 1.5rem;
     font-weight: 600;
     color: white;
+    text-align: center;
+    line-height: 1.3;
 }
 
-.install-badge {
-    background: rgba(59, 130, 246, 0.2);
-    color: #93c5fd;
-    padding: 0.25rem 0.75rem;
-    border-radius: 1rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-}
+
 
 .install-description {
     color: #cbd5e1;
-    margin-bottom: 2rem;
+    margin-bottom: auto;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+/* Install buttons specific styling */
+.install-option .btn {
+    margin-top: auto;
+    width: 100%;
+    justify-content: center;
+    min-height: 56px;
+    white-space: nowrap;
 }
 
 .coming-soon {
@@ -570,6 +618,36 @@ section {
     padding: 2rem;
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.steps-content {
+    transition: all 0.3s ease;
+}
+
+.steps-alt {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.steps-alt p {
+    color: #94a3b8;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+
+.safari-notice-inline {
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.safari-notice-inline p {
+    color: #fed7aa;
+    margin: 0;
+    font-size: 0.9rem;
 }
 
 .steps-title {
@@ -811,6 +889,81 @@ section {
     transform: translateY(0);
 }
 
+/* Safari Notice */
+.safari-notice {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.safari-notice .notice-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.safari-notice .notice-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+}
+
+.safari-notice .notice-text {
+    flex: 1;
+    line-height: 1.5;
+}
+
+.safari-notice .notice-text strong {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    display: block;
+}
+
+/* Browser-specific hero CTA animations */
+.hero-buttons .btn-primary {
+    transition: all 0.3s ease;
+}
+
+.hero-buttons .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.25);
+}
+
+/* Enhanced install option ordering for browser detection */
+.install-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    justify-content: center;
+    align-items: stretch;
+}
+
+.install-option {
+    flex: 1;
+    min-width: 300px;
+    max-width: 400px;
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    .install-options {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .install-option {
+        width: 100%;
+        max-width: none;
+        min-height: 260px;
+    }
+    
+    .install-header {
+        min-height: 50px;
+    }
+    
+    .install-title {
+        font-size: 1.3rem;
+    }
+}
+
 /* Accessibility */
 @media (prefers-reduced-motion: reduce) {
     * {
@@ -821,5 +974,10 @@ section {
     
     html {
         scroll-behavior: auto;
+    }
+    
+    .safari-notice {
+        transition: none !important;
+        transform: none !important;
     }
 }

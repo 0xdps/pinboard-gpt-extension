@@ -3,6 +3,7 @@
 > Ever had a perfect ChatGPT answer, buried deep in a long chat? You remember what it said, maybe even which chat it was in — but scrolling through hundreds of messages to find it again is a nightmare. GPT Pinboard fixes that.
 
 [![Chrome Web Store](https://img.shields.io/badge/Chrome-Web%20Store-blue)](https://chromewebstore.google.com/detail/pingpt-%E2%80%94-chatgpt-message/hdhoaialemjelcfjjmjkkhkffiggbnap)
+[![Firefox Add-ons](https://img.shields.io/badge/Firefox-Add--ons-orange)](https://addons.mozilla.org/en-US/firefox/addon/gpt-pinboard/)
 [![Version](https://img.shields.io/badge/version-1.1.1-green)](CHANGELOG.md)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 [![Website](https://img.shields.io/badge/Website-Live-green)](https://gptpins.dps.codes)
@@ -20,10 +21,13 @@ No accounts. No sync drama. Just fast access to what you actually need.
 
 ## 🚀 Quick Start
 
-### Install from Chrome Web Store
-**[🚀 Install GPT Pinboard from Chrome Web Store](https://chromewebstore.google.com/detail/pingpt-%E2%80%94-chatgpt-message/hdhoaialemjelcfjjmjkkhkffiggbnap)**
+### Install from Browser Stores
 
-One-click install with automatic updates.
+**Chrome:** [🚀 Install from Chrome Web Store](https://chromewebstore.google.com/detail/pingpt-%E2%80%94-chatgpt-message/hdhoaialemjelcfjjmjkkhkffiggbnap)
+
+**Firefox:** [🦊 Install from Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/gpt-pinboard/)
+
+One-click install with automatic updates for both browsers.
 
 ### Install from Source
 

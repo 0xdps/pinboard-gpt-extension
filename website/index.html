@@ -66,7 +66,7 @@
                         <strong>GPT Pinboard fixes that.</strong>
                     </p>
                     <div class="hero-buttons">
-                        <a href="https://chromewebstore.google.com/detail/pingpt-%E2%80%94-chatgpt-message/hdhoaialemjelcfjjmjkkhkffiggbnap" class="btn btn-primary" target="_blank">
+                        <a href="#install" class="btn btn-primary">
                             <span>🚀</span> Install Now
                         </a>
                         <a href="#features" class="btn btn-secondary">
@@ -288,26 +288,36 @@
             </div>
             
             <div class="install-options">
-                <div class="install-option primary">
+                <div class="install-option primary" data-browser="chrome">
                     <div class="install-header">
                         <h3 class="install-title">Chrome Web Store</h3>
-                        <span class="install-badge">Recommended</span>
                     </div>
                     <p class="install-description">
                         One-click install with automatic updates
                     </p>
                     <a href="https://chromewebstore.google.com/detail/pingpt-%E2%80%94-chatgpt-message/hdhoaialemjelcfjjmjkkhkffiggbnap" class="btn btn-primary btn-large" target="_blank">
-                        🚀 Install from Chrome Store
+                        🚀 Install for Chrome
                     </a>
                 </div>
                 
-                <div class="install-option">
+                <div class="install-option" data-browser="firefox">
                     <div class="install-header">
-                        <h3 class="install-title">Install from Source</h3>
-                        <span class="install-badge">Advanced</span>
+                        <h3 class="install-title">Firefox Add-ons</h3>
                     </div>
                     <p class="install-description">
-                        For developers and early adopters
+                        One-click install with automatic updates
+                    </p>
+                    <a href="https://addons.mozilla.org/en-US/firefox/addon/gpt-pinboard/" class="btn btn-primary btn-large" target="_blank">
+                        🦊 Install for Firefox
+                    </a>
+                </div>
+                
+                <div class="install-option" data-browser="source">
+                    <div class="install-header">
+                        <h3 class="install-title">Install from Source</h3>
+                    </div>
+                    <p class="install-description">
+                        One-click install with automatic updates
                     </p>
                     <a href="https://github.com/0xdps/gpt-pinboard-extension#install-from-source" class="btn btn-secondary btn-large" target="_blank">
                         📦 GitHub Instructions
@@ -315,15 +325,11 @@
                 </div>
             </div>
             
-            <div class="install-steps">
-                <h4 class="steps-title">Quick Install from Source:</h4>
-                <ol class="steps-list">
-                    <li>Download from <a href="https://github.com/0xdps/gpt-pinboard-extension" target="_blank">GitHub</a></li>
-                    <li>Go to <code>chrome://extensions/</code></li>
-                    <li>Enable "Developer Mode"</li>
-                    <li>Click "Load unpacked" → Select folder</li>
-                    <li>Visit <a href="https://chatgpt.com" target="_blank">ChatGPT</a> and start pinning!</li>
-                </ol>
+            <div class="install-steps" id="browser-install-steps">
+                <h4 class="steps-title">Quick Install Instructions:</h4>
+                <div class="steps-content">
+                    <!-- Steps will be populated by JavaScript based on detected browser -->
+                </div>
             </div>
         </div>
     </section>
