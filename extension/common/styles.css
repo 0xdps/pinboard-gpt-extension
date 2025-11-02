@@ -39,6 +39,8 @@ body.dark-mode .header {
     display: flex;
     flex-direction: column;
     gap: 2px;
+    cursor: pointer;
+    user-select: none;
 }
 
 .header-title {
@@ -453,6 +455,11 @@ body.dark-mode .coffee-section {
     box-shadow: 0 4px 12px rgba(64, 220, 165, 0.3);
 }
 
+/* Pin Template */
+#pinTemplate {
+    display: none !important;
+}
+
 /* Pin Styles */
 .pin {
     border: 1px solid #e0e0e0;
@@ -641,7 +648,7 @@ body.dark-mode .iconBtn.deleteBtn:hover {
     background: #6c757d;
     color: white;
     border-color: #6c757d;
-    cursor: default;
+    position: relative;
 }
 
 body.dark-mode .iconBtn.infoBtn {
@@ -658,6 +665,53 @@ body.dark-mode .iconBtn.infoBtn {
 body.dark-mode .iconBtn.infoBtn:hover {
     background: #5a6268;
     border-color: #5a6268;
+}
+
+/* Custom Tooltip */
+button[data-tooltip]:hover::before {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: 18%;
+    right: calc(100% + 12px);
+    transform: translateY(-50%);
+    background: #333;
+    color: white;
+    padding: 6px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    white-space: nowrap;
+    z-index: 1000;
+    opacity: 0;
+    animation: tooltipFadeIn 0.2s forwards;
+    pointer-events: none;
+}
+
+body.dark-mode button[data-tooltip]:hover::before {
+    background: #1a1a1a;
+    color: #f0f0f0;
+}
+
+button[data-tooltip]:hover::after {
+    content: '';
+    position: absolute;
+    top: 45%;
+    right: calc(100% + 5px);
+    transform: translateY(-50%);
+    border: 4px solid transparent;
+    border-left-color: #333;
+    z-index: 1000;
+    opacity: 0;
+    animation: tooltipFadeIn 0.2s forwards;
+    pointer-events: none;
+}
+
+body.dark-mode button[data-tooltip]:hover::after {
+    border-left-color: #1a1a1a;
+}
+
+@keyframes tooltipFadeIn {
+    from { opacity: 0; transform: translateY(2px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 /* General Button Styles */

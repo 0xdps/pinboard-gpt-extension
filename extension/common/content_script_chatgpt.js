@@ -7,14 +7,26 @@ function createPinButtonForMessage(messageContainer) {
     return;
   }
   
-  const pinButton = document.createElement('button');
-  // Use PNG icon for compatibility
-  const runtime = typeof chrome !== 'undefined' ? chrome.runtime : browser.runtime;
-  pinButton.innerHTML = `
-    <img src="${runtime.getURL('icons/icon-16.png')}" width="16" height="16" style="display: block;" alt="GPT Pinboard"/>
-  `;
-  pinButton.title = 'Pin this message with GPT Pinboard';
-  pinButton.className = 'pingpt-pin-button';
+  // Check if extension context is still valid
+  let runtime, pinButton;
+  try {
+    runtime = typeof chrome !== 'undefined' ? chrome.runtime : browser.runtime;
+    if (!runtime || !runtime.getURL) {
+      console.log('GPT Pinboard: Extension context invalidated, skipping button creation');
+      return;
+    }
+    
+    pinButton = document.createElement('button');
+    // Use PNG icon for compatibility
+    pinButton.innerHTML = `
+      <img src="${runtime.getURL('icons/icon-16.png')}" width="16" height="16" style="display: block;" alt="GPT Pinboard"/>
+    `;
+    pinButton.title = 'Pin this message with GPT Pinboard';
+    pinButton.className = 'pingpt-pin-button';
+  } catch (error) {
+    console.log('GPT Pinboard: Extension context error:', error.message);
+    return;
+  }
   pinButton.style.cssText = `
     position: absolute;
     z-index: 10000;
@@ -865,31 +877,38 @@ async function highlightPin(pin) {
 }
 
 // Listen for messages from background script
-chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  
-  if (msg.action === 'pin-selection' && msg.text) {
-    // Find element containing this text
-    const allElements = document.querySelectorAll('[data-message-author-role], .group, article');
-    for (const el of allElements) {
-      const text = el.innerText || el.textContent || '';
-      if (text.includes(msg.text)) {
-        pinMessage(el);
-        break;
-      }
+try {
+  const runtime = typeof chrome !== 'undefined' ? chrome.runtime : browser.runtime;
+  if (runtime && runtime.onMessage) {
+    runtime.onMessage.addListener((msg, sender, sendResponse) => {
+      
+      if (msg.action === 'pin-selection' && msg.text) {
+        // Find element containing this text
+        const allElements = document.querySelectorAll('[data-message-author-role], .group, article');
+        for (const el of allElements) {
+          const text = el.innerText || el.textContent || '';
+          if (text.includes(msg.text)) {
+            pinMessage(el);
+            break;
+          }
     }
     sendResponse({ ok: true });
     return true;
   } else if (msg.action === 'highlight-pin' && msg.pin) {
     highlightPin(msg.pin).then(result => {
       sendResponse(result);
-    }).catch(err => {
-      sendResponse({ found: false, error: err.message });
-    });
-    return true; // Will respond asynchronously
+      }).catch(err => {
+        sendResponse({ found: false, error: err.message });
+      });
+      return true; // Will respond asynchronously
+    }
+    
+    return false;
+  });
   }
-  
-  return false;
-});
+} catch (error) {
+  console.log('GPT Pinboard: Failed to set up message listener:', error.message);
+}
 
 // Add a manual pin button to the page for easier access
 function addManualPinButton() {

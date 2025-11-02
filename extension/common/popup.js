@@ -129,34 +129,60 @@ document.addEventListener('DOMContentLoaded', async () => {
   function escapeHtml(s){ return (s||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
 
   function renderPin(pin) {
-    const div = document.createElement('div');
-    div.className = 'pin';
+    // Clone the template
+    const template = document.getElementById('pinTemplate');
+    const pinElement = template.cloneNode(true);
+    
+    // Remove the template ID and make it visible
+    pinElement.removeAttribute('id');
+    pinElement.style.display = 'flex';
+    
+    // Get elements to populate
+    const titleEl = pinElement.querySelector('.pin-title');
+    const messageEl = pinElement.querySelector('.pin-message');
+    const tagsEl = pinElement.querySelector('.pin-tags');
+    const openBtn = pinElement.querySelector('.openBtn');
+    const deleteBtn = pinElement.querySelector('.deleteBtn');
+    const infoBtn = pinElement.querySelector('.infoBtn');
+    
+    // Populate content
     const messagePreview = pin.messageText.length > 150 
       ? escapeHtml(pin.messageText.slice(0, 150)) + '…' 
       : escapeHtml(pin.messageText);
     const title = pin.name ? escapeHtml(pin.name) : '';
     
-    // Create clickable tags
-    const tagsHtml = pin.tags?.length 
-      ? pin.tags.map(tag => `<span class="tag-link" data-tag="${escapeHtml(tag)}">${escapeHtml(tag)}</span>`).join(' ')
-      : '';
+    // Set title (hide if empty)
+    if (title) {
+      titleEl.textContent = title;
+      titleEl.style.display = 'block';
+    } else {
+      titleEl.style.display = 'none';
+    }
     
+    // Set message
+    messageEl.textContent = pin.messageText.length > 150 
+      ? pin.messageText.slice(0, 150) + '…' 
+      : pin.messageText;
+    
+    // Set tags
+    if (pin.tags?.length) {
+      tagsEl.innerHTML = pin.tags.map(tag => 
+        `<span class="tag-link" data-tag="${escapeHtml(tag)}">${escapeHtml(tag)}</span>`
+      ).join(' ');
+      tagsEl.style.display = 'flex';
+    } else {
+      tagsEl.style.display = 'none';
+    }
+    
+    // Set button data and tooltip
+    openBtn.setAttribute('data-id', pin.id);
+    deleteBtn.setAttribute('data-id', pin.id);
+    
+    // Create custom tooltip for info button
     const dateTime = new Date(pin.pinnedAt).toLocaleString();
-    const site = pin.site || 'ChatGPT';
+    infoBtn.setAttribute('data-tooltip', dateTime);
     
-    div.innerHTML = `
-      <div class="pin-content">
-        ${title ? `<div class="pin-title">${title}</div>` : ''}
-        <div class="pin-message">${messagePreview}</div>
-        ${tagsHtml ? `<div class="pin-tags">${tagsHtml}</div>` : ''}
-      </div>
-      <div class="pin-actions">
-        <button data-id="${pin.id}" class="iconBtn openBtn" title="Open pin">→</button>
-        <button data-id="${pin.id}" class="iconBtn deleteBtn" title="Delete pin">✕</button>
-        <button class="iconBtn infoBtn" title="${dateTime}">ⓘ</button>
-      </div>
-    `;
-    return div;
+    return pinElement;
   }
 
   async function render() {

@@ -16,22 +16,36 @@
       </div>
     </div>
     <div>
-      <button id="settingsBtn" class="settings-btn" title="Settings">⚙️</button>
+      <button id="settingsBtn" class="settings-btn" data-tooltip="Settings">⚙️</button>
     </div>
   </div>
   
   <div class="search-container">
     <input id="search" placeholder="Search pins or tags..." />
-    <button id="clearSearch" class="clear-search-btn" title="Clear search">×</button>
+    <button id="clearSearch" class="clear-search-btn" data-tooltip="Clear search">×</button>
   </div>
   <div id="list"></div>
+
+  <!-- Pin Template (hidden by default) -->
+  <div id="pinTemplate" class="pin" style="display: none;">
+    <div class="pin-content">
+      <div class="pin-title"></div>
+      <div class="pin-message"></div>
+      <div class="pin-tags"></div>
+    </div>
+    <div class="pin-actions">
+      <button class="iconBtn openBtn" data-tooltip="Open pin">→</button>
+      <button class="iconBtn deleteBtn" data-tooltip="Delete pin">✕</button>
+      <button class="iconBtn infoBtn" data-tooltip="Info">ⓘ</button>
+    </div>
+  </div>
 
   <!-- Settings Modal -->
   <div id="settingsModal" class="modal" style="display: none;">
     <div class="modal-content">
       <div class="modal-header">
         <h3>Settings</h3>
-        <button id="closeSettings" class="close-btn">×</button>
+        <button id="closeSettings" class="close-btn" data-tooltip="Close">×</button>
       </div>
       
       <div class="settings-section">
