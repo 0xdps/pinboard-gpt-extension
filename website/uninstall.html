@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorry to See You Go - GPT Pinboard</title>
+    <meta name="description" content="We're sad to see you uninstall GPT Pinboard. Help us improve by sharing your feedback.">
+    <meta name="keywords" content="GPT Pinboard, uninstall, feedback">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="Sorry to See You Go - GPT Pinboard">
+    <meta property="og:description" content="We're sad to see you uninstall GPT Pinboard. Help us improve by sharing your feedback.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://gptpins.dps.codes/uninstall.html">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="./images/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="./images/favicon-16x16.png">
+    <link rel="shortcut icon" href="./images/favicon.ico">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="./css/styles.css">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        .uninstall-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+        
+        .uninstall-hero {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .uninstall-hero .emoji {
+            font-size: 4rem;
+            display: block;
+            margin-bottom: 1rem;
+        }
+        
+        .uninstall-hero h1 {
+            font-size: 2.5rem;
+            color: #1a1a1a;
+            margin-bottom: 1rem;
+        }
+        
+        .uninstall-hero p {
+            font-size: 1.2rem;
+            color: #64748b;
+            line-height: 1.6;
+        }
+        
+        .feedback-section {
+            background: white;
+            padding: 3rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin-bottom: 3rem;
+        }
+        
+        .feedback-section h2 {
+            color: #1a1a1a;
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        
+        .feedback-options {
+            display: grid;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .feedback-option {
+            background: #f8fafc;
+            padding: 1.25rem 1.5rem;
+            border-radius: 8px;
+            border: 2px solid #e2e8f0;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .feedback-option:hover {
+            border-color: #10a37f;
+            background: #f0fdf4;
+        }
+        
+        .feedback-option input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        
+        .feedback-option label {
+            cursor: pointer;
+            flex: 1;
+            color: #475569;
+            font-size: 1rem;
+        }
+        
+        .feedback-textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            color: #475569;
+            resize: vertical;
+            margin-bottom: 1.5rem;
+        }
+        
+        .feedback-textarea:focus {
+            outline: none;
+            border-color: #10a37f;
+        }
+        
+        .submit-btn {
+            width: 100%;
+            background: #10a37f;
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .submit-btn:hover {
+            background: #0d9488;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 163, 127, 0.3);
+        }
+        
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+        
+        .thank-you-message {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+            background: #f0fdf4;
+            border-radius: 8px;
+            border-left: 4px solid #10a37f;
+        }
+        
+        .thank-you-message.show {
+            display: block;
+        }
+        
+        .thank-you-message h3 {
+            color: #10a37f;
+            margin-top: 0;
+            font-size: 1.5rem;
+        }
+        
+        .alternatives-section {
+            background: #fef3c7;
+            padding: 2.5rem;
+            border-radius: 12px;
+            border-left: 4px solid #f59e0b;
+            margin-bottom: 3rem;
+        }
+        
+        .alternatives-section h3 {
+            color: #92400e;
+            margin-top: 0;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .alternatives-section ul {
+            margin: 0;
+            padding-left: 1.5rem;
+        }
+        
+        .alternatives-section li {
+            color: #78350f;
+            line-height: 1.8;
+            margin-bottom: 0.75rem;
+        }
+        
+        .support-section {
+            text-align: center;
+            padding: 2.5rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .support-section h3 {
+            color: #1a1a1a;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .support-links {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 1.5rem;
+        }
+        
+        .support-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: #f8fafc;
+            color: #10a37f;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.2s;
+            border: 2px solid #e2e8f0;
+        }
+        
+        .support-link:hover {
+            background: #f0fdf4;
+            border-color: #10a37f;
+            transform: translateY(-2px);
+        }
+        
+        @media (max-width: 768px) {
+            .uninstall-container {
+                padding: 2rem 1rem;
+            }
+            
+            .uninstall-hero h1 {
+                font-size: 2rem;
+            }
+            
+            .feedback-section {
+                padding: 2rem 1.5rem;
+            }
+            
+            .support-links {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <img src="./images/favicon-32x32.png" alt="GPT Pinboard" class="nav-logo">
+                <span class="nav-title">GPT Pinboard</span>
+            </div>
+            <div class="nav-links">
+                <a href="./index.html#features" class="nav-link">Features</a>
+                <a href="./index.html#install" class="nav-link">Install</a>
+                <a href="https://github.com/0xdps/gpt-pinboard-extension" class="nav-link" target="_blank">GitHub</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="uninstall-container">
+        <div class="uninstall-hero">
+            <span class="emoji">😢</span>
+            <h1>Sorry to See You Go</h1>
+            <p>We're sad to see you uninstall GPT Pinboard. Your feedback helps us improve and serve our community better.</p>
+        </div>
+
+        <div class="alternatives-section">
+            <h3>💡 Before You Go - Did You Know?</h3>
+            <ul>
+                <li><strong>Export your pins:</strong> You can export all your pins to JSON before uninstalling</li>
+                <li><strong>Keyboard shortcuts:</strong> Use right-click to quickly pin selected text</li>
+                <li><strong>Search & filter:</strong> Find pins instantly by searching names, content, or tags</li>
+                <li><strong>100% private:</strong> All your data stays on your device - no accounts or tracking</li>
+                <li><strong>Free support:</strong> We're here to help! <a href="https://github.com/0xdps/gpt-pinboard-extension/issues" target="_blank" style="color: #10a37f;">Report any issues</a></li>
+            </ul>
+        </div>
+
+        <div class="feedback-section">
+            <h2>Help Us Improve</h2>
+            <p style="text-align: center; color: #64748b; margin-bottom: 2rem;">
+                Please let us know why you're uninstalling GPT Pinboard. Your feedback is invaluable!
+            </p>
+            
+            <form id="feedbackForm">
+                <div class="feedback-options">
+                    <div class="feedback-option">
+                        <input type="checkbox" id="reason1" name="reason" value="not-using-chatgpt">
+                        <label for="reason1">I don't use ChatGPT anymore</label>
+                    </div>
+                    
+                    <div class="feedback-option">
+                        <input type="checkbox" id="reason2" name="reason" value="too-complicated">
+                        <label for="reason2">It's too complicated to use</label>
+                    </div>
+                    
+                    <div class="feedback-option">
+                        <input type="checkbox" id="reason3" name="reason" value="not-working">
+                        <label for="reason3">It doesn't work properly</label>
+                    </div>
+                    
+                    <div class="feedback-option">
+                        <input type="checkbox" id="reason4" name="reason" value="privacy-concerns">
+                        <label for="reason4">Privacy or security concerns</label>
+                    </div>
+                    
+                    <div class="feedback-option">
+                        <input type="checkbox" id="reason5" name="reason" value="missing-features">
+                        <label for="reason5">Missing features I need</label>
+                    </div>
+                    
+                    <div class="feedback-option">
+                        <input type="checkbox" id="reason6" name="reason" value="found-alternative">
+                        <label for="reason6">Found a better alternative</label>
+                    </div>
+                    
+                    <div class="feedback-option">
+                        <input type="checkbox" id="reason7" name="reason" value="other">
+                        <label for="reason7">Other reason</label>
+                    </div>
+                </div>
+                
+                <textarea 
+                    id="additionalFeedback" 
+                    class="feedback-textarea" 
+                    placeholder="Tell us more about your experience... (optional)"
+                ></textarea>
+                
+                <button type="submit" class="submit-btn">
+                    Submit Feedback
+                </button>
+            </form>
+            
+            <div id="thankYouMessage" class="thank-you-message">
+                <h3>Thank You! 🙏</h3>
+                <p style="color: #64748b; margin: 0;">
+                    Your feedback has been received. We appreciate you taking the time to help us improve GPT Pinboard.
+                </p>
+            </div>
+        </div>
+
+        <div class="support-section">
+            <h3>Need Help Instead?</h3>
+            <p style="color: #64748b; margin-bottom: 1.5rem;">
+                If you're experiencing issues, we're here to help! Check out our resources or get in touch.
+            </p>
+            
+            <div class="support-links">
+                <a href="https://github.com/0xdps/gpt-pinboard-extension/issues" class="support-link" target="_blank">
+                    🐛 Report a Bug
+                </a>
+                <a href="https://github.com/0xdps/gpt-pinboard-extension/discussions" class="support-link" target="_blank">
+                    💬 Ask Questions
+                </a>
+                <a href="./index.html#how-it-works" class="support-link">
+                    📖 User Guide
+                </a>
+                <a href="mailto:dps.manit@gmail.com" class="support-link">
+                    ✉️ Email Support
+                </a>
+            </div>
+            
+            <p style="color: #64748b; margin-top: 2rem; font-size: 0.95rem;">
+                Want to give it another try? 
+                <a href="./index.html#install" style="color: #10a37f; font-weight: 500; text-decoration: none;">Reinstall GPT Pinboard</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <img src="./images/favicon-48x48.png" alt="GPT Pinboard" class="footer-logo">
+                    <span class="footer-title">GPT Pinboard</span>
+                </div>
+                
+                <div class="footer-links">
+                    <div class="footer-column">
+                        <h4 class="footer-heading">Product</h4>
+                        <a href="./index.html#features" class="footer-link">Features</a>
+                        <a href="./index.html#how-it-works" class="footer-link">How it Works</a>
+                        <a href="./index.html#install" class="footer-link">Installation</a>
+                    </div>
+                    
+                    <div class="footer-column">
+                        <h4 class="footer-heading">Legal</h4>
+                        <a href="./privacy.html" class="footer-link">Privacy Policy</a>
+                        <a href="https://github.com/0xdps/gpt-pinboard-extension/?tab=MIT-1-ov-file" class="footer-link" target="_blank">License</a>
+                    </div>
+                    
+                    <div class="footer-column">
+                        <h4 class="footer-heading">Support</h4>
+                        <a href="https://github.com/0xdps/gpt-pinboard-extension/issues" class="footer-link" target="_blank">Report Bug</a>
+                        <a href="https://github.com/0xdps/gpt-pinboard-extension/discussions" class="footer-link" target="_blank">Discussions</a>
+                        <a href="mailto:dps.manit@gmail.com" class="footer-link">Contact</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p class="footer-text">
+                    Made with ❤️ by <a href="https://dps.codes" target="_blank">0xdps</a>
+                </p>
+                <p class="footer-text">
+                    Licensed under MIT • <a href="https://github.com/0xdps/gpt-pinboard-extension/?tab=MIT-1-ov-file" target="_blank">View License</a>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Handle feedback form submission
+        document.getElementById('feedbackForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Get selected reasons
+            const reasons = [];
+            document.querySelectorAll('input[name="reason"]:checked').forEach(checkbox => {
+                reasons.push(checkbox.value);
+            });
+            
+            const additionalFeedback = document.getElementById('additionalFeedback').value;
+            
+            // In a real implementation, this would send data to a server
+            // For now, we'll just show the thank you message
+            console.log('Uninstall Feedback:', {
+                reasons: reasons,
+                additionalFeedback: additionalFeedback,
+                timestamp: new Date().toISOString()
+            });
+            
+            // Show thank you message
+            document.getElementById('feedbackForm').style.display = 'none';
+            document.getElementById('thankYouMessage').classList.add('show');
+            
+            // Optional: You could also send this to GitHub Issues or a feedback service
+            // For privacy, we're keeping it local for now
+        });
+    </script>
+</body>
+</html>

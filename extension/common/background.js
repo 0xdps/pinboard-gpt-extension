@@ -1,10 +1,20 @@
-chrome.runtime.onInstalled.addListener(() => {
+chrome.runtime.onInstalled.addListener((details) => {
   chrome.contextMenus.create({
     id: "pin-selection",
     title: "Pin selection to GPT Pinboard",
     contexts: ["selection"],
     documentUrlPatterns: ["https://chatgpt.com/*", "https://chat.openai.com/*"]
   });
+
+  // Open welcome page on fresh install
+  if (details.reason === 'install') {
+    chrome.tabs.create({ url: 'https://gptpins.dps.codes/welcome.html' });
+  }
+
+  // Set uninstall URL
+  if (chrome.runtime.setUninstallURL) {
+    chrome.runtime.setUninstallURL('https://gptpins.dps.codes/uninstall.html');
+  }
 });
 
 chrome.contextMenus.onClicked.addListener((info, tab) => {

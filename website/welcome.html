@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to GPT Pinboard! 🎉</title>
+    <meta name="description" content="Welcome to GPT Pinboard! Learn how to pin, organize, and instantly find your important ChatGPT messages.">
+    <meta name="keywords" content="GPT Pinboard, welcome, getting started, ChatGPT extension">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="Welcome to GPT Pinboard!">
+    <meta property="og:description" content="Welcome to GPT Pinboard! Learn how to pin, organize, and instantly find your important ChatGPT messages.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://gptpins.dps.codes/welcome.html">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="./images/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="./images/favicon-16x16.png">
+    <link rel="shortcut icon" href="./images/favicon.ico">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="./css/styles.css">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        .welcome-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+        
+        .welcome-hero {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+        
+        .welcome-hero h1 {
+            font-size: 3rem;
+            color: #1a1a1a;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+        
+        .welcome-hero .emoji {
+            font-size: 3.5rem;
+            display: block;
+            margin-bottom: 1rem;
+        }
+        
+        .welcome-hero p {
+            font-size: 1.3rem;
+            color: #64748b;
+            margin-bottom: 2rem;
+        }
+        
+        .quick-start {
+            background: linear-gradient(135deg, #10a37f, #0d9488);
+            color: white;
+            padding: 3rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(16, 163, 127, 0.3);
+            margin-bottom: 3rem;
+        }
+        
+        .quick-start h2 {
+            margin-top: 0;
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .quick-start-steps {
+            display: grid;
+            gap: 1.5rem;
+        }
+        
+        .quick-step {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .quick-step h3 {
+            margin-top: 0;
+            font-size: 1.3rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .step-number {
+            background: white;
+            color: #10a37f;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        
+        .quick-step p {
+            margin: 0;
+            opacity: 0.95;
+            line-height: 1.6;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+        
+        .feature-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-4px);
+        }
+        
+        .feature-card .icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+        
+        .feature-card h3 {
+            color: #1a1a1a;
+            font-size: 1.3rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .feature-card p {
+            color: #64748b;
+            line-height: 1.6;
+            margin: 0;
+        }
+        
+        .tips-box {
+            background: #f0fdf4;
+            border-left: 4px solid #10a37f;
+            padding: 2rem;
+            border-radius: 8px;
+            margin: 3rem 0;
+        }
+        
+        .tips-box h3 {
+            color: #10a37f;
+            margin-top: 0;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .tips-box ul {
+            margin: 0;
+            padding-left: 1.5rem;
+        }
+        
+        .tips-box li {
+            color: #475569;
+            line-height: 1.8;
+            margin-bottom: 0.75rem;
+        }
+        
+        .cta-section {
+            text-align: center;
+            padding: 3rem 2rem;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin-top: 3rem;
+        }
+        
+        .cta-section h2 {
+            color: #1a1a1a;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #10a37f;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #0d9488;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 163, 127, 0.3);
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: #10a37f;
+            border: 2px solid #10a37f;
+        }
+        
+        .btn-secondary:hover {
+            background: #f0fdf4;
+            transform: translateY(-2px);
+        }
+        
+        @media (max-width: 768px) {
+            .welcome-container {
+                padding: 2rem 1rem;
+            }
+            
+            .welcome-hero h1 {
+                font-size: 2rem;
+            }
+            
+            .welcome-hero p {
+                font-size: 1.1rem;
+            }
+            
+            .quick-start {
+                padding: 2rem 1.5rem;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .cta-buttons {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <img src="./images/favicon-32x32.png" alt="GPT Pinboard" class="nav-logo">
+                <span class="nav-title">GPT Pinboard</span>
+            </div>
+            <div class="nav-links">
+                <a href="./index.html#features" class="nav-link">Features</a>
+                <a href="./index.html#install" class="nav-link">Install</a>
+                <a href="https://github.com/0xdps/gpt-pinboard-extension" class="nav-link" target="_blank">GitHub</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="welcome-container">
+        <div class="welcome-hero">
+            <span class="emoji">🎉</span>
+            <h1>Welcome to GPT Pinboard!</h1>
+            <p>You're all set to never lose an important ChatGPT message again.</p>
+        </div>
+
+        <div class="quick-start">
+            <h2>🚀 Quick Start Guide</h2>
+            <div class="quick-start-steps">
+                <div class="quick-step">
+                    <h3>
+                        <span class="step-number">1</span>
+                        Open ChatGPT
+                    </h3>
+                    <p>Visit <a href="https://chatgpt.com" target="_blank" style="color: white; text-decoration: underline;">chatgpt.com</a> and start or open any conversation.</p>
+                </div>
+                
+                <div class="quick-step">
+                    <h3>
+                        <span class="step-number">2</span>
+                        Pin a Message
+                    </h3>
+                    <p>Hover over any ChatGPT response and click the "Pin" button, or right-click selected text and choose "Pin selection to GPT Pinboard".</p>
+                </div>
+                
+                <div class="quick-step">
+                    <h3>
+                        <span class="step-number">3</span>
+                        View Your Pins
+                    </h3>
+                    <p>Click the GPT Pinboard icon in your browser toolbar to see all your pinned messages. Search, organize, and jump back anytime!</p>
+                </div>
+            </div>
+        </div>
+
+        <h2 style="text-align: center; font-size: 2rem; color: #1a1a1a; margin-bottom: 2rem;">What You Can Do</h2>
+        
+        <div class="features-grid">
+            <div class="feature-card">
+                <span class="icon">📌</span>
+                <h3>Pin Individual Messages</h3>
+                <p>Save specific ChatGPT responses, not entire conversations. Keep only what matters.</p>
+            </div>
+            
+            <div class="feature-card">
+                <span class="icon">🏷️</span>
+                <h3>Add Names & Tags</h3>
+                <p>Organize with custom names like "Python async guide" and tags like #code #important.</p>
+            </div>
+            
+            <div class="feature-card">
+                <span class="icon">🔍</span>
+                <h3>Search Instantly</h3>
+                <p>Find pins by content, name, or tags in seconds. No more endless scrolling.</p>
+            </div>
+            
+            <div class="feature-card">
+                <span class="icon">⚡</span>
+                <h3>Jump Back Fast</h3>
+                <p>Click any pin to open the original conversation with your message highlighted.</p>
+            </div>
+            
+            <div class="feature-card">
+                <span class="icon">💾</span>
+                <h3>Export & Backup</h3>
+                <p>Export your pins to JSON for backup or sharing. Import on another device easily.</p>
+            </div>
+            
+            <div class="feature-card">
+                <span class="icon">🔒</span>
+                <h3>100% Private</h3>
+                <p>Everything stays on your device. No accounts, no servers, no tracking. Ever.</p>
+            </div>
+        </div>
+
+        <div class="tips-box">
+            <h3>💡 Pro Tips</h3>
+            <ul>
+                <li><strong>Name your pins:</strong> "Python async explanation" is better than "response 1"</li>
+                <li><strong>Use tags generously:</strong> Add tags like #python, #important, or #todo for easy filtering</li>
+                <li><strong>Export regularly:</strong> Backup your pins weekly using the export feature</li>
+                <li><strong>Try right-click:</strong> Select any text, right-click, and choose "Pin selection to GPT Pinboard"</li>
+                <li><strong>Use date tags:</strong> Add tags like #2025-11 to organize by time period</li>
+            </ul>
+        </div>
+
+        <div class="cta-section">
+            <h2>Ready to Pin Your First Message?</h2>
+            <p style="color: #64748b; font-size: 1.1rem; margin-bottom: 2rem;">Head to ChatGPT and start pinning the messages that matter!</p>
+            
+            <div class="cta-buttons">
+                <a href="https://chatgpt.com" class="btn btn-primary" target="_blank">
+                    🚀 Open ChatGPT
+                </a>
+                <a href="./index.html#how-it-works" class="btn btn-secondary">
+                    📖 View Full Guide
+                </a>
+                <a href="https://github.com/0xdps/gpt-pinboard-extension" class="btn btn-secondary" target="_blank">
+                    💻 View on GitHub
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <img src="./images/favicon-48x48.png" alt="GPT Pinboard" class="footer-logo">
+                    <span class="footer-title">GPT Pinboard</span>
+                </div>
+                
+                <div class="footer-links">
+                    <div class="footer-column">
+                        <h4 class="footer-heading">Product</h4>
+                        <a href="./index.html#features" class="footer-link">Features</a>
+                        <a href="./index.html#how-it-works" class="footer-link">How it Works</a>
+                        <a href="./index.html#install" class="footer-link">Installation</a>
+                    </div>
+                    
+                    <div class="footer-column">
+                        <h4 class="footer-heading">Legal</h4>
+                        <a href="./privacy.html" class="footer-link">Privacy Policy</a>
+                        <a href="https://github.com/0xdps/gpt-pinboard-extension/?tab=MIT-1-ov-file" class="footer-link" target="_blank">License</a>
+                    </div>
+                    
+                    <div class="footer-column">
+                        <h4 class="footer-heading">Support</h4>
+                        <a href="https://github.com/0xdps/gpt-pinboard-extension/issues" class="footer-link" target="_blank">Report Bug</a>
+                        <a href="https://github.com/0xdps/gpt-pinboard-extension/discussions" class="footer-link" target="_blank">Discussions</a>
+                        <a href="mailto:dps.manit@gmail.com" class="footer-link">Contact</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p class="footer-text">
+                    Made with ❤️ by <a href="https://dps.codes" target="_blank">0xdps</a>
+                </p>
+                <p class="footer-text">
+                    Licensed under MIT • <a href="https://github.com/0xdps/gpt-pinboard-extension/?tab=MIT-1-ov-file" target="_blank">View License</a>
+                </p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

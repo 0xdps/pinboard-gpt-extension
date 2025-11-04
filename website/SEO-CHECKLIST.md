@@ -5,6 +5,9 @@
 - [x] `sitemap.xml` - XML sitemap for search engines
 - [x] `sitemap.xsl` - Visual stylesheet for sitemap display
 - [x] `robots.txt` - Web crawler directives and rules
+- [x] `privacy.html` - Privacy policy page with SEO metadata
+- [x] `welcome.html` - Welcome/onboarding page for new users
+- [x] `uninstall.html` - Uninstall feedback page
 
 ## SEO Features Implemented
 
