@@ -4,11 +4,11 @@
 // Helper function for verification status badge
 function getVerificationBadge(status) {
   switch (status) {
-    case 'verified': return '🟢 **VERIFIED** (Extension confirmed)';
-    case 'likely': return '🟡 **LIKELY** (Extension data found)';
-    case 'unknown': return '🟠 **UNKNOWN** (Basic detection)';
-    case 'none': return '🔴 **NONE** (No extension detected)';
-    default: return '❓ **ERROR** (Verification failed)';
+    case 'verified': return '🟢 **VERIFIED** (Full extension confirmation - feedback enabled)';
+    case 'likely': return '🟡 **LIKELY** (Extension indicators found - generic goodbye page)';
+    case 'unknown': return '🟠 **UNKNOWN** (Uncertain status - redirected)';
+    case 'none': return '🔴 **NONE** (No extension detected - redirected)';
+    default: return '❓ **ERROR** (Verification failed - redirected)';
   }
 }
 
@@ -207,6 +207,24 @@ export default async function handler(req, res) {
       }
     } else {
       console.log('❌ No extension verification data:', { ip: clientIP });
+    }
+
+    // Only allow VERIFIED users to submit feedback
+    if (extensionVerificationStatus !== 'verified') {
+      console.log('🚨 Non-verified user attempting feedback submission:', { 
+        ip: clientIP, 
+        status: extensionVerificationStatus,
+        type: extensionId?.type || 'none'
+      });
+      return res.status(403).json({
+        error: 'Verification required',
+        message: 'Only fully verified extension users can submit feedback through this form.',
+        status: extensionVerificationStatus,
+        alternatives: {
+          github: 'https://github.com/0xdps/gpt-pinboard-extension/discussions/new?category=feedback',
+          email: 'dps.manit@gmail.com'
+        }
+      });
     }
 
     // Prepare feedback data

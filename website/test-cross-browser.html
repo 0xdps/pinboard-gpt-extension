@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cross-Browser Extension Detection Test</title>
+    
+    <!-- SEO Blocking - Prevent search engine indexing -->
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
+    <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
+    <meta name="bingbot" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -312,19 +317,19 @@
             switch (result.type) {
                 case 'verified-extension':
                     statusEl.className = 'status verified';
-                    statusEl.textContent = '✅ Extension Verified - Genuine uninstall detected';
+                    statusEl.textContent = '✅ VERIFIED - Will see feedback form';
                     break;
                 case 'likely-extension':
                     statusEl.className = 'status likely';
-                    statusEl.textContent = '⚠️ Likely Extension User - Probable genuine feedback';
+                    statusEl.textContent = '👋 LIKELY - Will see generic goodbye page';
                     break;
                 case 'unknown':
                     statusEl.className = 'status unknown';
-                    statusEl.textContent = '❓ Unknown Source - Could be spam or genuine';
+                    statusEl.textContent = '🔄 UNKNOWN - Will be redirected to home page';
                     break;
                 default:
                     statusEl.className = 'status unknown';
-                    statusEl.textContent = '❌ No Extension Detected - Likely spam';
+                    statusEl.textContent = '🔄 NONE - Will be redirected to home page';
             }
         }
         

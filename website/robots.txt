@@ -1,9 +1,11 @@
 # Robots.txt for GPT Pinboard Website
 # https://gptpins.dps.codes/robots.txt
 
-# Allow all web crawlers to access the site
+# Allow all web crawlers to access the site, except sensitive pages
 User-agent: *
 Allow: /
+Disallow: /goodbye.html
+Disallow: /test-*.html
 
 # Sitemap location
 Sitemap: https://gptpins.dps.codes/sitemap.xml

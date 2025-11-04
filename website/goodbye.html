@@ -7,6 +7,11 @@
     <meta name="description" content="Thank you for trying GPT Pinboard. We'd love to hear your feedback to improve.">
     <meta name="keywords" content="GPT Pinboard, uninstall, feedback">
     
+    <!-- SEO Blocking - Prevent search engine indexing -->
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
+    <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
+    <meta name="bingbot" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
+    
     <!-- Open Graph -->
     <meta property="og:title" content="We're Sorry to See You Go - GPT Pinboard">
     <meta property="og:description" content="Thank you for trying GPT Pinboard. We'd love to hear your feedback.">
@@ -216,6 +221,52 @@
                                    style="display: inline-block; padding: 0.5rem 1rem; background: white; color: #666; border: 1px solid #ccc; border-radius: 6px; text-decoration: none; font-size: 0.9rem;">Send Email</a>
                             </div>
                         </div>
+
+                        <!-- Likely Users - Generic Goodbye Page -->
+                        <div id="likelySection" style="display: none; text-align: center;">
+                            <div style="font-size: 2rem; margin-bottom: 1rem;">👋</div>
+                            <h2 style="font-size: 1.8rem; margin-bottom: 1rem; color: #1a1a1a;">Thanks for Trying GPT Pinboard!</h2>
+                            <p style="font-size: 1.1rem; color: #666; margin-bottom: 2rem;">
+                                We appreciate you giving our extension a try. While you're moving on, we're always working to improve.
+                            </p>
+                            
+                            <div style="background: #f0f8ff; border: 1px solid #b8daff; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem;">
+                                <h3 style="font-size: 1.2rem; margin-bottom: 1rem; color: #004085;">💾 Did You Export Your Pins?</h3>
+                                <p style="margin-bottom: 1rem; color: #004085;">
+                                    If you had pins saved, they've been removed with the extension. For future reference, you can export your pins from the extension popup before uninstalling.
+                                </p>
+                                <p style="font-size: 0.9rem; color: #6c757d; margin-bottom: 0;">
+                                    <strong>Next time:</strong> Click the extension icon → Options → Export Pins to save your data.
+                                </p>
+                            </div>
+                            
+                            <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem;">
+                                <h3 style="font-size: 1.2rem; margin-bottom: 1rem; color: #856404;">💬 Want to Share Feedback?</h3>
+                                <p style="margin-bottom: 1rem; color: #856404;">
+                                    We'd love to hear your thoughts to help improve GPT Pinboard for other users.
+                                </p>
+                                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                                    <a href="https://github.com/0xdps/gpt-pinboard-extension/discussions/new?category=feedback" 
+                                       style="display: inline-block; padding: 0.75rem 1.5rem; background: #10a37f; color: white; border-radius: 6px; text-decoration: none; font-size: 1rem; font-weight: 500;" 
+                                       target="_blank">Share on GitHub</a>
+                                    <a href="mailto:dps.manit@gmail.com?subject=GPT%20Pinboard%20Feedback" 
+                                       style="display: inline-block; padding: 0.75rem 1.5rem; background: #007bff; color: white; border-radius: 6px; text-decoration: none; font-size: 1rem; font-weight: 500;">Send Email</a>
+                                </div>
+                            </div>
+                            
+                            <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #e0e0e0;">
+                                <h3 style="font-size: 1.2rem; margin-bottom: 1rem; color: #1a1a1a;">🔧 Looking for Alternatives?</h3>
+                                <p style="color: #666; margin-bottom: 1rem;">
+                                    While we're sad to see you go, here are some other tools that might help with ChatGPT:
+                                </p>
+                                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                                    <a href="https://chrome.google.com/webstore/category/extensions" 
+                                       style="display: inline-block; padding: 0.5rem 1rem; background: white; color: #666; border: 1px solid #ccc; border-radius: 6px; text-decoration: none; font-size: 0.9rem;" 
+                                       target="_blank">Browse Extensions</a>
+                                    <a href="https://gptpins.dps.codes" 
+                                       style="display: inline-block; padding: 0.5rem 1rem; background: white; color: #10a37f; border: 1px solid #10a37f; border-radius: 6px; text-decoration: none; font-size: 0.9rem;">Visit Homepage</a>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Unknown Verification - Limited Access -->
@@ -242,30 +293,7 @@
                             </p>
                         </div>
 
-                        <!-- No Extension Detected - Access Denied -->
-                        <div id="noneSection" style="display: none; text-align: center;">
-                            <div style="font-size: 2rem; margin-bottom: 1rem;">🚫</div>
-                            <h2 style="font-size: 1.8rem; margin-bottom: 1rem; color: #1a1a1a;">Extension Not Detected</h2>
-                            <p style="font-size: 1.1rem; color: #666; margin-bottom: 2rem;">
-                                We couldn't find any evidence that GPT Pinboard was installed on this device. This feedback form is specifically for users who have uninstalled our extension.
-                            </p>
-                            
-                            <div style="background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem;">
-                                <h3 style="font-size: 1.2rem; margin-bottom: 1rem; color: #721c24;">Are you looking for something else?</h3>
-                                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1rem;">
-                                    <a href="../index.html" 
-                                       style="display: inline-block; padding: 0.75rem 1.5rem; background: #10a37f; color: white; border-radius: 6px; text-decoration: none; font-size: 1rem; font-weight: 500;">Install Extension</a>
-                                    <a href="../support.html" 
-                                       style="display: inline-block; padding: 0.75rem 1.5rem; background: #007bff; color: white; border-radius: 6px; text-decoration: none; font-size: 1rem; font-weight: 500;">Get Help</a>
-                                </div>
-                                <p style="font-size: 0.9rem; color: #721c24; margin-bottom: 0;">
-                                    If you're a legitimate user experiencing issues, please contact us via email.
-                                </p>
-                            </div>
-                            
-                            <a href="mailto:dps.manit@gmail.com?subject=GPT%20Pinboard%20Support&body=I%20was%20directed%20to%20the%20goodbye%20page%20but%20my%20extension%20wasn't%20detected." 
-                               style="display: inline-block; padding: 0.5rem 1rem; background: white; color: #666; border: 1px solid #ccc; border-radius: 6px; text-decoration: none; font-size: 0.9rem;">Contact Support</a>
-                        </div>
+                        <!-- No Extension Detected section removed - users are redirected to home page instead -->
                     </div>
 
                     <div style="background: #fff3cd; padding: 2rem; border-radius: 12px; margin-bottom: 2rem; border-left: 4px solid #ffc107;">
@@ -652,25 +680,35 @@
                     console.log('Extension verification result:', { extensionContext, verificationStatus });
                     
                     // Show appropriate section based on verification status
-                    if (verificationStatus === 'verified' || verificationStatus === 'likely') {
-                        // Show feedback form for verified/likely users
+                    if (verificationStatus === 'verified') {
+                        // Show feedback form only for fully verified users
                         document.getElementById('feedbackSection').style.display = 'block';
-                        console.log('✅ Showing feedback form - verification status:', verificationStatus);
+                        console.log('✅ Showing feedback form - VERIFIED user');
+                    } else if (verificationStatus === 'likely') {
+                        // Show generic goodbye page for likely users (no feedback form)
+                        document.getElementById('likelySection').style.display = 'block';
+                        console.log('👋 Showing generic goodbye - LIKELY user');
                     } else if (verificationStatus === 'unknown') {
-                        // Show limited access message for unknown users
-                        document.getElementById('unknownSection').style.display = 'block';
-                        console.log('⚠️ Showing unknown section - verification status:', verificationStatus);
+                        // Redirect unknown users to home page
+                        console.log('❓ UNKNOWN user - redirecting to home page');
+                        setTimeout(() => {
+                            window.location.href = '/';
+                        }, 1500);
                     } else {
-                        // Show access denied for users with no extension evidence
-                        document.getElementById('noneSection').style.display = 'block';
-                        console.log('🚫 Showing none section - verification status:', verificationStatus);
+                        // Redirect users with no extension evidence to home page
+                        console.log('🚫 No extension detected - redirecting to home page');
+                        setTimeout(() => {
+                            window.location.href = '/';
+                        }, 1500);
                     }
                     
                 } catch (error) {
                     console.error('Extension verification failed:', error);
-                    // On error, show unknown section as fallback
-                    document.getElementById('loadingState').style.display = 'none';
-                    document.getElementById('unknownSection').style.display = 'block';
+                    // On error, redirect to home page as safeguard
+                    console.log('🚫 Verification error - redirecting to home page');
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 2000);
                 }
             }
 

@@ -312,11 +312,16 @@ function detectBrowserAndExtension() {
 }
 ```
 
-**Verification Results:**
-- `VERIFIED`: Direct extension communication successful
-- `LIKELY`: Extension markers detected but no direct communication
-- `UNKNOWN`: No extension indicators, possible spam
-- `NONE`: No verification possible, likely spam
+**Verification Results & User Experience:**
+- `VERIFIED`: Direct extension communication → **Shows feedback form**
+- `LIKELY`: Extension markers detected → **Shows generic goodbye page**  
+- `UNKNOWN`: No clear extension indicators → **Redirected to home page**
+- `NONE`: No verification possible → **Redirected to home page**
+
+**Access Policy:**
+- Only VERIFIED users can submit feedback through the form
+- LIKELY users see a friendly goodbye page with alternative feedback options
+- UNKNOWN/NONE users are redirected to prevent spam and improve UX
 
 #### Testing
 Use `website/test-cross-browser.html` to test verification on both browsers:
