@@ -56,13 +56,25 @@
 
             <div style="max-width: 900px; margin: 0 auto;">
                 <div style="line-height: 1.8; color: #333;">
-                    <div style="background: #f8f9fa; padding: 2rem; border-radius: 12px; margin-bottom: 2rem;">
-                        <h2 style="font-size: 1.8rem; margin-bottom: 1rem; color: #1a1a1a; text-align: center;">Your Feedback Matters</h2>
-                        <p style="font-size: 1.1rem; color: #666; margin-bottom: 2rem; text-align: center;">
-                            We're constantly working to improve. Help us make GPT Pinboard better by sharing why you uninstalled.
-                        </p>
-                        
-                        <!-- Feedback Survey Form -->
+                    <!-- Verification Status Container -->
+                    <div id="verificationContainer" style="background: #f8f9fa; padding: 2rem; border-radius: 12px; margin-bottom: 2rem;">
+                        <!-- Loading State -->
+                        <div id="loadingState" style="text-align: center;">
+                            <div style="font-size: 2rem; margin-bottom: 1rem;">🔄</div>
+                            <h2 style="font-size: 1.8rem; margin-bottom: 1rem; color: #1a1a1a;">Verifying Extension Installation...</h2>
+                            <p style="font-size: 1.1rem; color: #666; margin-bottom: 0;">
+                                Please wait while we confirm you had GPT Pinboard installed.
+                            </p>
+                        </div>
+
+                        <!-- Verified/Likely Users - Show Feedback Form -->
+                        <div id="feedbackSection" style="display: none;">
+                            <h2 style="font-size: 1.8rem; margin-bottom: 1rem; color: #1a1a1a; text-align: center;">Your Feedback Matters</h2>
+                            <p style="font-size: 1.1rem; color: #666; margin-bottom: 2rem; text-align: center;">
+                                We're constantly working to improve. Help us make GPT Pinboard better by sharing why you uninstalled.
+                            </p>
+                            
+                            <!-- Feedback Survey Form -->
                         <form id="feedbackForm" style="max-width: 600px; margin: 0 auto;">
                             <div style="margin-bottom: 2rem;">
                                 <h3 style="font-size: 1.2rem; margin-bottom: 1rem; color: #1a1a1a;">What were the main reasons for uninstalling? (Check all that apply)</h3>
@@ -159,19 +171,22 @@
                                 <input type="text" name="website" placeholder="Leave this empty" tabindex="-1" autocomplete="off">
                             </div>
 
-                            <!-- Simple verification -->
+                            <!-- Math CAPTCHA verification -->
                             <div style="margin-bottom: 1.5rem; background: #f0f8ff; padding: 1rem; border-radius: 6px; border-left: 3px solid #007bff;">
                                 <label style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: #333;">
-                                    Simple verification: What browser extension did you uninstall? (helps prevent spam)
+                                    Simple verification: What is <span id="captcha-question" style="font-weight: bold; color: #007bff;"></span>? (helps prevent spam)
                                 </label>
                                 <input 
-                                    type="text" 
+                                    type="number" 
                                     name="verification" 
-                                    placeholder="e.g., GPT Pinboard"
+                                    placeholder="Enter the answer"
                                     style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9rem;"
                                     required
+                                    min="11"
+                                    max="18"
                                 >
                                 <small style="color: #666; font-size: 0.8rem;">This helps us verify you're providing genuine feedback</small>
+                                <input type="hidden" name="captcha-answer" id="captcha-answer" value="">
                             </div>
 
                             <div style="text-align: center;">
@@ -200,6 +215,56 @@
                                 <a href="mailto:dps.manit@gmail.com?subject=GPT%20Pinboard%20Feedback" 
                                    style="display: inline-block; padding: 0.5rem 1rem; background: white; color: #666; border: 1px solid #ccc; border-radius: 6px; text-decoration: none; font-size: 0.9rem;">Send Email</a>
                             </div>
+                        </div>
+                        </div>
+
+                        <!-- Unknown Verification - Limited Access -->
+                        <div id="unknownSection" style="display: none; text-align: center;">
+                            <div style="font-size: 2rem; margin-bottom: 1rem;">🤔</div>
+                            <h2 style="font-size: 1.8rem; margin-bottom: 1rem; color: #1a1a1a;">Extension Verification Uncertain</h2>
+                            <p style="font-size: 1.1rem; color: #666; margin-bottom: 2rem;">
+                                We couldn't fully verify that you had GPT Pinboard installed. To prevent spam, our feedback form is limited to verified users.
+                            </p>
+                            
+                            <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem;">
+                                <h3 style="font-size: 1.2rem; margin-bottom: 1rem; color: #856404;">Alternative Ways to Share Feedback</h3>
+                                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                                    <a href="https://github.com/0xdps/gpt-pinboard-extension/discussions/new?category=feedback" 
+                                       style="display: inline-block; padding: 0.75rem 1.5rem; background: #10a37f; color: white; border-radius: 6px; text-decoration: none; font-size: 1rem; font-weight: 500;" 
+                                       target="_blank">GitHub Discussion</a>
+                                    <a href="mailto:dps.manit@gmail.com?subject=GPT%20Pinboard%20Feedback&body=I%20had%20issues%20with%20the%20extension%20verification%20on%20the%20goodbye%20page." 
+                                       style="display: inline-block; padding: 0.75rem 1.5rem; background: #6c757d; color: white; border-radius: 6px; text-decoration: none; font-size: 1rem; font-weight: 500;">Send Email</a>
+                                </div>
+                            </div>
+                            
+                            <p style="font-size: 0.9rem; color: #666;">
+                                If you believe this is an error, please contact us directly and we'll help resolve the issue.
+                            </p>
+                        </div>
+
+                        <!-- No Extension Detected - Access Denied -->
+                        <div id="noneSection" style="display: none; text-align: center;">
+                            <div style="font-size: 2rem; margin-bottom: 1rem;">🚫</div>
+                            <h2 style="font-size: 1.8rem; margin-bottom: 1rem; color: #1a1a1a;">Extension Not Detected</h2>
+                            <p style="font-size: 1.1rem; color: #666; margin-bottom: 2rem;">
+                                We couldn't find any evidence that GPT Pinboard was installed on this device. This feedback form is specifically for users who have uninstalled our extension.
+                            </p>
+                            
+                            <div style="background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem;">
+                                <h3 style="font-size: 1.2rem; margin-bottom: 1rem; color: #721c24;">Are you looking for something else?</h3>
+                                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1rem;">
+                                    <a href="../index.html" 
+                                       style="display: inline-block; padding: 0.75rem 1.5rem; background: #10a37f; color: white; border-radius: 6px; text-decoration: none; font-size: 1rem; font-weight: 500;">Install Extension</a>
+                                    <a href="../support.html" 
+                                       style="display: inline-block; padding: 0.75rem 1.5rem; background: #007bff; color: white; border-radius: 6px; text-decoration: none; font-size: 1rem; font-weight: 500;">Get Help</a>
+                                </div>
+                                <p style="font-size: 0.9rem; color: #721c24; margin-bottom: 0;">
+                                    If you're a legitimate user experiencing issues, please contact us via email.
+                                </p>
+                            </div>
+                            
+                            <a href="mailto:dps.manit@gmail.com?subject=GPT%20Pinboard%20Support&body=I%20was%20directed%20to%20the%20goodbye%20page%20but%20my%20extension%20wasn't%20detected." 
+                               style="display: inline-block; padding: 0.5rem 1rem; background: white; color: #666; border: 1px solid #ccc; border-radius: 6px; text-decoration: none; font-size: 0.9rem;">Contact Support</a>
                         </div>
                     </div>
 
@@ -341,7 +406,28 @@
     
     <!-- Feedback Form Script -->
     <script>
+        // Generate math CAPTCHA
+        function generateCaptcha() {
+            // Generate two single digits where sum > 10
+            // Possible combinations: 2+9=11, 3+8=11, 3+9=12, 4+7=11, 4+8=12, 4+9=13, etc.
+            let num1, num2, answer;
+            do {
+                num1 = Math.floor(Math.random() * 9) + 1;  // 1-9
+                num2 = Math.floor(Math.random() * 9) + 1;  // 1-9
+                answer = num1 + num2;
+            } while (answer <= 10);  // Keep generating until sum > 10
+            
+            document.getElementById('captcha-question').textContent = `${num1} + ${num2}`;
+            document.getElementById('captcha-answer').value = answer;
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
+            // Generate initial CAPTCHA
+            generateCaptcha();
+
+            // Perform extension verification and show appropriate section
+            performExtensionVerification();
+
             // Add hover effects for form elements
             const checkboxLabels = document.querySelectorAll('label:has(input[type="checkbox"])');
             const radioLabels = document.querySelectorAll('label:has(input[type="radio"])');
@@ -417,6 +503,17 @@
                 try {
                     // Collect form data
                     const formData = new FormData(form);
+                    
+                    // Validate math CAPTCHA
+                    const userAnswer = parseInt(formData.get('verification'));
+                    const correctAnswer = parseInt(document.getElementById('captcha-answer').value);
+                    
+                    if (userAnswer !== correctAnswer) {
+                        showError('❌ Incorrect answer. Please try the math problem again.');
+                        generateCaptcha(); // Generate new CAPTCHA
+                        form.querySelector('input[name="verification"]').value = '';
+                        return;
+                    }
                     
                     // Check for extension context (if available)
                     const extensionId = await checkExtensionContext();
@@ -529,25 +626,256 @@
                 }
             });
             
-            // Function to check if user has extension context
+            // Function to perform extension verification and show appropriate content
+            async function performExtensionVerification() {
+                try {
+                    const extensionContext = await checkExtensionContext();
+                    
+                    // Hide loading state
+                    document.getElementById('loadingState').style.display = 'none';
+                    
+                    // Determine verification status
+                    let verificationStatus = 'none';
+                    
+                    if (extensionContext && typeof extensionContext === 'object') {
+                        if (extensionContext.type === 'verified-extension' && extensionContext.installToken) {
+                            verificationStatus = 'verified';
+                        } else if (extensionContext.confidence === 'medium' || extensionContext.type === 'extension-uninstall') {
+                            verificationStatus = 'likely';
+                        } else if (extensionContext.confidence === 'low') {
+                            verificationStatus = 'unknown';
+                        } else {
+                            verificationStatus = 'none';
+                        }
+                    }
+                    
+                    console.log('Extension verification result:', { extensionContext, verificationStatus });
+                    
+                    // Show appropriate section based on verification status
+                    if (verificationStatus === 'verified' || verificationStatus === 'likely') {
+                        // Show feedback form for verified/likely users
+                        document.getElementById('feedbackSection').style.display = 'block';
+                        console.log('✅ Showing feedback form - verification status:', verificationStatus);
+                    } else if (verificationStatus === 'unknown') {
+                        // Show limited access message for unknown users
+                        document.getElementById('unknownSection').style.display = 'block';
+                        console.log('⚠️ Showing unknown section - verification status:', verificationStatus);
+                    } else {
+                        // Show access denied for users with no extension evidence
+                        document.getElementById('noneSection').style.display = 'block';
+                        console.log('🚫 Showing none section - verification status:', verificationStatus);
+                    }
+                    
+                } catch (error) {
+                    console.error('Extension verification failed:', error);
+                    // On error, show unknown section as fallback
+                    document.getElementById('loadingState').style.display = 'none';
+                    document.getElementById('unknownSection').style.display = 'block';
+                }
+            }
+
+            // Function to verify extension installation
             async function checkExtensionContext() {
                 try {
-                    // Try to detect extension by checking for specific elements or storage
-                    // This is a lightweight check, not foolproof but helps identify genuine users
+                    // Detect browser and get appropriate extension info
+                    const browserInfo = detectBrowserAndExtension();
+                    console.log('Browser detection result:', browserInfo);
                     
+                    return new Promise((resolve) => {
+                        // Set timeout for extension response
+                        const timeout = setTimeout(() => {
+                            console.log('Extension verification timeout - falling back to basic checks');
+                            resolve(performBasicChecks());
+                        }, 2000);
+                        
+                        // Try unified extension messaging approach
+                        if (browserInfo.browser === 'chrome' && browserInfo.extensionId) {
+                            // Chrome - use known extension ID from Web Store
+                            tryExtensionMessaging(browserInfo.extensionId, resolve, timeout, 'chrome');
+                        } else if (browserInfo.browser === 'firefox') {
+                            // Firefox - try extension messaging with fallback to detection methods
+                            tryFirefoxVerification(resolve, timeout);
+                        } else {
+                            // Fallback for other browsers or unknown cases
+                            clearTimeout(timeout);
+                            resolve(performBasicChecks());
+                        }
+                    });
+                } catch (error) {
+                    console.log('Extension verification failed:', error);
+                    return performBasicChecks();
+                }
+            }
+
+            // Detect browser type and extension information
+            function detectBrowserAndExtension() {
+                const userAgent = navigator.userAgent.toLowerCase();
+                
+                if (userAgent.includes('firefox')) {
+                    return {
+                        browser: 'firefox',
+                        extensionId: null, // Firefox uses different detection
+                        webExtensionId: 'pingpt@devendrapratap.dev' // From Firefox manifest
+                    };
+                } else if (userAgent.includes('chrome') || userAgent.includes('chromium') || userAgent.includes('edge')) {
+                    return {
+                        browser: 'chrome',
+                        extensionId: 'hdhoaialemjelcfjjmjkkhkffiggbnap', // Chrome Web Store ID
+                        webExtensionId: null
+                    };
+                } else if (userAgent.includes('safari')) {
+                    return {
+                        browser: 'safari',
+                        extensionId: null,
+                        webExtensionId: null
+                    };
+                } else {
+                    return {
+                        browser: 'unknown',
+                        extensionId: null,
+                        webExtensionId: null
+                    };
+                }
+            }
+
+            // Extension messaging approach (works for Chrome, Edge, etc.)
+            function tryExtensionMessaging(extensionId, resolve, timeout, browserType = 'chrome') {
+                if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
+                    chrome.runtime.sendMessage(
+                        extensionId,
+                        { action: 'verify-installation' },
+                        (response) => {
+                                    clearTimeout(timeout);
+                                    if (chrome.runtime.lastError) {
+                                        console.log('Extension not found, falling back to basic checks');
+                                        resolve(performBasicChecks());
+                                    } else if (response && response.verified) {
+                                        console.log('Extension verified:', response);
+                                        resolve({
+                                            type: 'verified-extension',
+                                            extensionId: response.extensionId,
+                                            installToken: response.installToken,
+                                            installDate: response.installDate,
+                                            version: response.version
+                                        });
+                                    } else {
+                                        resolve(performBasicChecks());
+                                    }
+                                }
+                            );
+                        } else {
+                            clearTimeout(timeout);
+                            resolve(performBasicChecks());
+                        }
+                    }
+
+            // Firefox extension verification approach
+            function tryFirefoxVerification(resolve, timeout) {
+                console.log('Attempting Firefox extension detection...');
+                
+                // Method 1: Check if extension content script already injected data
+                if (window.pingptExtensionData) {
+                    clearTimeout(timeout);
+                    console.log('Firefox extension detected via injected data');
+                    resolve({
+                        type: 'verified-extension',
+                        browser: 'firefox',
+                        detection: 'content-script',
+                        extensionId: window.pingptExtensionData.extensionId,
+                        installToken: window.pingptExtensionData.installToken,
+                        installDate: window.pingptExtensionData.installDate,
+                        version: window.pingptExtensionData.version
+                    });
+                    return;
+                }
+                
+                // Method 2: Check for extension marker element
+                const marker = document.getElementById('pingpt-extension-marker');
+                if (marker) {
+                    clearTimeout(timeout);
+                    console.log('Firefox extension detected via DOM marker');
+                    resolve({
+                        type: 'verified-extension',
+                        browser: 'firefox',
+                        detection: 'dom-marker',
+                        extensionId: marker.getAttribute('data-extension-id'),
+                        installToken: marker.getAttribute('data-install-token'),
+                        installDate: marker.getAttribute('data-install-date'),
+                        version: marker.getAttribute('data-version')
+                    });
+                    return;
+                }
+                
+                // Method 3: Listen for the extension detection event (with timeout)
+                const eventListener = (event) => {
+                    if (event.type === 'pingptExtensionDetected') {
+                        clearTimeout(timeout);
+                        document.removeEventListener('pingptExtensionDetected', eventListener);
+                        console.log('Firefox extension detected via custom event');
+                        resolve({
+                            type: 'verified-extension',
+                            browser: 'firefox',
+                            detection: 'custom-event',
+                            extensionId: event.detail.extensionId,
+                            installToken: event.detail.installToken,
+                            installDate: event.detail.installDate,
+                            version: event.detail.version
+                        });
+                    }
+                };
+                document.addEventListener('pingptExtensionDetected', eventListener);
+                
+                // Method 4: Try postMessage communication
+                window.postMessage({
+                    type: 'pingpt-verify-extension'
+                }, window.location.origin);
+                
+                // Listen for response
+                const messageListener = (event) => {
+                    if (event.origin !== window.location.origin) return;
+                    if (event.data && event.data.type === 'pingpt-extension-verified') {
+                        clearTimeout(timeout);
+                        window.removeEventListener('message', messageListener);
+                        document.removeEventListener('pingptExtensionDetected', eventListener);
+                        console.log('Firefox extension detected via postMessage');
+                        resolve({
+                            type: 'verified-extension',
+                            browser: 'firefox',
+                            detection: 'post-message',
+                            extensionId: event.data.data.extensionId,
+                            installToken: event.data.data.installToken,
+                            installDate: event.data.data.installDate,
+                            version: event.data.data.version
+                        });
+                    }
+                };
+                window.addEventListener('message', messageListener);
+                
+                // Method 5: Fallback to basic checks after timeout
+                setTimeout(() => {
+                    clearTimeout(timeout);
+                    document.removeEventListener('pingptExtensionDetected', eventListener);
+                    window.removeEventListener('message', messageListener);
+                    console.log('Firefox extension detection timeout - using basic checks');
+                    resolve(performBasicChecks());
+                }, 2000);
+            }
+
+            // Fallback checks if direct extension communication fails
+            function performBasicChecks() {
+                try {
                     // Check if coming from extension uninstall flow
                     const urlParams = new URLSearchParams(window.location.search);
                     if (urlParams.get('source') === 'extension') {
-                        return 'extension-uninstall';
+                        return { type: 'extension-uninstall', confidence: 'medium' };
                     }
                     
-                    // Check localStorage for extension data (if any exists)
+                    // Check localStorage for extension data
                     const hasExtensionData = localStorage.getItem('gpt-pinboard-data') || 
-                                           localStorage.getItem('pinboard-data') ||
-                                           sessionStorage.getItem('extension-context');
+                                           localStorage.getItem('pinboard-data');
                     
                     if (hasExtensionData) {
-                        return 'extension-data-found';
+                        return { type: 'extension-data-found', confidence: 'low' };
                     }
                     
                     // Check if page was accessed via common uninstall flows
@@ -555,13 +883,13 @@
                     if (referrer.includes('chrome://extensions') || 
                         referrer.includes('about:addons') || 
                         referrer.includes('edge://extensions')) {
-                        return 'browser-extension-page';
+                        return { type: 'browser-extension-page', confidence: 'medium' };
                     }
                     
-                    return null;
+                    return { type: 'unknown', confidence: 'none' };
                 } catch (error) {
-                    console.log('Extension context check failed:', error);
-                    return null;
+                    console.log('Basic extension context check failed:', error);
+                    return { type: 'error', confidence: 'none' };
                 }
             }
         });

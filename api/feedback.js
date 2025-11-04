@@ -1,6 +1,17 @@
 // Vercel Function to handle feedback submissions via GitHub Issues
 // Simplified version focused on GitHub Issues integration
 
+// Helper function for verification status badge
+function getVerificationBadge(status) {
+  switch (status) {
+    case 'verified': return '🟢 **VERIFIED** (Extension confirmed)';
+    case 'likely': return '🟡 **LIKELY** (Extension data found)';
+    case 'unknown': return '🟠 **UNKNOWN** (Basic detection)';
+    case 'none': return '🔴 **NONE** (No extension detected)';
+    default: return '❓ **ERROR** (Verification failed)';
+  }
+}
+
 export default async function handler(req, res) {
   // Set CORS headers (restrict to your domain in production)
   const allowedOrigins = [
@@ -144,34 +155,58 @@ export default async function handler(req, res) {
       });
     }
 
-    // Verification field check
-    if (!verification || typeof verification !== 'string') {
+    // Math CAPTCHA verification check
+    const verificationAnswer = parseInt(verification);
+    if (!verification || isNaN(verificationAnswer)) {
       return res.status(400).json({
         error: 'Verification required',
-        message: 'Please complete the verification field.'
+        message: 'Please complete the math verification.'
       });
     }
 
-    const verificationText = verification.trim().toLowerCase();
-    const validAnswers = [
-      'gpt pinboard',
-      'pinboard',
-      'gpt-pinboard',
-      'chatgpt pinboard',
-      'pingpt'
-    ];
-
-    const isValidVerification = validAnswers.some(answer => 
-      verificationText.includes(answer) || 
-      answer.includes(verificationText.replace(/[^a-z0-9\s]/g, ''))
-    );
-
-    if (!isValidVerification) {
-      console.log('🚨 Invalid verification:', { ip: clientIP, verification: verificationText });
+    // Basic validation - answer should be > 10 (since our sum is always > 10)
+    // and reasonable range for single digit math problems (11-18: 2+9=11 to 9+9=18)
+    if (verificationAnswer < 11 || verificationAnswer > 18) {
+      console.log('🚨 Invalid math verification:', { ip: clientIP, answer: verificationAnswer });
       return res.status(400).json({
         error: 'Verification failed',
-        message: 'Please enter the correct extension name you uninstalled.'
+        message: 'Please solve the math problem correctly.'
       });
+    }
+
+    // Enhanced extension verification (optional but adds credibility)
+    let extensionVerificationStatus = 'none';
+    let extensionData = null;
+
+    if (extensionId && typeof extensionId === 'object') {
+      if (extensionId.type === 'verified-extension' && extensionId.installToken) {
+        extensionVerificationStatus = 'verified';
+        extensionData = {
+          extensionId: extensionId.extensionId,
+          installToken: extensionId.installToken,
+          installDate: extensionId.installDate,
+          version: extensionId.version
+        };
+        console.log('✅ Extension verified:', { 
+          ip: clientIP, 
+          extensionId: extensionId.extensionId,
+          installDate: extensionId.installDate 
+        });
+      } else if (extensionId.confidence === 'medium') {
+        extensionVerificationStatus = 'likely';
+        console.log('⚠️ Extension likely (medium confidence):', { 
+          ip: clientIP, 
+          type: extensionId.type 
+        });
+      } else {
+        extensionVerificationStatus = 'unknown';
+        console.log('❓ Extension status unknown:', { 
+          ip: clientIP, 
+          type: extensionId.type || 'unknown' 
+        });
+      }
+    } else {
+      console.log('❌ No extension verification data:', { ip: clientIP });
     }
 
     // Prepare feedback data
@@ -188,9 +223,10 @@ export default async function handler(req, res) {
         submissionMethod: 'web-form',
         clientIP: clientIP,
         referrer: referrer || 'Unknown',
-        extensionId: extensionId || null,
+        extensionVerification: extensionVerificationStatus,
+        extensionData: extensionData,
         contentLength: feedbackText.length,
-        hasExtensionContext: !!extensionId
+        hasExtensionContext: extensionVerificationStatus !== 'none'
       }
     };
 
@@ -263,9 +299,14 @@ ${feedbackData.openToContact ? '✅ Open to follow-up contact' : '❌ Prefers no
 - **Source URL:** ${feedbackData.metadata.sourceUrl}
 - **Client IP:** \`${feedbackData.metadata.clientIP}\`
 - **Referrer:** ${feedbackData.metadata.referrer}
-- **Extension Context:** ${feedbackData.metadata.hasExtensionContext ? '✅ Yes' : '❓ Unknown'}
+- **Extension Verification:** ${getVerificationBadge(feedbackData.metadata.extensionVerification)}
 - **Content Length:** ${feedbackData.metadata.contentLength} chars
 - **Submission Method:** ${feedbackData.metadata.submissionMethod}
+${feedbackData.metadata.extensionData ? `
+- **Extension ID:** \`${feedbackData.metadata.extensionData.extensionId}\`
+- **Install Token:** \`${feedbackData.metadata.extensionData.installToken}\`
+- **Install Date:** ${feedbackData.metadata.extensionData.installDate}
+- **Extension Version:** ${feedbackData.metadata.extensionData.version}` : ''}
 
 ---
 *📝 Auto-generated from [goodbye page](https://gptpins.dps.codes/goodbye.html) feedback form*`;

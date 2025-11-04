@@ -1,0 +1,89 @@
+// Web verification content script for cross-browser extension detection
+// This script runs on our website pages to help identify extension installation
+
+(function() {
+    'use strict';
+    
+    // Only run on our domains
+    const allowedDomains = ['gptpins.dps.codes', 'localhost'];
+    const currentDomain = window.location.hostname;
+    
+    if (!allowedDomains.some(domain => currentDomain.includes(domain))) {
+        return;
+    }
+    
+    console.log('GPT Pinboard: Web verification script loaded');
+    
+    // Get runtime reference (cross-browser compatible)
+    const runtime = typeof chrome !== 'undefined' ? chrome.runtime : 
+                   (typeof browser !== 'undefined' ? browser.runtime : null);
+    
+    if (!runtime) {
+        console.log('GPT Pinboard: No extension runtime available');
+        return;
+    }
+    
+    // Inject extension identification into the page
+    function injectExtensionIdentifier() {
+        // Get installation data from storage
+        const storage = typeof chrome !== 'undefined' ? chrome.storage : browser.storage;
+        
+        storage.local.get(['gpt-pinboard-install'], (result) => {
+            const installData = result['gpt-pinboard-install'];
+            
+            if (installData) {
+                // Create a marker element that the webpage can detect
+                const marker = document.createElement('div');
+                marker.id = 'pingpt-extension-marker';
+                marker.style.display = 'none';
+                marker.setAttribute('data-extension-id', runtime.id);
+                marker.setAttribute('data-install-token', installData.installToken);
+                marker.setAttribute('data-install-date', installData.installDate);
+                marker.setAttribute('data-version', installData.version);
+                
+                // Add to document head
+                document.head.appendChild(marker);
+                
+                // Also set a global variable for immediate detection
+                window.pingptExtensionData = {
+                    extensionId: runtime.id,
+                    installToken: installData.installToken,
+                    installDate: installData.installDate,
+                    version: installData.version,
+                    browser: typeof chrome !== 'undefined' ? 'chrome' : 'firefox'
+                };
+                
+                console.log('GPT Pinboard: Extension marker injected successfully');
+                
+                // Dispatch a custom event to notify the page
+                const event = new CustomEvent('pingptExtensionDetected', {
+                    detail: window.pingptExtensionData
+                });
+                document.dispatchEvent(event);
+            }
+        });
+    }
+    
+    // Inject identifier when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', injectExtensionIdentifier);
+    } else {
+        injectExtensionIdentifier();
+    }
+    
+    // Also listen for page messages and respond with verification
+    window.addEventListener('message', (event) => {
+        if (event.origin !== window.location.origin) return;
+        
+        if (event.data && event.data.type === 'pingpt-verify-extension') {
+            // Respond with extension verification
+            if (window.pingptExtensionData) {
+                window.postMessage({
+                    type: 'pingpt-extension-verified',
+                    data: window.pingptExtensionData
+                }, window.location.origin);
+            }
+        }
+    });
+    
+})();

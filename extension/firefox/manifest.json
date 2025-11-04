@@ -40,6 +40,15 @@
       "matches": ["https://chatgpt.com/*", "https://chat.openai.com/*"],
       "js": ["idb.js", "content_script_chatgpt.js"],
       "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://gptpins.dps.codes/*",
+        "http://localhost:8080/*",
+        "https://localhost:8080/*"
+      ],
+      "js": ["web_verification.js"],
+      "run_at": "document_end"
     }
   ],
   "content_security_policy": {
@@ -51,6 +60,13 @@
       "matches": ["https://chatgpt.com/*", "https://chat.openai.com/*"]
     }
   ],
+  "externally_connectable": {
+    "matches": [
+      "https://gptpins.dps.codes/*",
+      "http://localhost:8080/*",
+      "https://localhost:8080/*"
+    ]
+  },
   "icons": {
     "16": "icons/icon-16.png",
     "32": "icons/icon-32.png",

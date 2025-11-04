@@ -6,16 +6,63 @@ chrome.runtime.onInstalled.addListener((details) => {
     documentUrlPatterns: ["https://chatgpt.com/*", "https://chat.openai.com/*"]
   });
 
-  // Open welcome page on install
+  // Store installation information for feedback verification
   if (details.reason === 'install') {
+    const installationData = {
+      extensionId: chrome.runtime.id,
+      installDate: new Date().toISOString(),
+      installToken: generateInstallToken(),
+      version: chrome.runtime.getManifest().version
+    };
+    
+    chrome.storage.local.set({ 
+      'gpt-pinboard-install': installationData 
+    });
+
+    // Open welcome page on install
     chrome.tabs.create({
       url: 'https://gptpins.dps.codes/welcome.html'
     });
   }
 });
 
+// Generate unique installation token
+function generateInstallToken() {
+  return 'gpt-pin-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+}
+
 // Set uninstall URL for feedback
 chrome.runtime.setUninstallURL('https://gptpins.dps.codes/goodbye.html');
+
+// Handle requests for installation verification from web pages
+chrome.runtime.onMessageExternal.addListener((request, sender, sendResponse) => {
+  if (request.action === 'verify-installation') {
+    // Only respond to requests from our official domains
+    const allowedOrigins = [
+      'https://gptpins.dps.codes',
+      'http://localhost:8080', // for development
+      'https://localhost:8080'
+    ];
+    
+    if (allowedOrigins.includes(sender.origin)) {
+      chrome.storage.local.get(['gpt-pinboard-install'], (result) => {
+        const installData = result['gpt-pinboard-install'];
+        if (installData) {
+          sendResponse({
+            verified: true,
+            extensionId: chrome.runtime.id,
+            installToken: installData.installToken,
+            installDate: installData.installDate,
+            version: installData.version
+          });
+        } else {
+          sendResponse({ verified: false });
+        }
+      });
+      return true; // Will respond asynchronously
+    }
+  }
+});
 
 chrome.contextMenus.onClicked.addListener((info, tab) => {
   if (info.menuItemId === 'pin-selection') {

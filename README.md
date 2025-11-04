@@ -136,7 +136,7 @@ npm run feedback:test  # Test the setup
 
 ### Security Features
 - **Rate Limiting**: 1 submission per 5 minutes per IP
-- **Spam Protection**: Honeypot fields, verification questions, content validation
+- **Spam Protection**: Extension verification (form only shown to verified users), math CAPTCHA, honeypot fields, content validation
 - **Origin Validation**: Only accepts requests from approved domains
 - **Content Filtering**: Blocks common spam patterns and malicious content
 

@@ -260,9 +260,70 @@ User fills form → Vercel API → GitHub Issues → Automatic labeling & format
 
 ### Security Features
 - **Rate Limiting**: 1 submission per 5 minutes per IP
-- **Spam Protection**: Honeypot fields, verification questions
+- **Spam Protection**: Cross-browser extension verification, math CAPTCHA, honeypot fields
 - **Content Validation**: Blocks common spam patterns
 - **Origin Validation**: Only accepts requests from approved domains
+
+### Cross-Browser Extension Verification
+
+The feedback system includes sophisticated cross-browser extension verification to ensure only genuine users can submit feedback. The system works differently for Chrome and Firefox due to browser-specific limitations.
+
+#### Chrome Verification (Direct Messaging)
+- Uses `chrome.runtime.sendMessage()` with Web Store extension ID
+- Direct communication between website and extension via `externally_connectable`
+- Retrieves installation data including unique install token
+- Most reliable verification method
+
+#### Firefox Verification (Content Script Injection)
+- Content script (`web_verification.js`) injects extension data into web pages
+- Creates DOM markers and global variables for detection
+- Uses custom events and postMessage for communication
+- Multiple detection methods for reliability
+
+#### Implementation Details
+
+**Extension Setup:**
+```json
+// manifest.json (both browsers)
+"externally_connectable": {
+  "matches": [
+    "https://gptpins.dps.codes/*",
+    "http://localhost:8080/*"
+  ]
+},
+"content_scripts": [
+  {
+    "matches": ["https://gptpins.dps.codes/*"],
+    "js": ["web_verification.js"],
+    "run_at": "document_end"
+  }
+]
+```
+
+**Browser Detection:**
+```javascript
+function detectBrowserAndExtension() {
+  const ua = navigator.userAgent.toLowerCase();
+  if (ua.includes('firefox')) return { browser: 'firefox' };
+  if (ua.includes('chrome')) return { 
+    browser: 'chrome', 
+    extensionId: 'hdhoaialemjelcfjjmjkkhkffiggbnap' 
+  };
+}
+```
+
+**Verification Results:**
+- `VERIFIED`: Direct extension communication successful
+- `LIKELY`: Extension markers detected but no direct communication
+- `UNKNOWN`: No extension indicators, possible spam
+- `NONE`: No verification possible, likely spam
+
+#### Testing
+Use `website/test-cross-browser.html` to test verification on both browsers:
+```bash
+npm run dev:website
+# Visit http://localhost:8080/test-cross-browser.html
+```
 
 ### Setup (for developers)
 ```bash

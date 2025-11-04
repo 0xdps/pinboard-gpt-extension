@@ -37,7 +37,7 @@ https.get(testUrl, (res) => {
 console.log('\n3. Manual testing steps:');
 console.log('   📝 Visit your goodbye page');
 console.log('   🔍 Fill out the feedback form');
-console.log('   ✍️  Verification field: type "GPT Pinboard"');
+console.log('   🧮 Math verification: solve the simple addition problem');
 console.log('   📤 Submit and check for success message');
 console.log('   🐙 Verify GitHub issue was created');
 

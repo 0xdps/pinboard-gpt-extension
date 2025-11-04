@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cross-Browser Extension Detection Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+        .loading { background: #f0f0f0; color: #666; }
+        .verified { background: #d4edda; color: #155724; }
+        .likely { background: #fff3cd; color: #856404; }
+        .unknown { background: #f8d7da; color: #721c24; }
+        .details {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <h1>GPT Pinboard Extension Detection Test</h1>
+    <p>This page tests cross-browser extension detection functionality.</p>
+    
+    <div id="status" class="status loading">
+        🔄 Testing extension detection...
+    </div>
+    
+    <div id="details" class="details" style="display: none;"></div>
+    
+    <div>
+        <button onclick="runTest()">Run Test Again</button>
+        <button onclick="clearResults()">Clear Results</button>
+    </div>
+    
+    <h2>Browser Information</h2>
+    <div class="details" id="browserInfo"></div>
+    
+    <h2>Detection Methods</h2>
+    <div class="details" id="detectionLog"></div>
+
+    <script>
+        let detectionLog = [];
+        
+        function log(message) {
+            console.log(message);
+            detectionLog.push(`[${new Date().toLocaleTimeString()}] ${message}`);
+            updateDetectionLog();
+        }
+        
+        function updateDetectionLog() {
+            document.getElementById('detectionLog').textContent = detectionLog.join('\n');
+        }
+        
+        function updateBrowserInfo() {
+            const browserInfo = {
+                userAgent: navigator.userAgent,
+                platform: navigator.platform,
+                language: navigator.language,
+                cookieEnabled: navigator.cookieEnabled,
+                onLine: navigator.onLine,
+                chrome: typeof chrome !== 'undefined',
+                browser: typeof browser !== 'undefined'
+            };
+            document.getElementById('browserInfo').textContent = JSON.stringify(browserInfo, null, 2);
+        }
+        
+        // Detect browser type and extension information
+        function detectBrowserAndExtension() {
+            const userAgent = navigator.userAgent.toLowerCase();
+            
+            if (userAgent.includes('firefox')) {
+                return {
+                    browser: 'firefox',
+                    extensionId: null,
+                    webExtensionId: 'pingpt@devendrapratap.dev'
+                };
+            } else if (userAgent.includes('chrome') || userAgent.includes('chromium') || userAgent.includes('edge')) {
+                return {
+                    browser: 'chrome',
+                    extensionId: 'hdhoaialemjelcfjjmjkkhkffiggbnap',
+                    webExtensionId: null
+                };
+            } else if (userAgent.includes('safari')) {
+                return {
+                    browser: 'safari',
+                    extensionId: null,
+                    webExtensionId: null
+                };
+            } else {
+                return {
+                    browser: 'unknown',
+                    extensionId: null,
+                    webExtensionId: null
+                };
+            }
+        }
+        
+        // Test extension detection
+        async function checkExtensionContext() {
+            try {
+                const browserInfo = detectBrowserAndExtension();
+                log(`Browser detected: ${browserInfo.browser}`);
+                
+                return new Promise((resolve) => {
+                    const timeout = setTimeout(() => {
+                        log('Extension verification timeout - using basic checks');
+                        resolve(performBasicChecks());
+                    }, 3000);
+                    
+                    if (browserInfo.browser === 'chrome' && browserInfo.extensionId) {
+                        log('Trying Chrome extension messaging...');
+                        tryExtensionMessaging(browserInfo.extensionId, resolve, timeout, 'chrome');
+                    } else if (browserInfo.browser === 'firefox') {
+                        log('Trying Firefox extension detection...');
+                        tryFirefoxVerification(resolve, timeout);
+                    } else {
+                        clearTimeout(timeout);
+                        resolve(performBasicChecks());
+                    }
+                });
+            } catch (error) {
+                log(`Extension verification failed: ${error}`);
+                return performBasicChecks();
+            }
+        }
+        
+        // Chrome extension messaging
+        function tryExtensionMessaging(extensionId, resolve, timeout, browserType = 'chrome') {
+            if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
+                chrome.runtime.sendMessage(
+                    extensionId,
+                    { action: 'verify-installation' },
+                    (response) => {
+                        clearTimeout(timeout);
+                        if (chrome.runtime.lastError) {
+                            log(`Extension not found: ${chrome.runtime.lastError.message}`);
+                            resolve(performBasicChecks());
+                        } else if (response && response.verified) {
+                            log(`Extension verified via messaging: ${JSON.stringify(response)}`);
+                            resolve({
+                                type: 'verified-extension',
+                                extensionId: response.extensionId,
+                                installToken: response.installToken,
+                                installDate: response.installDate,
+                                version: response.version
+                            });
+                        } else {
+                            log('Extension messaging failed - no valid response');
+                            resolve(performBasicChecks());
+                        }
+                    }
+                );
+            } else {
+                clearTimeout(timeout);
+                log('Chrome runtime not available');
+                resolve(performBasicChecks());
+            }
+        }
+        
+        // Firefox extension verification
+        function tryFirefoxVerification(resolve, timeout) {
+            log('Starting Firefox extension detection methods...');
+            
+            // Method 1: Check if extension content script already injected data
+            if (window.pingptExtensionData) {
+                clearTimeout(timeout);
+                log('Firefox extension detected via injected data');
+                resolve({
+                    type: 'verified-extension',
+                    browser: 'firefox',
+                    detection: 'content-script',
+                    extensionId: window.pingptExtensionData.extensionId,
+                    installToken: window.pingptExtensionData.installToken,
+                    installDate: window.pingptExtensionData.installDate,
+                    version: window.pingptExtensionData.version
+                });
+                return;
+            }
+            
+            // Method 2: Check for extension marker element
+            const marker = document.getElementById('pingpt-extension-marker');
+            if (marker) {
+                clearTimeout(timeout);
+                log('Firefox extension detected via DOM marker');
+                resolve({
+                    type: 'verified-extension',
+                    browser: 'firefox',
+                    detection: 'dom-marker',
+                    extensionId: marker.getAttribute('data-extension-id'),
+                    installToken: marker.getAttribute('data-install-token'),
+                    installDate: marker.getAttribute('data-install-date'),
+                    version: marker.getAttribute('data-version')
+                });
+                return;
+            }
+            
+            // Method 3: Listen for the extension detection event
+            const eventListener = (event) => {
+                if (event.type === 'pingptExtensionDetected') {
+                    clearTimeout(timeout);
+                    document.removeEventListener('pingptExtensionDetected', eventListener);
+                    log('Firefox extension detected via custom event');
+                    resolve({
+                        type: 'verified-extension',
+                        browser: 'firefox',
+                        detection: 'custom-event',
+                        extensionId: event.detail.extensionId,
+                        installToken: event.detail.installToken,
+                        installDate: event.detail.installDate,
+                        version: event.detail.version
+                    });
+                }
+            };
+            document.addEventListener('pingptExtensionDetected', eventListener);
+            
+            // Method 4: Try postMessage communication
+            log('Trying postMessage communication...');
+            window.postMessage({
+                type: 'pingpt-verify-extension'
+            }, window.location.origin);
+            
+            const messageListener = (event) => {
+                if (event.origin !== window.location.origin) return;
+                if (event.data && event.data.type === 'pingpt-extension-verified') {
+                    clearTimeout(timeout);
+                    window.removeEventListener('message', messageListener);
+                    document.removeEventListener('pingptExtensionDetected', eventListener);
+                    log('Firefox extension detected via postMessage');
+                    resolve({
+                        type: 'verified-extension',
+                        browser: 'firefox',
+                        detection: 'post-message',
+                        extensionId: event.data.data.extensionId,
+                        installToken: event.data.data.installToken,
+                        installDate: event.data.data.installDate,
+                        version: event.data.data.version
+                    });
+                }
+            };
+            window.addEventListener('message', messageListener);
+            
+            // Fallback after timeout
+            setTimeout(() => {
+                clearTimeout(timeout);
+                document.removeEventListener('pingptExtensionDetected', eventListener);
+                window.removeEventListener('message', messageListener);
+                log('Firefox extension detection timeout - using basic checks');
+                resolve(performBasicChecks());
+            }, 2500);
+        }
+        
+        // Basic fallback checks
+        function performBasicChecks() {
+            log('Performing basic fallback checks...');
+            
+            // Check referrer
+            const hasValidReferrer = document.referrer && 
+                                   (document.referrer.includes('chatgpt.com') || 
+                                    document.referrer.includes('chat.openai.com'));
+            
+            if (hasValidReferrer) {
+                log(`Valid referrer found: ${document.referrer}`);
+                return {
+                    type: 'likely-extension',
+                    detection: 'referrer-based',
+                    referrer: document.referrer
+                };
+            }
+            
+            log('No extension or referrer indicators found');
+            return {
+                type: 'unknown',
+                detection: 'no-indicators'
+            };
+        }
+        
+        // Update status display
+        function updateStatus(result) {
+            const statusEl = document.getElementById('status');
+            const detailsEl = document.getElementById('details');
+            
+            detailsEl.style.display = 'block';
+            detailsEl.textContent = JSON.stringify(result, null, 2);
+            
+            switch (result.type) {
+                case 'verified-extension':
+                    statusEl.className = 'status verified';
+                    statusEl.textContent = '✅ Extension Verified - Genuine uninstall detected';
+                    break;
+                case 'likely-extension':
+                    statusEl.className = 'status likely';
+                    statusEl.textContent = '⚠️ Likely Extension User - Probable genuine feedback';
+                    break;
+                case 'unknown':
+                    statusEl.className = 'status unknown';
+                    statusEl.textContent = '❓ Unknown Source - Could be spam or genuine';
+                    break;
+                default:
+                    statusEl.className = 'status unknown';
+                    statusEl.textContent = '❌ No Extension Detected - Likely spam';
+            }
+        }
+        
+        // Main test function
+        async function runTest() {
+            detectionLog = [];
+            document.getElementById('status').className = 'status loading';
+            document.getElementById('status').textContent = '🔄 Testing extension detection...';
+            document.getElementById('details').style.display = 'none';
+            
+            log('Starting extension detection test...');
+            
+            const result = await checkExtensionContext();
+            log(`Final result: ${JSON.stringify(result)}`);
+            
+            updateStatus(result);
+        }
+        
+        function clearResults() {
+            detectionLog = [];
+            updateDetectionLog();
+            document.getElementById('status').className = 'status loading';
+            document.getElementById('status').textContent = 'Ready to test...';
+            document.getElementById('details').style.display = 'none';
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            updateBrowserInfo();
+            runTest();
+        });
+    </script>
+</body>
+</html>
