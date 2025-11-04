@@ -85,4 +85,36 @@
     <priority>0.3</priority>
   </url>
 
+  <!-- Privacy Policy Page -->
+  <url>
+    <loc>https://gptpins.dps.codes/privacy.html</loc>
+    <lastmod>2025-11-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Support Page -->
+  <url>
+    <loc>https://gptpins.dps.codes/support.html</loc>
+    <lastmod>2025-11-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Welcome Page -->
+  <url>
+    <loc>https://gptpins.dps.codes/welcome.html</loc>
+    <lastmod>2025-11-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- Goodbye/Uninstall Page -->
+  <url>
+    <loc>https://gptpins.dps.codes/goodbye.html</loc>
+    <lastmod>2025-11-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>
+
 </urlset>
