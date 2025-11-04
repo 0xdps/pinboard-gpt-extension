@@ -57,6 +57,9 @@ gpt-pinboard-extension/
 ├── 📁 build/             # Build outputs (gitignored)
 │   ├── chrome/           # Chrome extension build
 │   └── firefox/          # Firefox extension build
+├── 📁 pack/              # Distribution packages (gitignored)
+│   ├── pingpt-chrome-v{version}.zip
+│   └── pingpt-firefox-v{version}.zip
 └── 📋 Configuration files
     ├── package.json      # npm scripts and dependencies
     ├── vercel.json       # Deployment configuration
@@ -391,7 +394,7 @@ npm run build
 
 # Create distribution packages
 npm run pack
-# Creates: pingpt-chrome-v{version}.zip and pingpt-firefox-v{version}.zip
+# Creates: pack/pingpt-chrome-v{version}.zip and pack/pingpt-firefox-v{version}.zip
 ```
 
 ### Store Submission Process

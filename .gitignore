@@ -17,8 +17,9 @@ node_modules/
 # Build outputs (if you add a build process)
 dist/
 build/
+pack/
 
-# Archive files
+# Archive files (except in pack folder)
 *.zip
 *.crx
 *.pem
