@@ -436,8 +436,8 @@
             
             const additionalFeedback = document.getElementById('additionalFeedback').value;
             
-            // In a real implementation, this would send data to a server
-            // For now, we'll just show the thank you message
+            // Note: To respect user privacy, feedback is logged locally only
+            // No data is transmitted to external servers
             console.log('Uninstall Feedback:', {
                 reasons: reasons,
                 additionalFeedback: additionalFeedback,

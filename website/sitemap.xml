@@ -8,7 +8,7 @@
   <!-- Homepage -->
   <url>
     <loc>https://gptpins.dps.codes/</loc>
-    <lastmod>2025-11-02</lastmod>
+    <lastmod>2025-11-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -16,7 +16,7 @@
   <!-- Features Section -->
   <url>
     <loc>https://gptpins.dps.codes/#features</loc>
-    <lastmod>2025-11-02</lastmod>
+    <lastmod>2025-11-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -24,7 +24,7 @@
   <!-- How It Works Section -->
   <url>
     <loc>https://gptpins.dps.codes/#how-it-works</loc>
-    <lastmod>2025-11-02</lastmod>
+    <lastmod>2025-11-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -32,7 +32,7 @@
   <!-- Installation Section -->
   <url>
     <loc>https://gptpins.dps.codes/#install</loc>
-    <lastmod>2025-11-02</lastmod>
+    <lastmod>2025-11-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
@@ -40,7 +40,7 @@
   <!-- GitHub Repository -->
   <url>
     <loc>https://github.com/0xdps/gpt-pinboard-extension</loc>
-    <lastmod>2025-11-02</lastmod>
+    <lastmod>2025-11-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -48,7 +48,7 @@
   <!-- Documentation -->
   <url>
     <loc>https://github.com/0xdps/gpt-pinboard-extension/blob/main/README.md</loc>
-    <lastmod>2025-11-02</lastmod>
+    <lastmod>2025-11-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -56,7 +56,7 @@
   <!-- Development Guide -->
   <url>
     <loc>https://github.com/0xdps/gpt-pinboard-extension/blob/main/DEVELOPMENT.md</loc>
-    <lastmod>2025-11-02</lastmod>
+    <lastmod>2025-11-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -64,7 +64,7 @@
   <!-- Changelog -->
   <url>
     <loc>https://github.com/0xdps/gpt-pinboard-extension/blob/main/CHANGELOG.md</loc>
-    <lastmod>2025-11-02</lastmod>
+    <lastmod>2025-11-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.4</priority>
   </url>
@@ -72,7 +72,7 @@
   <!-- Privacy Policy -->
   <url>
     <loc>https://github.com/0xdps/gpt-pinboard-extension/blob/main/PRIVACY.md</loc>
-    <lastmod>2025-11-02</lastmod>
+    <lastmod>2025-11-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
   </url>
