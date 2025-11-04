@@ -47,7 +47,7 @@
 
   <!-- Documentation -->
   <url>
-    <loc>https://github.com/0xdps/gpt-pinboard-extension/blob/main/README.md</loc>
+    <loc>https://github.com/0xdps/gpt-pinboard-extension/blob/trunk/README.md</loc>
     <lastmod>2025-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
@@ -55,7 +55,7 @@
 
   <!-- Development Guide -->
   <url>
-    <loc>https://github.com/0xdps/gpt-pinboard-extension/blob/main/DEVELOPMENT.md</loc>
+    <loc>https://github.com/0xdps/gpt-pinboard-extension/blob/trunk/DEVELOPMENT.md</loc>
     <lastmod>2025-11-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
@@ -63,7 +63,7 @@
 
   <!-- Changelog -->
   <url>
-    <loc>https://github.com/0xdps/gpt-pinboard-extension/blob/main/CHANGELOG.md</loc>
+    <loc>https://github.com/0xdps/gpt-pinboard-extension/blob/trunk/CHANGELOG.md</loc>
     <lastmod>2025-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.4</priority>
@@ -71,7 +71,7 @@
 
   <!-- Privacy Policy -->
   <url>
-    <loc>https://github.com/0xdps/gpt-pinboard-extension/blob/main/PRIVACY.md</loc>
+    <loc>https://github.com/0xdps/gpt-pinboard-extension/blob/trunk/PRIVACY.md</loc>
     <lastmod>2025-11-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
@@ -79,7 +79,7 @@
 
   <!-- Release Guide -->
   <url>
-    <loc>https://github.com/0xdps/gpt-pinboard-extension/blob/main/RELEASE.md</loc>
+    <loc>https://github.com/0xdps/gpt-pinboard-extension/blob/trunk/RELEASE.md</loc>
     <lastmod>2025-11-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
