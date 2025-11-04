@@ -7,7 +7,17 @@
 [![Version](https://img.shields.io/badge/version-1.1.1-green)](CHANGELOG.md)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 [![Website](https://img.shields.io/badge/Website-Live-green)](https://gptpins.dps.codes)
-[![Deploy](https://img.shields.io/badge/Deploy%20to-Vercel-black)](VERCEL.md)
+
+## 📖 Table of Contents
+- [✨ Features](#-features)
+- [🚀 Quick Start](#-quick-start)
+- [📖 Usage](#-usage)
+- [🌐 Website & Deployment](#-website--deployment)
+- [📈 Feedback System Setup](#-feedback-system-setup)
+- [🛠️ Development](#️-development)
+- [🔧 Technical Stack](#-technical-stack)
+- [🆘 Support & Troubleshooting](#-support--troubleshooting)
+- [📄 License](#-license)
 
 ## ✨ Features
 
@@ -62,59 +72,135 @@ npm install
 - **Export/Import** - Backup pins or sync across devices
 - **Delete** - Click "Delete" to remove unwanted pins
 
-## 🌐 Website
+## 🌐 Website & Deployment
 
 Visit our official website: **[gptpins.dps.codes](https://gptpins.dps.codes)**
 
 The website includes:
-- Interactive feature showcase
-- Installation guides
-- Usage tutorials  
-- Developer documentation
+- Interactive feature showcase with browser detection
+- Installation guides for Chrome, Firefox, Safari, Edge
+- Usage tutorials and developer documentation
+- User feedback collection system
 
-### Run Website Locally
+### Deploy to Vercel
+
 ```bash
+# Deploy to production
+npm run deploy
+
+# Preview deployment  
+npm run deploy:preview
+
+# Build website locally
+npm run build:website
+
+# Run website locally
 npm run dev:website
 # Visit: http://localhost:8080
 ```
 
+### Website Features
+- **Browser Detection**: Shows appropriate install button for user's browser
+- **Responsive Design**: Works on desktop and mobile
+- **Feedback System**: Collects user feedback via GitHub Issues
+- **Progressive Enhancement**: Works with JavaScript disabled
+
+## � Feedback System Setup
+
+The website includes a comprehensive feedback system that collects user feedback via GitHub Issues.
+
+### ⚡ Quick Setup (5 minutes)
+
+#### 1. Create GitHub Token
+```bash
+# Open GitHub settings
+open https://github.com/settings/personal-access-tokens/new
+
+# Configure fine-grained token:
+# - Name: GPT Pinboard Feedback
+# - Repository: gpt-pinboard-extension (selected repositories only)
+# - Permissions: Issues (Read and write), Metadata (Read)
+```
+
+#### 2. Add to Vercel
+```bash
+vercel env add GITHUB_TOKEN
+# Paste your token when prompted
+```
+
+#### 3. Deploy & Test
+```bash
+npm run deploy
+npm run feedback:test  # Test the setup
+```
+
+### Security Features
+- **Rate Limiting**: 1 submission per 5 minutes per IP
+- **Spam Protection**: Honeypot fields, verification questions, content validation
+- **Origin Validation**: Only accepts requests from approved domains
+- **Content Filtering**: Blocks common spam patterns and malicious content
+
+### Feedback Management
+```bash
+npm run feedback:issues  # View all feedback issues
+npm run feedback:logs    # Monitor submissions
+npm run feedback:env     # Check environment setup
+```
+
 ## 🛠️ Development
 
-See [DEVELOPMENT.md](DEVELOPMENT.md) for:
-- Setting up development environment
-- Build commands and workflow
-- Debugging tools and techniques
-- Architecture overview
-- Contributing guidelines
+For detailed development instructions, see **[DEVELOPMENT.md](DEVELOPMENT.md)**.
 
 ### Quick Commands
 
 ```bash
+npm install          # Install dependencies
 npm run build        # Generate icons and assets
-npm run pack         # Package extension for Chrome Web Store
+npm run dev:chrome   # Development build for Chrome
+npm run dev:firefox  # Development build for Firefox
 npm run dev:website  # Run website locally
+npm run pack         # Package extension for stores
 npm run release      # Build and package in one step
+
+# Feedback system commands
+npm run feedback:setup  # Setup feedback system
+npm run feedback:test   # Test feedback system
+npm run feedback:logs   # View feedback logs
 ```
+
+### Quick Setup for Contributors
+
+```bash
+# 1. Clone repository
+git clone https://github.com/0xdps/gpt-pinboard-extension.git
+cd gpt-pinboard-extension
+
+# 2. Install dependencies
+npm install
+
+# 3. Build extension
+npm run build
+
+# 4. Load in browser
+# Chrome: Load build/chrome/ folder in chrome://extensions/
+# Firefox: Load build/firefox/ folder in about:debugging
+```
+
+See [DEVELOPMENT.md](DEVELOPMENT.md) for complete setup, testing, and contribution guidelines.
 
 ## 📚 Documentation
 
 ### Quick Navigation
 
-| For... | Document | Purpose |
-|--------|----------|---------|
-| **Users** | [README.md](#) | Features, installation, usage guide |
-| **Users** | [CHANGELOG.md](CHANGELOG.md) | Version history, what's new |
-| **Developers** | [DEVELOPMENT.md](DEVELOPMENT.md) | Setup, debugging, architecture, contributing |
-| **Publishers** | [RELEASE.md](RELEASE.md) | Chrome Web Store publishing guide |
-| **Legal** | [PRIVACY.md](PRIVACY.md) | Privacy policy and permission justifications |
-
-### I want to...
-- **Install the extension** → [Quick Start](#-quick-start)
-- **Fix a problem** → [Support & Troubleshooting](#-support--troubleshooting)
-- **Learn features** → [Usage Guide](#-usage)
-- **Contribute code** → [DEVELOPMENT.md](DEVELOPMENT.md#contributing)
-- **Report a bug** → [GitHub Issues](https://github.com/devendrapratap02/pingpt-chrome-extension/issues)
-- **Publish to store** → [RELEASE.md](RELEASE.md)
+| Task | Section | Purpose |
+|------|---------|---------|
+| **Install extension** | [Quick Start](#-quick-start) | Get started in 2 minutes |
+| **Setup feedback system** | [Feedback System](#-feedback-system-setup) | Configure GitHub Issues integration |
+| **Deploy website** | [Website & Deployment](#-website--deployment) | Deploy to Vercel |
+| **Development** | [Development](#️-development) | Build, test, contribute |
+| **Get help** | [Support](#-support--troubleshooting) | Troubleshooting guide |
+| **Legal** | [PRIVACY.md](PRIVACY.md) | Privacy policy |
+| **Changes** | [CHANGELOG.md](CHANGELOG.md) | Version history |
 
 ## 🎯 Use Cases
 
@@ -132,15 +218,7 @@ npm run release      # Build and package in one step
 - **XPath + Text Anchors** - Dual message location system
 - **CSP Compliant** - No eval(), no remote scripts
 
-## 🤝 Contributing
 
-Contributions welcome! See [DEVELOPMENT.md](DEVELOPMENT.md) for guidelines.
-
-1. Fork the repository
-2. Create feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'feat: add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
-5. Open Pull Request
 
 ## 📄 License
 
@@ -185,28 +263,11 @@ MIT License - see [LICENSE](LICENSE) file
 
 For more help, check out our [GitHub Issues](https://github.com/devendrapratap02/pingpt-chrome-extension/issues) or email us directly.
 
-## � Website Deployment
-
-The project includes a promotional website that can be deployed to Vercel:
-
-```bash
-# Deploy to production
-npm run deploy
-
-# Preview deployment  
-npm run deploy:preview
-
-# Build website locally
-npm run build:website
-```
-
-See [VERCEL.md](VERCEL.md) for complete deployment instructions.
-
-## �🙏 Acknowledgments
+## 🙏 Acknowledgments
 
 Built for the ChatGPT community. Special thanks to all contributors and users providing feedback!
 
 ---
 
-**Made with ❤️ by [Devendra Pratap Singh](https://github.com/devendrapratap02)**
+**Made with ❤️ by [Devendra Pratap Singh](https://github.com/0xdps)**
 

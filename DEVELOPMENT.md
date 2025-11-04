@@ -1,37 +1,87 @@
-# Development Guide
+# 🛠️ Development Guide
 
-## 🛠️ Setting Up Development Environment
+## � Table of Contents
+- [🚀 Quick Setup](#-quick-setup)
+- [🏗️ Project Structure](#️-project-structure)
+- [🔧 Build System](#-build-system)
+- [🌐 Website Development](#-website-development)
+- [📈 Feedback System](#-feedback-system)
+- [🧪 Testing](#-testing)
+- [📦 Packaging & Release](#-packaging--release)
+- [🤝 Contributing](#-contributing)
+
+## 🚀 Quick Setup
 
 ### Prerequisites
 - Node.js 16+ and npm
 - Git
-- Chrome/Chromium browser
+- Chrome/Chromium or Firefox browser
 
 ### Installation
 
 ```bash
 # Clone repository
-git clone https://github.com/devendrapratap02/pingpt-chrome-extension.git
-cd pingpt-chrome-extension
+git clone https://github.com/0xdps/gpt-pinboard-extension.git
+cd gpt-pinboard-extension
 
 # Install dependencies
 npm install
 
 # Build icons and assets
 npm run build
+
+# Load extension in browser (see browser-specific instructions below)
 ```
 
-### Loading Extension in Chrome
+## 🏗️ Project Structure
 
-1. Open Chrome and navigate to `chrome://extensions/`
-2. Enable **Developer Mode** (toggle in top-right)
-3. Click **Load unpacked**
-4. Select the project folder
-5. Extension should now be loaded
+```
+gpt-pinboard-extension/
+├── 📁 extension/           # Extension source code
+│   ├── common/           # Shared code (JS, HTML, CSS, icons)
+│   ├── chrome/           # Chrome-specific manifest.json
+│   └── firefox/          # Firefox-specific manifest.json
+├── 📁 website/            # Static promotional website
+│   ├── index.html        # Main page with browser detection
+│   ├── goodbye.html      # Feedback collection page
+│   ├── support.html      # Help and support page
+│   ├── css/styles.css    # Responsive website styles
+│   ├── js/main.js        # Browser detection & feedback
+│   └── images/           # Website assets (generated)
+├── 📁 api/               # Vercel serverless functions
+│   └── feedback.js       # GitHub Issues integration
+├── 📁 assets/            # Source images for icon generation
+├── 📁 scripts/           # Build and utility scripts
+│   ├── generate-assets.js # Icon generation
+│   └── test-feedback.js  # Feedback system testing
+├── 📁 build/             # Build outputs (gitignored)
+│   ├── chrome/           # Chrome extension build
+│   └── firefox/          # Firefox extension build
+└── 📋 Configuration files
+    ├── package.json      # npm scripts and dependencies
+    ├── vercel.json       # Deployment configuration
+    └── .env.example      # Environment variables template
+```
 
-### Multi-Browser Development
+### Loading Extension in Browser
 
-This project supports both **Chrome** and **Firefox** from a single codebase.
+**Chrome:**
+1. Run `npm run build:chrome`
+2. Open `chrome://extensions/`
+3. Enable **Developer Mode** (toggle in top-right)
+4. Click **Load unpacked**
+5. Select the `build/chrome/` folder
+
+**Firefox:**
+1. Run `npm run build:firefox`
+2. Open `about:debugging#/runtime/this-firefox`
+3. Click **Load Temporary Add-on**
+4. Select any file in `build/firefox/` folder
+
+## 🔧 Build System
+
+### Multi-Browser Support
+This project supports **Chrome** and **Firefox** from a single codebase with browser-specific builds.
 
 #### Directory Structure
 
@@ -163,6 +213,82 @@ python3 -m http.server 8080
 
 The website showcases the extension features, installation instructions, and usage guides in a professional, modern design with comprehensive SEO optimization.
 
+## 🌐 Website Development
+
+### Browser Detection System
+The website automatically detects the user's browser and shows appropriate install options:
+
+```javascript
+// main.js implements:
+- Chrome/Edge detection → Shows Chrome Web Store button
+- Firefox detection → Shows Firefox Add-ons button  
+- Safari detection → Shows alternative options
+- Dynamic install step reordering
+```
+
+### Pages Structure
+- **`index.html`** - Main landing page with features, installation
+- **`goodbye.html`** - Feedback collection for uninstalled users
+- **`support.html`** - Help documentation and troubleshooting
+- **Responsive design** - Works on desktop, tablet, mobile
+
+### SEO Optimization
+- **`sitemap.xml`** - Search engine sitemap with priorities
+- **`sitemap.xsl`** - Visual sitemap stylesheet  
+- **`robots.txt`** - Crawler directives and policies
+- **Meta tags** - Proper Open Graph and Twitter Card tags
+- **Structured data** - Schema.org markup for rich snippets
+
+### Local Development
+```bash
+npm run dev:website  # Start development server on localhost:8080
+npm run build:website # Build assets for production
+```
+
+## 📈 Feedback System
+
+### Overview
+Comprehensive feedback collection system integrated with GitHub Issues for user feedback management.
+
+### Architecture
+```
+User fills form → Vercel API → GitHub Issues → Automatic labeling & formatting
+```
+
+### Security Features
+- **Rate Limiting**: 1 submission per 5 minutes per IP
+- **Spam Protection**: Honeypot fields, verification questions
+- **Content Validation**: Blocks common spam patterns
+- **Origin Validation**: Only accepts requests from approved domains
+
+### Setup (for developers)
+```bash
+# 1. Create fine-grained GitHub token
+open https://github.com/settings/personal-access-tokens/new
+# Permissions: Issues (Read/Write), Metadata (Read)
+# Repository: gpt-pinboard-extension only
+
+# 2. Add to Vercel environment
+vercel env add GITHUB_TOKEN
+
+# 3. Deploy and test
+npm run deploy
+npm run feedback:test
+```
+
+### API Endpoint
+- **Path**: `/api/feedback.js`
+- **Method**: POST
+- **Response**: Creates formatted GitHub issue with user feedback
+- **Error Handling**: Graceful fallback to email/GitHub links
+
+### Management Commands
+```bash
+npm run feedback:issues  # View all feedback on GitHub
+npm run feedback:logs    # Monitor Vercel function logs
+npm run feedback:env     # Check environment configuration
+```
+
 ## 🔍 Debugging
 
 ### Browser Console Debugging
@@ -198,6 +324,121 @@ await GPT_Pinboard_Debug.clearAllPins()
 1. Right-click extension icon
 2. Select **Inspect popup**
 3. Check Console for errors
+
+## 🧪 Testing
+
+### Extension Testing
+```bash
+# Build and test Chrome extension
+npm run build:chrome
+# Load build/chrome/ in chrome://extensions/
+
+# Build and test Firefox extension  
+npm run build:firefox
+# Load build/firefox/ in about:debugging
+
+# Test both builds
+npm run build && echo "Test both builds manually"
+```
+
+### Website Testing
+```bash
+# Test website locally
+npm run dev:website
+# Visit http://localhost:8080
+
+# Test feedback system
+npm run feedback:test
+# Follow prompted test scenarios
+```
+
+### Manual Testing Checklist
+
+#### Extension Functionality
+- [ ] Pin messages using hover button
+- [ ] Pin messages using right-click menu
+- [ ] Pin messages using quick pin button
+- [ ] Search pins by name, content, tags
+- [ ] Edit pin names and tags
+- [ ] Delete pins
+- [ ] Export/import pins
+- [ ] Jump to original message (highlight works)
+
+#### Website Features  
+- [ ] Browser detection shows correct install button
+- [ ] All install buttons work correctly
+- [ ] Responsive design on mobile/tablet
+- [ ] Feedback form submits successfully
+- [ ] Support page loads and functions
+
+#### Cross-Browser Compatibility
+- [ ] Chrome extension loads and functions
+- [ ] Firefox extension loads and functions
+- [ ] Website works in Chrome, Firefox, Safari, Edge
+
+## 📦 Packaging & Release
+
+### Build for Distribution
+```bash
+# Clean previous builds
+npm run clean
+
+# Generate fresh assets
+npm run build:assets  
+
+# Build both browser versions
+npm run build
+
+# Create distribution packages
+npm run pack
+# Creates: pingpt-chrome-v{version}.zip and pingpt-firefox-v{version}.zip
+```
+
+### Store Submission Process
+1. **Test thoroughly** on clean browser profile
+2. **Update version** in both manifest files
+3. **Update CHANGELOG.md** with new features/fixes
+4. **Run full build** with `npm run release`
+5. **Submit ZIP files** to respective browser stores
+6. **Create GitHub release** with changelog
+
+### Version Management
+- Follow semantic versioning (major.minor.patch)
+- Update version in both `chrome/manifest.json` and `firefox/manifest.json`
+- Keep versions synchronized between browsers
+- Document changes in CHANGELOG.md
+
+## 🤝 Contributing
+
+### Getting Started
+1. Fork the repository
+2. Create feature branch: `git checkout -b feature/amazing-feature`
+3. Make changes following the coding standards below
+4. Test thoroughly (extension + website + feedback system)
+5. Commit: `git commit -m 'feat: add amazing feature'`
+6. Push: `git push origin feature/amazing-feature`
+7. Open Pull Request with detailed description
+
+### Coding Standards
+- **JavaScript**: Use modern ES6+ syntax, avoid var
+- **HTML**: Semantic markup, accessibility attributes
+- **CSS**: Use CSS custom properties, mobile-first responsive
+- **Comments**: Document complex logic and API interactions
+- **File naming**: Use kebab-case for files, camelCase for variables
+
+### Pull Request Guidelines
+- Include description of changes and motivation
+- Reference any related issues with #issue-number
+- Add screenshots for UI changes
+- Test on both Chrome and Firefox
+- Update documentation if needed
+
+### Development Workflow
+1. **Feature branches** - Create from main branch
+2. **Small commits** - Atomic changes with clear messages
+3. **Test locally** - Both extension and website functionality
+4. **Update docs** - Keep DEVELOPMENT.md and README.md current
+5. **Code review** - Get feedback before merging
 4. Look for initialization messages
 
 ### Common Issues

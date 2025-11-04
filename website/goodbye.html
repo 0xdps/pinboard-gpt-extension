@@ -56,18 +56,150 @@
 
             <div style="max-width: 900px; margin: 0 auto;">
                 <div style="line-height: 1.8; color: #333;">
-                    <div style="background: #f8f9fa; padding: 2rem; border-radius: 12px; margin-bottom: 2rem; text-align: center;">
-                        <h2 style="font-size: 1.8rem; margin-bottom: 1rem; color: #1a1a1a;">Your Feedback Matters</h2>
-                        <p style="font-size: 1.1rem; color: #666; margin-bottom: 1.5rem;">
+                    <div style="background: #f8f9fa; padding: 2rem; border-radius: 12px; margin-bottom: 2rem;">
+                        <h2 style="font-size: 1.8rem; margin-bottom: 1rem; color: #1a1a1a; text-align: center;">Your Feedback Matters</h2>
+                        <p style="font-size: 1.1rem; color: #666; margin-bottom: 2rem; text-align: center;">
                             We're constantly working to improve. Help us make GPT Pinboard better by sharing why you uninstalled.
                         </p>
-                        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-                            <a href="https://github.com/0xdps/gpt-pinboard-extension/discussions/new?category=feedback" 
-                               style="display: inline-block; padding: 1rem 2rem; background: #10a37f; color: white; border-radius: 8px; text-decoration: none; font-weight: 600;" 
-                               target="_blank">Share Feedback</a>
-                            <a href="https://github.com/0xdps/gpt-pinboard-extension/issues/new" 
-                               style="display: inline-block; padding: 1rem 2rem; background: white; color: #10a37f; border: 2px solid #10a37f; border-radius: 8px; text-decoration: none; font-weight: 600;" 
-                               target="_blank">Report a Problem</a>
+                        
+                        <!-- Feedback Survey Form -->
+                        <form id="feedbackForm" style="max-width: 600px; margin: 0 auto;">
+                            <div style="margin-bottom: 2rem;">
+                                <h3 style="font-size: 1.2rem; margin-bottom: 1rem; color: #1a1a1a;">What were the main reasons for uninstalling? (Check all that apply)</h3>
+                                <div style="display: grid; gap: 0.75rem; text-align: left;">
+                                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem; border-radius: 4px; transition: background-color 0.2s;">
+                                        <input type="checkbox" name="reasons" value="too-complex" style="margin: 0;">
+                                        <span>Too complex or hard to use</span>
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem; border-radius: 4px; transition: background-color 0.2s;">
+                                        <input type="checkbox" name="reasons" value="bugs" style="margin: 0;">
+                                        <span>Encountered bugs or technical issues</span>
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem; border-radius: 4px; transition: background-color 0.2s;">
+                                        <input type="checkbox" name="reasons" value="missing-features" style="margin: 0;">
+                                        <span>Missing features I needed</span>
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem; border-radius: 4px; transition: background-color 0.2s;">
+                                        <input type="checkbox" name="reasons" value="performance" style="margin: 0;">
+                                        <span>Performance issues (slow, laggy)</span>
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem; border-radius: 4px; transition: background-color 0.2s;">
+                                        <input type="checkbox" name="reasons" value="privacy-concerns" style="margin: 0;">
+                                        <span>Privacy or security concerns</span>
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem; border-radius: 4px; transition: background-color 0.2s;">
+                                        <input type="checkbox" name="reasons" value="dont-use-chatgpt" style="margin: 0;">
+                                        <span>Don't use ChatGPT anymore</span>
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem; border-radius: 4px; transition: background-color 0.2s;">
+                                        <input type="checkbox" name="reasons" value="found-alternative" style="margin: 0;">
+                                        <span>Found a better alternative</span>
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem; border-radius: 4px; transition: background-color 0.2s;">
+                                        <input type="checkbox" name="reasons" value="temporary" style="margin: 0;">
+                                        <span>Temporary uninstall (testing, troubleshooting)</span>
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem; border-radius: 4px; transition: background-color 0.2s;">
+                                        <input type="checkbox" name="reasons" value="other" style="margin: 0;">
+                                        <span>Other reason</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div style="margin-bottom: 2rem;">
+                                <h3 style="font-size: 1.2rem; margin-bottom: 1rem; color: #1a1a1a;">How would you rate your overall experience?</h3>
+                                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                                    <label style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem; cursor: pointer; padding: 1rem; border: 2px solid #e0e0e0; border-radius: 8px; transition: all 0.2s;">
+                                        <input type="radio" name="rating" value="1" style="margin: 0;">
+                                        <span style="font-size: 1.5rem;">😞</span>
+                                        <span style="font-size: 0.9rem;">Poor</span>
+                                    </label>
+                                    <label style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem; cursor: pointer; padding: 1rem; border: 2px solid #e0e0e0; border-radius: 8px; transition: all 0.2s;">
+                                        <input type="radio" name="rating" value="2" style="margin: 0;">
+                                        <span style="font-size: 1.5rem;">😐</span>
+                                        <span style="font-size: 0.9rem;">Fair</span>
+                                    </label>
+                                    <label style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem; cursor: pointer; padding: 1rem; border: 2px solid #e0e0e0; border-radius: 8px; transition: all 0.2s;">
+                                        <input type="radio" name="rating" value="3" style="margin: 0;">
+                                        <span style="font-size: 1.5rem;">🙂</span>
+                                        <span style="font-size: 0.9rem;">Good</span>
+                                    </label>
+                                    <label style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem; cursor: pointer; padding: 1rem; border: 2px solid #e0e0e0; border-radius: 8px; transition: all 0.2s;">
+                                        <input type="radio" name="rating" value="4" style="margin: 0;">
+                                        <span style="font-size: 1.5rem;">😊</span>
+                                        <span style="font-size: 0.9rem;">Great</span>
+                                    </label>
+                                    <label style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem; cursor: pointer; padding: 1rem; border: 2px solid #e0e0e0; border-radius: 8px; transition: all 0.2s;">
+                                        <input type="radio" name="rating" value="5" style="margin: 0;">
+                                        <span style="font-size: 1.5rem;">🤩</span>
+                                        <span style="font-size: 0.9rem;">Excellent</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div style="margin-bottom: 2rem;">
+                                <h3 style="font-size: 1.2rem; margin-bottom: 1rem; color: #1a1a1a;">Any additional feedback or suggestions?</h3>
+                                <textarea 
+                                    name="feedback" 
+                                    rows="4" 
+                                    placeholder="Help us understand what we could do better or what features would bring you back..."
+                                    style="width: 100%; padding: 1rem; border: 2px solid #e0e0e0; border-radius: 8px; font-family: inherit; font-size: 1rem; resize: vertical; transition: border-color 0.2s;"
+                                ></textarea>
+                            </div>
+
+                            <div style="margin-bottom: 1.5rem;">
+                                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                    <input type="checkbox" name="contact" value="yes" style="margin: 0;">
+                                    <span style="font-size: 0.9rem; color: #666;">I'm open to being contacted about my feedback</span>
+                                </label>
+                            </div>
+
+                            <!-- Honeypot field (hidden from users, bots might fill it) -->
+                            <div style="position: absolute; left: -9999px; opacity: 0; pointer-events: none;">
+                                <input type="text" name="website" placeholder="Leave this empty" tabindex="-1" autocomplete="off">
+                            </div>
+
+                            <!-- Simple verification -->
+                            <div style="margin-bottom: 1.5rem; background: #f0f8ff; padding: 1rem; border-radius: 6px; border-left: 3px solid #007bff;">
+                                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: #333;">
+                                    Simple verification: What browser extension did you uninstall? (helps prevent spam)
+                                </label>
+                                <input 
+                                    type="text" 
+                                    name="verification" 
+                                    placeholder="e.g., GPT Pinboard"
+                                    style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9rem;"
+                                    required
+                                >
+                                <small style="color: #666; font-size: 0.8rem;">This helps us verify you're providing genuine feedback</small>
+                            </div>
+
+                            <div style="text-align: center;">
+                                <button 
+                                    type="submit" 
+                                    style="padding: 1rem 2rem; background: #10a37f; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background-color 0.2s;"
+                                    onmouseover="this.style.background='#0d8968'" 
+                                    onmouseout="this.style.background='#10a37f'"
+                                >
+                                    Submit Feedback
+                                </button>
+                                <div id="feedback-status" style="margin-top: 1rem; padding: 0.75rem; border-radius: 6px; display: none;"></div>
+                            </div>
+                        </form>
+
+                        <!-- Alternative feedback options -->
+                        <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #e0e0e0; text-align: center;">
+                            <p style="font-size: 0.9rem; color: #666; margin-bottom: 1rem;">Prefer other ways to share feedback?</p>
+                            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                                <a href="https://github.com/0xdps/gpt-pinboard-extension/discussions/new?category=feedback" 
+                                   style="display: inline-block; padding: 0.5rem 1rem; background: white; color: #10a37f; border: 1px solid #10a37f; border-radius: 6px; text-decoration: none; font-size: 0.9rem;" 
+                                   target="_blank">GitHub Discussion</a>
+                                <a href="https://github.com/0xdps/gpt-pinboard-extension/issues/new" 
+                                   style="display: inline-block; padding: 0.5rem 1rem; background: white; color: #dc3545; border: 1px solid #dc3545; border-radius: 6px; text-decoration: none; font-size: 0.9rem;" 
+                                   target="_blank">Report Bug</a>
+                                <a href="mailto:dps.manit@gmail.com?subject=GPT%20Pinboard%20Feedback" 
+                                   style="display: inline-block; padding: 0.5rem 1rem; background: white; color: #666; border: 1px solid #ccc; border-radius: 6px; text-decoration: none; font-size: 0.9rem;">Send Email</a>
+                            </div>
                         </div>
                     </div>
 
@@ -206,5 +338,233 @@
 
     <!-- Scripts -->
     <script src="./js/main.js"></script>
+    
+    <!-- Feedback Form Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add hover effects for form elements
+            const checkboxLabels = document.querySelectorAll('label:has(input[type="checkbox"])');
+            const radioLabels = document.querySelectorAll('label:has(input[type="radio"])');
+            const textarea = document.querySelector('textarea[name="feedback"]');
+            
+            // Checkbox hover effects
+            checkboxLabels.forEach(label => {
+                label.addEventListener('mouseenter', function() {
+                    this.style.backgroundColor = '#f0f0f0';
+                });
+                label.addEventListener('mouseleave', function() {
+                    this.style.backgroundColor = 'transparent';
+                });
+            });
+            
+            // Radio button hover and selection effects
+            radioLabels.forEach(label => {
+                const radio = label.querySelector('input[type="radio"]');
+                
+                label.addEventListener('mouseenter', function() {
+                    if (!radio.checked) {
+                        this.style.borderColor = '#10a37f';
+                        this.style.backgroundColor = '#f8fff9';
+                    }
+                });
+                
+                label.addEventListener('mouseleave', function() {
+                    if (!radio.checked) {
+                        this.style.borderColor = '#e0e0e0';
+                        this.style.backgroundColor = 'transparent';
+                    }
+                });
+                
+                radio.addEventListener('change', function() {
+                    // Reset all radio labels
+                    radioLabels.forEach(l => {
+                        l.style.borderColor = '#e0e0e0';
+                        l.style.backgroundColor = 'transparent';
+                    });
+                    
+                    // Highlight selected
+                    if (this.checked) {
+                        label.style.borderColor = '#10a37f';
+                        label.style.backgroundColor = '#f8fff9';
+                    }
+                });
+            });
+            
+            // Textarea focus effects
+            if (textarea) {
+                textarea.addEventListener('focus', function() {
+                    this.style.borderColor = '#10a37f';
+                });
+                
+                textarea.addEventListener('blur', function() {
+                    this.style.borderColor = '#e0e0e0';
+                });
+            }
+            
+            // Form submission
+            const form = document.getElementById('feedbackForm');
+            const statusDiv = document.getElementById('feedback-status');
+            
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                // Show loading state
+                const submitBtn = form.querySelector('button[type="submit"]');
+                const originalText = submitBtn.textContent;
+                submitBtn.textContent = 'Submitting...';
+                submitBtn.disabled = true;
+                
+                try {
+                    // Collect form data
+                    const formData = new FormData(form);
+                    
+                    // Check for extension context (if available)
+                    const extensionId = await checkExtensionContext();
+                    
+                    const data = {
+                        reasons: formData.getAll('reasons'),
+                        rating: formData.get('rating'),
+                        feedback: formData.get('feedback'),
+                        contact: formData.get('contact') === 'yes',
+                        verification: formData.get('verification'),
+                        website: formData.get('website'), // honeypot
+                        timestamp: new Date().toISOString(),
+                        userAgent: navigator.userAgent,
+                        url: window.location.href,
+                        referrer: document.referrer,
+                        extensionId: extensionId
+                    };
+                    
+                    // Submit to Vercel function (we'll create this)
+                    const response = await fetch('/api/feedback', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(data)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok && result.success) {
+                        // Success
+                        statusDiv.style.display = 'block';
+                        statusDiv.style.backgroundColor = '#d4edda';
+                        statusDiv.style.color = '#155724';
+                        statusDiv.style.border = '1px solid #c3e6cb';
+                        
+                        let successMessage = '✅ Thank you! Your feedback has been submitted successfully.';
+                        if (result.githubIssue && result.githubIssue.url) {
+                            successMessage += `<br><small>📝 <a href="${result.githubIssue.url}" target="_blank" style="color: #155724;">View your feedback on GitHub</a></small>`;
+                        }
+                        statusDiv.innerHTML = successMessage;
+                        
+                        // Reset form
+                        form.reset();
+                        
+                        // Reset radio button styles
+                        radioLabels.forEach(l => {
+                            l.style.borderColor = '#e0e0e0';
+                            l.style.backgroundColor = 'transparent';
+                        });
+                        
+                    } else {
+                        throw new Error(result.message || 'Submission failed');
+                    }
+                    
+                } catch (error) {
+                    console.error('Feedback submission error:', error);
+                    
+                    // Show error message with fallback options
+                    statusDiv.style.display = 'block';
+                    statusDiv.style.backgroundColor = '#f8d7da';
+                    statusDiv.style.color = '#721c24';
+                    statusDiv.style.border = '1px solid #f5c6cb';
+                    
+                    let errorMessage = '❌ There was an issue submitting your feedback.';
+                    
+                    // If we have specific fallback options from the API response
+                    if (error.response && error.response.fallbackOptions) {
+                        errorMessage += `<br><div style="margin-top: 0.5rem;">Please try: 
+                            <a href="${error.response.fallbackOptions.github}" target="_blank" style="color: #721c24; text-decoration: underline;">GitHub Discussion</a> or 
+                            <a href="${error.response.fallbackOptions.email}" style="color: #721c24; text-decoration: underline;">Send Email</a>
+                        </div>`;
+                    } else {
+                        // Handle specific error types
+                        const responseText = await error.response?.text() || '';
+                        let parsedError;
+                        
+                        try {
+                            parsedError = JSON.parse(responseText);
+                        } catch {
+                            parsedError = { message: 'Unknown error occurred' };
+                        }
+                        
+                        // Show specific error messages
+                        if (parsedError.error === 'Rate limit exceeded') {
+                            errorMessage = `⏱️ ${parsedError.message}`;
+                        } else if (parsedError.error === 'Verification failed') {
+                            errorMessage = `❌ ${parsedError.message}`;
+                        } else {
+                            // Default fallback options
+                            const emailBody = encodeURIComponent(
+                                `Rating: ${data.rating || 'Not provided'}\n` +
+                                `Reasons: ${data.reasons.join(', ') || 'Not specified'}\n` +
+                                `Feedback: ${data.feedback || 'No additional feedback'}\n` +
+                                `Contact: ${data.contact ? 'Yes' : 'No'}`
+                            );
+                            
+                            errorMessage += `<br><div style="margin-top: 0.5rem;">Please try: 
+                                <a href="https://github.com/0xdps/gpt-pinboard-extension/discussions/new?category=feedback" target="_blank" style="color: #721c24; text-decoration: underline;">GitHub Discussion</a> or 
+                                <a href="mailto:dps.manit@gmail.com?subject=GPT%20Pinboard%20Feedback&body=${emailBody}" style="color: #721c24; text-decoration: underline;">Send Email</a>
+                            </div>`;
+                        }
+                    }
+                    
+                    statusDiv.innerHTML = errorMessage;
+                } finally {
+                    // Reset button
+                    submitBtn.textContent = originalText;
+                    submitBtn.disabled = false;
+                }
+            });
+            
+            // Function to check if user has extension context
+            async function checkExtensionContext() {
+                try {
+                    // Try to detect extension by checking for specific elements or storage
+                    // This is a lightweight check, not foolproof but helps identify genuine users
+                    
+                    // Check if coming from extension uninstall flow
+                    const urlParams = new URLSearchParams(window.location.search);
+                    if (urlParams.get('source') === 'extension') {
+                        return 'extension-uninstall';
+                    }
+                    
+                    // Check localStorage for extension data (if any exists)
+                    const hasExtensionData = localStorage.getItem('gpt-pinboard-data') || 
+                                           localStorage.getItem('pinboard-data') ||
+                                           sessionStorage.getItem('extension-context');
+                    
+                    if (hasExtensionData) {
+                        return 'extension-data-found';
+                    }
+                    
+                    // Check if page was accessed via common uninstall flows
+                    const referrer = document.referrer;
+                    if (referrer.includes('chrome://extensions') || 
+                        referrer.includes('about:addons') || 
+                        referrer.includes('edge://extensions')) {
+                        return 'browser-extension-page';
+                    }
+                    
+                    return null;
+                } catch (error) {
+                    console.log('Extension context check failed:', error);
+                    return null;
+                }
+            }
+        });
+    </script>
 </body>
 </html>
