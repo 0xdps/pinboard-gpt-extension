@@ -1412,6 +1412,273 @@ function isExtensionContextValid() {
   }
 }
 
+// Add pin option to ChatGPT's native selection popup
+function addPinOptionToChatGPTPopup() {
+  // Watch for ChatGPT's selection popup to appear
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      mutation.addedNodes.forEach((node) => {
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          // Look for ChatGPT's selection popup patterns
+          let popupFound = false;
+          
+          // Check if this node contains "Ask ChatGPT" text
+          if (node.textContent && node.textContent.includes('Ask ChatGPT')) {
+            console.log('GPT Pinboard: Found popup with "Ask ChatGPT" text');
+            addPinButtonToPopup(node);
+            popupFound = true;
+          }
+          
+          // Check for common popup container patterns
+          if (!popupFound && node.querySelector) {
+            // Look for buttons with "Ask" in them
+            const askButtons = node.querySelectorAll('button, [role="button"]');
+            for (const btn of askButtons) {
+              if (btn.textContent && (btn.textContent.includes('Ask ChatGPT') || btn.textContent.includes('Ask'))) {
+                console.log('GPT Pinboard: Found popup with Ask button');
+                addPinButtonToPopup(node);
+                popupFound = true;
+                break;
+              }
+            }
+          }
+          
+          // Check for tooltip/popup container patterns
+          if (!popupFound && (
+            node.matches && (
+              node.matches('[role="tooltip"]') ||
+              node.matches('[role="menu"]') ||
+              node.matches('.tooltip') ||
+              node.matches('.popup') ||
+              node.classList.contains('selection-popup')
+            )
+          )) {
+            // Double-check it's related to text selection
+            const selection = window.getSelection();
+            if (selection.rangeCount > 0 && selection.toString().trim()) {
+              console.log('GPT Pinboard: Found potential selection popup container');
+              addPinButtonToPopup(node);
+            }
+          }
+        }
+      });
+    });
+  });
+  
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true
+  });
+}
+
+function addPinButtonToPopup(popupContainer) {
+  // Avoid adding multiple pin buttons
+  if (popupContainer.querySelector('.gpt-pinboard-popup-btn')) {
+    return;
+  }
+  
+  console.log('GPT Pinboard: Found ChatGPT selection popup, adding pin button');
+  
+  // Find existing ChatGPT button to clone
+  const existingButton = popupContainer.querySelector('button');
+  if (!existingButton) {
+    console.log('GPT Pinboard: No existing button found to clone');
+    return;
+  }
+  
+  console.log('GPT Pinboard: Found existing button to clone:', existingButton);
+  
+  // Clone the entire button with all its structure and classes
+  const pinButton = existingButton.cloneNode(true);
+  
+  // ADD our class to the existing classes (don't replace them!)
+  pinButton.classList.add('gpt-pinboard-popup-btn');
+  
+  // Remove any existing event listeners by replacing with a fresh clone
+  const cleanButton = pinButton.cloneNode(true);
+  cleanButton.classList.add('gpt-pinboard-popup-btn');
+  
+  // Find the nested structure: button > div > span
+  const innerDiv = cleanButton.querySelector('div');
+  if (!innerDiv) {
+    console.log('GPT Pinboard: Could not find inner div in cloned button');
+    return;
+  }
+  console.log('GPT Pinboard: Found inner div:', innerDiv);
+  
+  // Find the span that contains the icon and text
+  const contentSpan = innerDiv.querySelector('span');
+  if (!contentSpan) {
+    console.log('GPT Pinboard: Could not find content span in cloned button');
+    return;
+  }
+  console.log('GPT Pinboard: Found content span, current content:', contentSpan.innerHTML);
+  
+  // Clear the content span (this is where the icon and text are)
+  contentSpan.innerHTML = '';
+  console.log('GPT Pinboard: Cleared content span');
+  
+  // Create our custom icon
+  let iconElement;
+  try {
+    const runtime = typeof chrome !== 'undefined' ? chrome.runtime : browser.runtime;
+    if (runtime && runtime.getURL) {
+      iconElement = document.createElement('img');
+      iconElement.src = runtime.getURL('icons/icon-16.png');
+      iconElement.width = 20;
+      iconElement.height = 20;
+      iconElement.style.cssText = 'display: block; flex-shrink: 0;';
+      iconElement.alt = 'GPT Pinboard';
+      
+      iconElement.onerror = () => {
+        iconElement.style.display = 'none';
+        const svgFallback = document.createElement('div');
+        svgFallback.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="icon" style="flex-shrink: 0; display: block;">
+          <path d="M16 12V4H17V2H7V4H8V12L6 14V16H11V22H13V16H18V14L16 12Z"/>
+        </svg>`;
+        contentSpan.insertBefore(svgFallback.firstChild, contentSpan.firstChild);
+      };
+    } else {
+      throw new Error('Runtime not available');
+    }
+  } catch (error) {
+    iconElement = document.createElement('div');
+    iconElement.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="icon" style="flex-shrink: 0; display: block;">
+      <path d="M16 12V4H17V2H7V4H8V12L6 14V16H11V22H13V16H18V14L16 12Z"/>
+    </svg>`;
+    iconElement = iconElement.firstChild;
+  }
+  
+  // Create text span that matches ChatGPT's structure
+  const textSpan = document.createElement('span');
+  textSpan.className = 'whitespace-nowrap! select-none max-md:sr-only';
+  textSpan.textContent = 'Add to GPT Pinboard';
+  
+  // Add our content to the content span (maintaining the same structure)
+  if (iconElement) {
+    contentSpan.appendChild(iconElement);
+    console.log('GPT Pinboard: Added icon element');
+  }
+  contentSpan.appendChild(textSpan);
+  console.log('GPT Pinboard: Added text span, final content:', contentSpan.innerHTML);
+  
+  // Apply subtle border customization
+  // cleanButton.style.border = '1px solid #ffffff26';
+  
+  // Use the cleaned cloned button
+  const finalButton = cleanButton;
+  
+  // No hover effect needed - cloned button already has ChatGPT's native hover behavior
+  
+  finalButton.addEventListener('click', async (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    
+    // Get current selection
+    const selection = window.getSelection();
+    if (!selection.rangeCount) {
+      showNotification('⚠️ No text selected');
+      return;
+    }
+    
+    const selectedText = selection.toString().trim();
+    if (selectedText.length < 3) {
+      showNotification('⚠️ Please select at least 3 characters to pin');
+      return;
+    }
+    
+    console.log('GPT Pinboard: Pin button clicked from popup, text:', selectedText);
+    
+    // Hide the popup
+    const popup = finalButton.closest('[role="menu"], [role="tooltip"], .popup-container') || popupContainer;
+    if (popup) {
+      popup.style.display = 'none';
+    }
+    
+    // Create pin using the same logic as other pin methods
+    try {
+      let messageContainer = getMessageContainerFromSelection();
+      
+      if (!messageContainer) {
+        messageContainer = findMessageContainerByText(selectedText);
+      }
+      
+      if (!messageContainer) {
+        showNotification('⚠️ Could not identify the message container');
+        return;
+      }
+      
+      // Use cursor position to find target element (same as selection method)
+      const range = selection.getRangeAt(0);
+      const rect = range.getBoundingClientRect();
+      const x = rect.left + (rect.width / 2);
+      const y = rect.top + (rect.height / 2);
+      
+      let targetElement = document.elementFromPoint(x, y);
+      if (targetElement && messageContainer.contains(targetElement)) {
+        // Find meaningful parent element
+        for (let i = 0; i < 3 && targetElement && messageContainer.contains(targetElement); i++) {
+          const elementText = (targetElement.innerText || targetElement.textContent || '').trim();
+          if (elementText.includes(selectedText)) {
+            break;
+          }
+          targetElement = targetElement.parentElement;
+        }
+      } else {
+        targetElement = messageContainer;
+      }
+      
+      // Determine pin type (single vs multi-word)
+      const wordCount = selectedText.split(/\s+/).filter(word => word.length > 0).length;
+      const isSingleWord = wordCount === 1;
+      
+      let pinContent, pinType;
+      if (isSingleWord) {
+        const fullMessageText = messageContainer.innerText || messageContainer.textContent || '';
+        pinContent = fullMessageText.trim().slice(0, 120);
+        pinType = 'full-message-with-highlight';
+      } else {
+        pinContent = selectedText.slice(0, 120);
+        pinType = 'selection-only';
+      }
+      
+      // Create pin object
+      const pin = {
+        id: crypto.randomUUID(),
+        messageText: pinContent,
+        name: '',
+        tags: [],
+        pageUrl: window.location.href,
+        site: 'ChatGPT',
+        pinnedAt: Date.now(),
+        xpath: (() => {
+          const xpath = getXPath(targetElement);
+          console.log('GPT Pinboard: Generated XPath:', xpath);
+          return xpath;
+        })(),
+        anchors: getTextAnchors(targetElement),
+        selectionText: selectedText.slice(0, 100),
+        selectionType: pinType
+      };
+      
+      console.log('GPT Pinboard: Creating pin from popup:', pin);
+      await openPinDialogWithData(pin);
+      
+    } catch (error) {
+      console.error('GPT Pinboard: Error creating pin from popup:', error);
+      showNotification('❌ Failed to create pin: ' + error.message);
+    }
+  });
+  
+  // Find the best place to insert the pin button
+  const askButton = popupContainer.querySelector('button');
+  if (askButton && askButton.parentElement) {
+    askButton.parentElement.insertBefore(finalButton, askButton.nextSibling);
+  } else {
+    popupContainer.appendChild(finalButton);
+  }
+}
+
 // Listen for messages from background script
 try {
   const runtime = typeof chrome !== 'undefined' ? chrome.runtime : browser.runtime;
@@ -1626,6 +1893,156 @@ function getRecentMessages(limit = 5) {
 }
 
 // Create message selection dropdown
+// Create message navigation dropdown (shows all messages, navigates on click)
+function createMessageNavigationDropdown(messages) {
+  const dropdown = document.createElement('div');
+  dropdown.style.cssText = `
+    position: fixed;
+    bottom: 160px;
+    right: 20px;
+    z-index: 10001;
+    background: white;
+    border: 1px solid #dadce0;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    max-width: 400px;
+    max-height: 400px;
+    overflow-y: auto;
+    font-family: system-ui, -apple-system, sans-serif;
+  `;
+  
+  // Header
+  const header = document.createElement('div');
+  header.style.cssText = `
+    padding: 12px 16px;
+    border-bottom: 1px solid #e8eaed;
+    font-weight: 600;
+    font-size: 14px;
+    color: #202124;
+    background: #f8f9fa;
+    border-radius: 8px 8px 0 0;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  `;
+  header.textContent = `Navigate to message (${messages.length} total):`;
+  dropdown.appendChild(header);
+  
+  // Message options - show in chronological order
+  messages.forEach((message, index) => {
+    const messageText = (message.innerText || '').trim();
+    const preview = messageText.length > 80 ? messageText.slice(0, 80) + '...' : messageText;
+    const authorRole = message.getAttribute('data-message-author-role');
+    const isAssistant = authorRole === 'assistant';
+    
+    const option = document.createElement('div');
+    option.style.cssText = `
+      padding: 10px 16px;
+      border-bottom: 1px solid #f1f3f4;
+      cursor: pointer;
+      transition: background 0.2s;
+      font-size: 12px;
+      line-height: 1.4;
+    `;
+    
+    const headerRow = document.createElement('div');
+    headerRow.style.cssText = `
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    `;
+    
+    const roleLabel = document.createElement('span');
+    roleLabel.style.cssText = `
+      font-weight: 600;
+      font-size: 10px;
+      color: ${isAssistant ? '#10a37f' : '#1a73e8'};
+      text-transform: uppercase;
+    `;
+    roleLabel.textContent = isAssistant ? '🤖 Assistant' : '👤 You';
+    
+    const messageNumber = document.createElement('span');
+    messageNumber.style.cssText = `
+      font-size: 10px;
+      color: #9aa0a6;
+      font-weight: 500;
+    `;
+    messageNumber.textContent = `#${index + 1}`;
+    
+    headerRow.appendChild(roleLabel);
+    headerRow.appendChild(messageNumber);
+    
+    const previewDiv = document.createElement('div');
+    previewDiv.style.cssText = `
+      color: #5f6368;
+      overflow: hidden;
+    `;
+    previewDiv.textContent = preview;
+    
+    option.appendChild(headerRow);
+    option.appendChild(previewDiv);
+    
+    option.addEventListener('mouseenter', () => {
+      option.style.background = '#f8f9fa';
+    });
+    
+    option.addEventListener('mouseleave', () => {
+      option.style.background = 'transparent';
+    });
+    
+    option.addEventListener('click', () => {
+      // Scroll to message and highlight it
+      message.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      
+      // Highlight the message briefly
+      const originalBg = message.style.backgroundColor;
+      message.style.backgroundColor = '#fff3cd';
+      message.style.transition = 'background-color 0.3s';
+      
+      setTimeout(() => {
+        message.style.backgroundColor = originalBg;
+      }, 2000);
+      
+      dropdown.remove();
+    });
+    
+    dropdown.appendChild(option);
+  });
+  
+  // Cancel option
+  const cancelOption = document.createElement('div');
+  cancelOption.style.cssText = `
+    padding: 12px 16px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #5f6368;
+    text-align: center;
+    border-top: 1px solid #e8eaed;
+    background: #f8f9fa;
+    border-radius: 0 0 8px 8px;
+    position: sticky;
+    bottom: 0;
+  `;
+  cancelOption.textContent = 'Cancel';
+  
+  cancelOption.addEventListener('mouseenter', () => {
+    cancelOption.style.background = '#e8eaed';
+  });
+  
+  cancelOption.addEventListener('mouseleave', () => {
+    cancelOption.style.background = '#f8f9fa';
+  });
+  
+  cancelOption.addEventListener('click', () => {
+    dropdown.remove();
+  });
+  
+  dropdown.appendChild(cancelOption);
+  
+  return dropdown;
+}
+
 function createMessageSelectionDropdown(messages, onSelect) {
   const dropdown = document.createElement('div');
   dropdown.style.cssText = `
@@ -1751,44 +2168,30 @@ function addManualPinButton() {
     const manualBtn = document.createElement('button');
     manualBtn.id = 'pingpt-manual-pin';
     
-    // Create SVG element safely
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('width', '16');
-    svg.setAttribute('height', '16');
-    svg.setAttribute('viewBox', '0 0 24 24');
-    svg.style.cssText = 'margin-right: 6px; vertical-align: middle;';
+    // Use extension icon
+    const iconImg = document.createElement('img');
+    try {
+      const runtime = typeof chrome !== 'undefined' ? chrome.runtime : browser.runtime;
+      if (runtime && runtime.getURL) {
+        iconImg.src = runtime.getURL('icons/icon-16.png');
+        iconImg.width = 16;
+        iconImg.height = 16;
+        iconImg.style.cssText = 'margin-right: 6px; vertical-align: middle;';
+        manualBtn.appendChild(iconImg);
+      }
+    } catch (error) {
+      // Fallback to simple text if icon fails
+      console.log('GPT Pinboard: Could not load icon for floating button');
+    }
     
-    const ellipse = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
-    ellipse.setAttribute('cx', '12');
-    ellipse.setAttribute('cy', '8');  
-    ellipse.setAttribute('rx', '6');
-    ellipse.setAttribute('ry', '5');
-    ellipse.setAttribute('fill', '#febf00');
-    ellipse.setAttribute('stroke', '#fff');
-    ellipse.setAttribute('stroke-width', '0.5');
-    ellipse.setAttribute('opacity', '0.9');
+    manualBtn.appendChild(iconImg);
     
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('d', 'M 12 13 L 10 20 L 14 20 Z');
-    path.setAttribute('fill', '#fff');
+    const buttonText = document.createElement('div');
+    buttonText.textContent = 'Messages';
+    buttonText.style.cssText = 'font-size: 12px; margin-top: 4px;';
+    manualBtn.appendChild(buttonText);
     
-    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    text.setAttribute('x', '12');
-    text.setAttribute('y', '9.5');
-    text.setAttribute('text-anchor', 'middle');
-    text.setAttribute('font-family', 'Arial, sans-serif');
-    text.setAttribute('font-size', '3.5');
-    text.setAttribute('font-weight', 'bold');
-    text.setAttribute('fill', '#4a71f6');
-    text.textContent = 'PIN';
-    
-    svg.appendChild(ellipse);
-    svg.appendChild(path);
-    svg.appendChild(text);
-    
-    manualBtn.appendChild(svg);
-    manualBtn.appendChild(document.createTextNode('Pin Message'));
-    manualBtn.title = 'Pin a message from this conversation';
+    manualBtn.title = 'View and navigate to messages in this conversation';
     manualBtn.style.cssText = `
       position: fixed;
       bottom: 100px;
@@ -1798,12 +2201,17 @@ function addManualPinButton() {
       color: white;
       border: none;
       border-radius: 8px;
-      padding: 10px 16px;
+      padding: 12px 16px;
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
       box-shadow: 0 4px 12px rgba(0,0,0,0.2);
       transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-width: 80px;
     `;
     
     manualBtn.addEventListener('mouseenter', () => {
@@ -1833,29 +2241,22 @@ function addManualPinButton() {
     }
     
     manualBtn.addEventListener('click', async () => {
-      const recentMessages = getRecentMessages(5);
+      // Get ALL messages in the conversation (not just recent 5)
+      const allMessages = Array.from(document.querySelectorAll('[data-message-author-role]'));
       
-      if (recentMessages.length === 0) {
+      if (allMessages.length === 0) {
         showNotification('⚠️ No messages found. Try scrolling or asking ChatGPT a question first.');
         return;
       }
       
-      // If only one message, pin it directly
-      if (recentMessages.length === 1) {
-        await openPinDialog(recentMessages[0]);
-        return;
-      }
-      
-      // Show selection dropdown for multiple messages
+      // Show selection dropdown for navigating to messages
       const existingDropdown = document.querySelector('#pingpt-message-dropdown');
       if (existingDropdown) {
         existingDropdown.remove();
         return;
       }
       
-      const dropdown = createMessageSelectionDropdown(recentMessages, async (selectedMessage) => {
-        await openPinDialog(selectedMessage);
-      });
+      const dropdown = createMessageNavigationDropdown(allMessages);
       dropdown.id = 'pingpt-message-dropdown';
       
       document.body.appendChild(dropdown);
@@ -1882,6 +2283,9 @@ initializePinButtons();
 
 // Add manual pin button
 addManualPinButton();
+
+// Add pin option to ChatGPT's native selection popup
+addPinOptionToChatGPTPopup();
 
 // Add CSS for pin button hover effects
 const style = document.createElement('style');
