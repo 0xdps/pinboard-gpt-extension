@@ -1930,10 +1930,25 @@ function createMessageNavigationDropdown(messages) {
   
   // Message options - show in chronological order
   messages.forEach((message, index) => {
-    const messageText = (message.innerText || '').trim();
-    const preview = messageText.length > 80 ? messageText.slice(0, 80) + '...' : messageText;
     const authorRole = message.getAttribute('data-message-author-role');
     const isAssistant = authorRole === 'assistant';
+    
+    // Try to get text from the actual content area
+    let messageText = '';
+    const contentDiv = message.querySelector('[data-message-id]');
+    if (contentDiv) {
+      messageText = (contentDiv.innerText || contentDiv.textContent || '').trim();
+    } else {
+      messageText = (message.innerText || message.textContent || '').trim();
+    }
+    
+    // For empty messages (like code execution results), show a placeholder
+    let preview = messageText;
+    if (!preview || preview.length === 0) {
+      preview = isAssistant ? '[Response content]' : '[Empty message]';
+    } else if (preview.length > 80) {
+      preview = preview.slice(0, 80) + '...';
+    }
     
     const option = document.createElement('div');
     option.style.cssText = `
@@ -1992,19 +2007,23 @@ function createMessageNavigationDropdown(messages) {
     });
     
     option.addEventListener('click', () => {
-      // Scroll to message and highlight it
-      message.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      
-      // Highlight the message briefly
-      const originalBg = message.style.backgroundColor;
-      message.style.backgroundColor = '#fff3cd';
-      message.style.transition = 'background-color 0.3s';
-      
-      setTimeout(() => {
-        message.style.backgroundColor = originalBg;
-      }, 2000);
-      
+      // Close dropdown first
       dropdown.remove();
+      
+      // Small delay to ensure dropdown is closed before scrolling
+      setTimeout(() => {
+        // Scroll to message and highlight it
+        message.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        
+        // Highlight the message briefly
+        const originalBg = message.style.backgroundColor;
+        message.style.backgroundColor = '#fff3cd';
+        message.style.transition = 'background-color 0.3s';
+        
+        setTimeout(() => {
+          message.style.backgroundColor = originalBg;
+        }, 2000);
+      }, 100);
     });
     
     dropdown.appendChild(option);
@@ -2039,6 +2058,25 @@ function createMessageNavigationDropdown(messages) {
   });
   
   dropdown.appendChild(cancelOption);
+  
+  // Scroll to show the last message by default
+  setTimeout(() => {
+    // Find the last message that's currently visible in the viewport
+    let lastVisibleIndex = messages.length - 1;
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const rect = messages[i].getBoundingClientRect();
+      if (rect.top < window.innerHeight && rect.bottom > 0) {
+        lastVisibleIndex = i;
+        break;
+      }
+    }
+    
+    // Scroll the dropdown to show this message
+    const options = dropdown.querySelectorAll('div[style*="cursor: pointer"]');
+    if (options[lastVisibleIndex]) {
+      options[lastVisibleIndex].scrollIntoView({ block: 'center' });
+    }
+  }, 50);
   
   return dropdown;
 }
@@ -2176,8 +2214,7 @@ function addManualPinButton() {
         iconImg.src = runtime.getURL('icons/icon-16.png');
         iconImg.width = 16;
         iconImg.height = 16;
-        iconImg.style.cssText = 'margin-right: 6px; vertical-align: middle;';
-        manualBtn.appendChild(iconImg);
+        iconImg.style.cssText = 'display: inline-block;';
       }
     } catch (error) {
       // Fallback to simple text if icon fails
@@ -2186,9 +2223,9 @@ function addManualPinButton() {
     
     manualBtn.appendChild(iconImg);
     
-    const buttonText = document.createElement('div');
-    buttonText.textContent = 'Messages';
-    buttonText.style.cssText = 'font-size: 12px; margin-top: 4px;';
+    const buttonText = document.createElement('span');
+    buttonText.textContent = 'Chat Outline';
+    buttonText.style.cssText = 'font-size: 14px; margin-left: 8px; display: inline-block;';
     manualBtn.appendChild(buttonText);
     
     manualBtn.title = 'View and navigate to messages in this conversation';
@@ -2201,17 +2238,16 @@ function addManualPinButton() {
       color: white;
       border: none;
       border-radius: 8px;
-      padding: 12px 16px;
+      padding: 10px 16px;
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
       box-shadow: 0 4px 12px rgba(0,0,0,0.2);
       transition: all 0.2s;
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       align-items: center;
       justify-content: center;
-      min-width: 80px;
     `;
     
     manualBtn.addEventListener('mouseenter', () => {
