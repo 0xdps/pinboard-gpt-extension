@@ -65,12 +65,81 @@ chrome.runtime.onMessageExternal.addListener((request, sender, sendResponse) => 
 });
 
 chrome.contextMenus.onClicked.addListener((info, tab) => {
+  console.log('GPT Pinboard: Context menu clicked', info);
   if (info.menuItemId === 'pin-selection') {
-    if (tab?.id) {
-      chrome.tabs.sendMessage(tab.id, { action: 'pin-selection', text: info.selectionText });
+    console.log('GPT Pinboard: Pin selection clicked, text:', info.selectionText);
+    
+    if (!tab?.id) {
+      console.error('GPT Pinboard: No active tab found');
+      return;
     }
+
+    // Check if the tab is a valid ChatGPT page
+    const validUrls = ['https://chatgpt.com/', 'https://chat.openai.com/'];
+    const isValidPage = validUrls.some(url => tab.url && tab.url.startsWith(url));
+    
+    if (!isValidPage) {
+      console.error('GPT Pinboard: Context menu triggered on non-ChatGPT page:', tab.url);
+      return;
+    }
+
+    // First check if content script is loaded by sending a ping
+    chrome.tabs.sendMessage(tab.id, { action: 'ping' }, (pingResponse) => {
+      if (chrome.runtime.lastError) {
+        console.log('GPT Pinboard: Content script not ready, injecting...');
+        
+        // Content script not loaded, try to inject it
+        chrome.scripting.executeScript({
+          target: { tabId: tab.id },
+          files: ['idb.js', 'content_script_chatgpt.js']
+        }, () => {
+          if (chrome.runtime.lastError) {
+            console.error('GPT Pinboard: Failed to inject content script:', chrome.runtime.lastError.message);
+            return;
+          }
+          
+          // Wait a bit for script to initialize, then send the message
+          setTimeout(() => {
+            sendPinMessage(tab.id, info.selectionText);
+          }, 1000);
+        });
+      } else {
+        // Content script is ready, send the message directly
+        sendPinMessage(tab.id, info.selectionText);
+      }
+    });
   }
 });
+
+function sendPinMessage(tabId, selectionText) {
+  sendMessageWithRetry(tabId, { action: 'pin-selection', text: selectionText }, (result) => {
+    if (result.error) {
+      console.error('GPT Pinboard: Error sending pin message:', result.error);
+    } else {
+      console.log('GPT Pinboard: Pin message sent successfully, response:', result.data);
+    }
+  });
+}
+
+function sendMessageWithRetry(tabId, message, callback, maxRetries = 3, currentRetry = 0) {
+  chrome.tabs.sendMessage(tabId, message, (response) => {
+    if (chrome.runtime.lastError) {
+      const error = chrome.runtime.lastError.message;
+      console.log(`GPT Pinboard: Message attempt ${currentRetry + 1} failed:`, error);
+      
+      if (currentRetry < maxRetries && error.includes('Could not establish connection')) {
+        // Retry after a delay
+        setTimeout(() => {
+          sendMessageWithRetry(tabId, message, callback, maxRetries, currentRetry + 1);
+        }, 500);
+      } else {
+        callback({ error: error });
+      }
+    } else {
+      callback({ data: response });
+    }
+  });
+}
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg?.action === 'open-and-highlight' && msg.pin) {
@@ -89,11 +158,11 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       // Check if active tab is already on the target URL
       if (activeTab && activeTab.url && activeTab.url.startsWith(targetUrl.split('?')[0])) {
         // Just highlight without reloading
-        chrome.tabs.sendMessage(activeTab.id, { action: 'highlight-pin', pin }, (resp) => {
-          if (chrome.runtime.lastError) {
-            sendResponse({ ok: false, error: chrome.runtime.lastError.message });
+        sendMessageWithRetry(activeTab.id, { action: 'highlight-pin', pin }, (resp) => {
+          if (resp.error) {
+            sendResponse({ ok: false, error: resp.error });
           } else {
-            sendResponse({ ok: true, resp });
+            sendResponse({ ok: true, resp: resp.data });
           }
         });
         return;
@@ -113,11 +182,11 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             chrome.tabs.update(t.id, { active: true }, () => {
               // Don't reload, just wait a bit and highlight
               setTimeout(() => {
-                chrome.tabs.sendMessage(t.id, { action: 'highlight-pin', pin }, (resp) => {
-                  if (chrome.runtime.lastError) {
-                    sendResponse({ ok: false, error: chrome.runtime.lastError.message });
+                sendMessageWithRetry(t.id, { action: 'highlight-pin', pin }, (result) => {
+                  if (result.error) {
+                    sendResponse({ ok: false, error: result.error });
                   } else {
-                    sendResponse({ ok: true, resp });
+                    sendResponse({ ok: true, resp: result.data });
                   }
                 });
               }, 300);
@@ -131,44 +200,31 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
               const t = chatTabs[0];
               chrome.windows.update(t.windowId, { focused: true }, () => {
                 chrome.tabs.update(t.id, { active: true, url: targetUrl }, () => {
-                  // Wait for navigation to complete
-                  const trySend = (attemptsLeft = 20) => {
-                    if (attemptsLeft <= 0) {
-                      sendResponse({ ok: false, error: 'Timed out waiting for page to load' });
-                      return;
-                    }
-                    setTimeout(() => {
-                      chrome.tabs.sendMessage(t.id, { action: 'highlight-pin', pin }, (resp) => {
-                        if (chrome.runtime.lastError) {
-                          trySend(attemptsLeft - 1);
-                        } else {
-                          sendResponse({ ok: true, resp });
-                        }
-                      });
-                    }, 400);
-                  };
-                  trySend(20);
+                  // Wait for navigation to complete, then send message with retry
+                  setTimeout(() => {
+                    sendMessageWithRetry(t.id, { action: 'highlight-pin', pin }, (result) => {
+                      if (result.error) {
+                        sendResponse({ ok: false, error: result.error });
+                      } else {
+                        sendResponse({ ok: true, resp: result.data });
+                      }
+                    }, 5); // More retries for navigation case
+                  }, 1000);
                 });
               });
             } else {
               // No ChatGPT tab open, create a new one
               chrome.tabs.create({ url: targetUrl }, (newTab) => {
-                const trySend = (attemptsLeft = 20) => {
-                  if (attemptsLeft <= 0) {
-                    sendResponse({ ok: false, error: 'Timed out waiting for tab' });
-                    return;
-                  }
-                  setTimeout(() => {
-                    chrome.tabs.sendMessage(newTab.id, { action: 'highlight-pin', pin }, (resp) => {
-                      if (chrome.runtime.lastError) {
-                        trySend(attemptsLeft - 1);
-                      } else {
-                        sendResponse({ ok: true, resp });
-                      }
-                    });
-                  }, 400);
-                };
-                trySend(20);
+                // Wait longer for new tab to load, then send message with retry
+                setTimeout(() => {
+                  sendMessageWithRetry(newTab.id, { action: 'highlight-pin', pin }, (result) => {
+                    if (result.error) {
+                      sendResponse({ ok: false, error: result.error });
+                    } else {
+                      sendResponse({ ok: true, resp: result.data });
+                    }
+                  }, 8); // Even more retries for new tab case
+                }, 2000);
               });
             }
           });
