@@ -26,6 +26,7 @@
 - **🔍 Search instantly** - Filter by text, name, or tags
 - **⚡ Jump back** - Instantly return to the original conversation
 - **💾 Local-first** - Your data stays on your device. No accounts. No sync drama.
+- **🌙 Dark mode support** - Automatic theme detection with seamless light/dark mode integration
 
 No accounts. No sync drama. Just fast access to what you actually need.
 
