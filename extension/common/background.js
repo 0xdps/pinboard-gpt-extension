@@ -1,10 +1,10 @@
-chrome.runtime.onInstalled.addListener((details) => {
-  chrome.contextMenus.create({
-    id: "pin-selection",
-    title: "Pin selection to GPT Pinboard",
-    contexts: ["selection"],
-    documentUrlPatterns: ["https://chatgpt.com/*", "https://chat.openai.com/*"]
-  });
+chrome.runtime.onInstalled.addListener(async (details) => {
+  // Check if context menu should be enabled (default to false)
+  const { enableContextMenu } = await chrome.storage.local.get(['enableContextMenu']);
+  
+  if (enableContextMenu === true) {
+    createContextMenu();
+  }
 
   // Store installation information for feedback verification
   if (details.reason === 'install') {
@@ -25,6 +25,29 @@ chrome.runtime.onInstalled.addListener((details) => {
     });
   }
 });
+
+// Function to create context menu
+function createContextMenu() {
+  chrome.contextMenus.create({
+    id: "pin-selection",
+    title: "Pin selection to GPT Pinboard",
+    contexts: ["selection"],
+    documentUrlPatterns: ["https://chatgpt.com/*", "https://chat.openai.com/*"]
+  }, () => {
+    if (chrome.runtime.lastError) {
+      console.log('Context menu already exists or error:', chrome.runtime.lastError.message);
+    }
+  });
+}
+
+// Function to remove context menu
+function removeContextMenu() {
+  chrome.contextMenus.remove("pin-selection", () => {
+    if (chrome.runtime.lastError) {
+      console.log('Context menu not found or error:', chrome.runtime.lastError.message);
+    }
+  });
+}
 
 // Generate unique installation token
 function generateInstallToken() {
@@ -232,5 +255,16 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       });
     });
     return true; // Will respond asynchronously
+  }
+  
+  // Handle context menu toggle from popup
+  if (msg?.action === 'update-context-menu') {
+    if (msg.enabled) {
+      createContextMenu();
+    } else {
+      removeContextMenu();
+    }
+    sendResponse({ ok: true });
+    return true;
   }
 });

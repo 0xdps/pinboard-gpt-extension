@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const syncToggle = document.getElementById('syncToggle');
   const themeText = document.getElementById('themeText');
   const themeToggle = document.getElementById('themeToggle');
+  const contextMenuToggle = document.getElementById('contextMenuToggle');
   
   // Settings Modal Elements
   const settingsBtn = document.getElementById('settingsBtn');
@@ -26,6 +27,17 @@ document.addEventListener('DOMContentLoaded', async () => {
       updateThemeText(isDark);
     } catch (err) {
       console.error('Error loading theme:', err);
+    }
+  }
+
+  // Initialize context menu setting
+  async function initializeContextMenu() {
+    try {
+      const { enableContextMenu } = await chrome.storage.local.get(['enableContextMenu']);
+      // Default to false (disabled)
+      contextMenuToggle.checked = enableContextMenu === true;
+    } catch (err) {
+      console.error('Error loading context menu setting:', err);
     }
   }
 
@@ -52,8 +64,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   };
 
-  // Initialize theme on load
+  // Context menu toggle handler
+  contextMenuToggle.onchange = async () => {
+    const enabled = contextMenuToggle.checked;
+    
+    try {
+      await chrome.storage.local.set({ enableContextMenu: enabled });
+      // Notify background script to update context menu
+      chrome.runtime.sendMessage({ action: 'update-context-menu', enabled });
+    } catch (err) {
+      console.error('Error saving context menu setting:', err);
+    }
+  };
+
+  // Initialize theme and context menu on load
   await initializeTheme();
+  await initializeContextMenu();
 
   // Settings Modal Handlers
   settingsBtn.onclick = () => {
