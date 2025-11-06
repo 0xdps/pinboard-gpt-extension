@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Initialize theme
   async function initializeTheme() {
     try {
-      const { theme } = await chrome.storage.local.get(['theme']);
+      const { theme } = await browser.storage.local.get(['theme']);
       const isDark = theme === 'dark';
       themeToggle.checked = isDark;
       document.body.classList.toggle('dark-mode', isDark);
@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Initialize context menu setting
   async function initializeContextMenu() {
     try {
-      const { enableContextMenu } = await chrome.storage.local.get(['enableContextMenu']);
+      const { enableContextMenu } = await browser.storage.local.get(['enableContextMenu']);
       // Default to false (disabled)
       contextMenuToggle.checked = enableContextMenu === true;
     } catch (err) {
@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateThemeText(isDark);
     
     try {
-      await chrome.storage.local.set({ theme: isDark ? 'dark' : 'light' });
+      await browser.storage.local.set({ theme: isDark ? 'dark' : 'light' });
     } catch (err) {
       console.error('Error saving theme:', err);
     }
@@ -71,9 +71,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const enabled = contextMenuToggle.checked;
     
     try {
-      await chrome.storage.local.set({ enableContextMenu: enabled });
+      await browser.storage.local.set({ enableContextMenu: enabled });
       // Notify background script to update context menu
-      chrome.runtime.sendMessage({ action: 'update-context-menu', enabled });
+      browser.runtime.sendMessage({ action: 'update-context-menu', enabled });
     } catch (err) {
       console.error('Error saving context menu setting:', err);
     }
@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Load version from manifest
   function loadVersion() {
-    const manifest = chrome.runtime.getManifest();
+    const manifest = browser.runtime.getManifest();
     if (versionNumber && manifest.version) {
       versionNumber.textContent = manifest.version;
     }
@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Coffee Button Handler
   coffeeBtn.onclick = () => {
-    chrome.tabs.create({ url: 'https://www.buymeacoffee.com/0xdps' });
+    browser.tabs.create({ url: 'https://www.buymeacoffee.com/0xdps' });
   };
 
   closeSettings.onclick = () => {
@@ -180,10 +180,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function openPin(pinId) {
     const stored = (await getPins()).find(x => x.id === pinId);
     if (stored?.pageUrl) {
-      chrome.runtime.sendMessage({ action: 'open-and-highlight', pin: stored }, (resp) => {
-        if (chrome.runtime.lastError) {
+      browser.runtime.sendMessage({ action: 'open-and-highlight', pin: stored }, (resp) => {
+        if (browser.runtime.lastError) {
           // Fallback: just open the URL
-          chrome.tabs.create({ url: stored.pageUrl });
+          browser.tabs.create({ url: stored.pageUrl });
         } else {
           // Close popup after opening
           window.close();
@@ -735,7 +735,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.addEventListener('click', (e) => {
     if (e.target.id === 'helpLink') {
       e.preventDefault();
-      chrome.tabs.create({ url: 'https://github.com/0xdps/gpt-pinboard-extension' });
+      browser.tabs.create({ url: 'https://github.com/0xdps/gpt-pinboard-extension' });
     }
   });
 

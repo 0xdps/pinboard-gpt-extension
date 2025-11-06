@@ -14,19 +14,19 @@
     
     console.log('GPT Pinboard: Web verification script loaded');
     
-    // Get runtime reference (Chrome only)
-    if (!chrome?.runtime) {
-        console.log('GPT Pinboard: Chrome extension runtime not available');
+    // Get runtime reference (Firefox only)
+    if (!browser?.runtime) {
+        console.log('GPT Pinboard: Firefox extension runtime not available');
         return;
     }
     
-    const runtime = chrome.runtime;
+    const runtime = browser.runtime;
     
     // Inject extension identification into the page
     function injectExtensionIdentifier() {
         // Get installation data from storage
         
-        chrome.storage.local.get(['gpt-pinboard-install'], (result) => {
+        browser.storage.local.get(['gpt-pinboard-install'], (result) => {
             const installData = result['gpt-pinboard-install'];
             
             if (installData) {
@@ -48,7 +48,7 @@
                     installToken: installData.installToken,
                     installDate: installData.installDate,
                     version: installData.version,
-                    browser: 'chrome'
+                    browser: 'firefox'
                 };
                 
                 console.log('GPT Pinboard: Extension marker injected successfully');

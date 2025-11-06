@@ -73,28 +73,37 @@ function createPinButtonForMessage(messageContainer) {
     pinButton.title = 'Pin this message (GPT Pinboard)';
     pinButton.setAttribute('aria-label', 'Pin this message');
     
-    // Create icon with error handling
+    // Create icon with consistent styling
     try {
       const img = document.createElement('img');
       img.src = runtime.getURL('icons/icon-16.png');
       img.width = 16;
       img.height = 16;
-      img.style.display = 'block';
+      img.style.cssText = `
+        display: block;
+        transition: filter 0.2s ease;
+      `;
       img.alt = '';
       img.setAttribute('aria-hidden', 'true');
       
       // Handle image load errors
       img.onerror = () => {
-        // Fallback to text icon
-        pinButton.innerHTML = '📌';
-        pinButton.style.fontSize = '14px';
+        // Fallback to SVG icon
+        pinButton.innerHTML = `
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="#ff6b35" style="display: block;">
+            <path d="M16 12V4H17V2H7V4H8V12L6 14V16H11V22H13V16H18V14L16 12Z"/>
+          </svg>
+        `;
       };
       
       pinButton.appendChild(img);
     } catch (error) {
-      // Fallback to text icon
-      pinButton.innerHTML = '📌';
-      pinButton.style.fontSize = '14px';
+      // Fallback to SVG icon
+      pinButton.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="#ff6b35" style="display: block;">
+          <path d="M16 12V4H17V2H7V4H8V12L6 14V16H11V22H13V16H18V14L16 12Z"/>
+        </svg>
+      `;
     }
     
     // Apply optimized styles
@@ -118,19 +127,19 @@ function createPinButtonForMessage(messageContainer) {
       backdrop-filter: blur(4px);
     `;
     
-    // Enhanced hover effects
+    // Enhanced hover effects with proper icon handling
     const handleMouseEnter = () => {
-      pinButton.style.background = '#3b82f6';
-      pinButton.style.color = 'white';
-      pinButton.style.borderColor = '#3b82f6';
+      pinButton.style.background = 'rgba(255, 255, 255, 1)';
+      pinButton.style.borderColor = '#ff6b35';
       pinButton.style.transform = 'scale(1.05)';
+      pinButton.style.boxShadow = '0 4px 12px rgba(255, 107, 53, 0.25)';
     };
     
     const handleMouseLeave = () => {
       pinButton.style.background = 'rgba(255, 255, 255, 0.9)';
-      pinButton.style.color = '#6b7280';
       pinButton.style.borderColor = '#e5e7eb';
       pinButton.style.transform = 'scale(1)';
+      pinButton.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.1)';
     };
     
     // Optimized event handling with passive listeners where possible
@@ -162,9 +171,28 @@ function createPinButtonForMessage(messageContainer) {
         messageContainer.style.position = 'relative';
       }
       
-      // Show button on message hover with better performance
-      const showButton = () => pinButton.style.opacity = '1';
-      const hideButton = () => pinButton.style.opacity = '0';
+      // Show button on message hover with improved stability
+      let hideTimeout;
+      
+      const showButton = () => {
+        clearTimeout(hideTimeout);
+        pinButton.style.opacity = '1';
+      };
+      
+      const hideButton = () => {
+        // Add small delay to prevent flickering when moving between message and button
+        hideTimeout = setTimeout(() => {
+          pinButton.style.opacity = '0';
+        }, 100);
+      };
+      
+      // Keep button visible when hovering over the button itself
+      pinButton.addEventListener('mouseenter', () => {
+        clearTimeout(hideTimeout);
+        pinButton.style.opacity = '1';
+      }, { passive: true });
+      
+      pinButton.addEventListener('mouseleave', hideButton, { passive: true });
       
       messageContainer.addEventListener('mouseenter', showButton, { passive: true });
       messageContainer.addEventListener('mouseleave', hideButton, { passive: true });

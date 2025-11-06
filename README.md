@@ -36,6 +36,8 @@ No accounts. No sync drama. Just fast access to what you actually need.
 
 **Chrome:** [🚀 Install from Chrome Web Store](https://chromewebstore.google.com/detail/pingpt-%E2%80%94-chatgpt-message/hdhoaialemjelcfjjmjkkhkffiggbnap)
 
+**Chrome:** [🔗 Install from Chrome Web Store](https://chromewebstore.google.com/detail/pingpt-%E2%80%94-chatgpt-message/hdhoaialemjelcfjjmjkkhkffiggbnap)
+
 **Firefox:** [🦊 Install from Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/gpt-pinboard/)
 
 One-click install with automatic updates for both browsers.
@@ -79,7 +81,7 @@ Visit our official website: **[gptpins.dps.codes](https://gptpins.dps.codes)**
 
 The website includes:
 - Interactive feature showcase with browser detection
-- Installation guides for Chrome, Firefox, Safari, Edge
+- Installation guides for Chrome and Firefox
 - Usage tutorials and developer documentation
 - User feedback collection system
 
@@ -158,6 +160,7 @@ For detailed development instructions, see **[DEVELOPMENT.md](DEVELOPMENT.md)**.
 npm install          # Install dependencies
 npm run build        # Generate icons and assets
 npm run dev:chrome   # Development build for Chrome
+npm run dev:chrome   # Development build for Chrome
 npm run dev:firefox  # Development build for Firefox
 npm run dev:website  # Run website locally
 npm run pack         # Package extension for stores
@@ -183,6 +186,7 @@ npm install
 npm run build
 
 # 4. Load in browser
+# Chrome: Load build/chrome/ folder in chrome://extensions/
 # Chrome: Load build/chrome/ folder in chrome://extensions/
 # Firefox: Load build/firefox/ folder in about:debugging
 ```

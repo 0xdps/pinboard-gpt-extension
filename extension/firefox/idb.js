@@ -1,23 +1,23 @@
 /**
- * Simplified Chrome Storage API wrapper
- * Uses chrome.storage.sync for automatic syncing across devices
- * No backward compatibility - Chrome extensions only
+ * Firefox Storage API wrapper  
+ * Uses browser.storage.sync for automatic syncing across devices
+ * Firefox extension specific - no cross-browser compatibility
  */
 
 const STORAGE_KEY = 'pins';
 const SETTINGS_KEY = 'settings';
 
-// Chrome sync quota limits (for reference)
+// Firefox sync quota limits (for reference)
 const SYNC_QUOTA_BYTES = 102400; // 100KB total
 const SYNC_MAX_ITEMS = 512;
 
-// Validate Chrome extension environment
-if (typeof chrome === 'undefined' || !chrome.storage?.sync) {
-  throw new Error('GPT Pinboard requires Chrome extension environment with storage.sync permission');
+// Validate Firefox extension environment
+if (typeof browser === 'undefined' || !browser.storage?.sync) {
+  throw new Error('GPT Pinboard requires Firefox extension environment with storage permission');
 }
 
 async function idbAdd(pin) {
-  const result = await chrome.storage.sync.get([STORAGE_KEY]);
+  const result = await browser.storage.sync.get([STORAGE_KEY]);
   const pins = result[STORAGE_KEY] || [];
   
   // Find and update existing pin or add new one
@@ -28,24 +28,24 @@ async function idbAdd(pin) {
     pins.push(pin);
   }
   
-  await chrome.storage.sync.set({ [STORAGE_KEY]: pins });
+  await browser.storage.sync.set({ [STORAGE_KEY]: pins });
   return pin;
 }
 
 async function idbGetAll() {
-  const result = await chrome.storage.sync.get([STORAGE_KEY]);
+  const result = await browser.storage.sync.get([STORAGE_KEY]);
   return result[STORAGE_KEY] || [];
 }
 
 async function idbDelete(id) {
-  const result = await chrome.storage.sync.get([STORAGE_KEY]);
+  const result = await browser.storage.sync.get([STORAGE_KEY]);
   const pins = result[STORAGE_KEY] || [];
   const filtered = pins.filter(p => p.id !== id);
-  await chrome.storage.sync.set({ [STORAGE_KEY]: filtered });
+  await browser.storage.sync.set({ [STORAGE_KEY]: filtered });
 }
 
 async function idbClear() {
-  await chrome.storage.sync.set({ [STORAGE_KEY]: [] });
+  await browser.storage.sync.set({ [STORAGE_KEY]: [] });
 }
 
 // Get a single pin by ID
@@ -54,9 +54,9 @@ async function idbGet(id) {
   return pins.find(p => p.id === id) || null;
 }
 
-// Settings management using chrome.storage.local (for non-synced preferences)
+// Settings management using browser.storage.local (for non-synced preferences)
 async function getSettings() {
-  const result = await chrome.storage.local.get([SETTINGS_KEY]);
+  const result = await browser.storage.local.get([SETTINGS_KEY]);
   return result[SETTINGS_KEY] || {
     theme: 'light',
     enableContextMenu: false
@@ -66,7 +66,7 @@ async function getSettings() {
 async function updateSettings(newSettings) {
   const currentSettings = await getSettings();
   const updatedSettings = { ...currentSettings, ...newSettings };
-  await chrome.storage.local.set({ [SETTINGS_KEY]: updatedSettings });
+  await browser.storage.local.set({ [SETTINGS_KEY]: updatedSettings });
   return updatedSettings;
 }
 
@@ -83,4 +83,3 @@ async function getStorageStats() {
     maxSize: SYNC_QUOTA_BYTES
   };
 }
-

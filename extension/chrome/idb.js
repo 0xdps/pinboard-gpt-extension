@@ -1,7 +1,7 @@
 /**
- * Simplified Chrome Storage API wrapper
+ * Chrome Storage API wrapper
  * Uses chrome.storage.sync for automatic syncing across devices
- * No backward compatibility - Chrome extensions only
+ * Chrome extension specific - no cross-browser compatibility
  */
 
 const STORAGE_KEY = 'pins';
@@ -83,4 +83,3 @@ async function getStorageStats() {
     maxSize: SYNC_QUOTA_BYTES
   };
 }
-

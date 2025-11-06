@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Architecture Overhaul**: Separated browser-specific code for better performance
+  - **Chrome Build**: Uses native `chrome.*` APIs directly (Manifest V3)
+  - **Firefox Build**: Uses native `browser.*` APIs directly (Manifest V2)
+  - **Eliminated Runtime Detection**: No more `typeof chrome !== 'undefined'` checks
+  - **Browser-Specific Files**: `extension/chrome/*.js` and `extension/firefox/*.js`
+  - **Common Resources**: Shared HTML/CSS in `extension/common/`
+
+### Improved  
+- **Code Cleanliness**: Removed all backward compatibility layers
+  - Direct API usage in each browser build (no runtime detection overhead)
+  - Cleaner error handling without cross-browser edge cases  
+  - Better performance from eliminating compatibility checks
+  - Easier maintenance with clear separation of concerns
+
+### Technical
+- **Build System**: Updated to copy browser-specific JS files correctly
+  - `npm run build:chrome` - Chrome-optimized build
+  - `npm run build:firefox` - Firefox-optimized build  
+  - `npm run build` - Both browsers
+  - Proper manifest versions (V3 for Chrome, V2 for Firefox)
+
 ## [1.1.0] - 2025-10-23
 
 ### Added
