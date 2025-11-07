@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', async () => {
   const listEl = document.getElementById('list');
   const search = document.getElementById('search');
-  const clearSearchBtn = document.getElementById('clearSearch');
   const searchContainer = document.querySelector('.search-container');
   const exportBtn = document.getElementById('exportBtn');
   const importBtn = document.getElementById('importBtn');
@@ -500,7 +499,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       
       if (q) {
         // Search found no results
-        messageP.innerHTML = `No pins found for "<strong>${escapeHtml(q)}</strong>"<br><br>Try a different search term or <button type="button" onclick="document.getElementById('search').value=''; updateClearButton(); render();" style="background:none;border:none;color:var(--primary);cursor:pointer;text-decoration:underline;padding:0;font-size:inherit;">clear search</button>`;
+        messageP.innerHTML = `No pins found for "<strong>${escapeHtml(q)}</strong>"`;
       } else {
         // No pins at all
         messageP.innerHTML = 'No pins yet!<br><br>Visit ChatGPT and click the pin button next to any message to save it here.';
@@ -555,6 +554,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const counter = document.createElement('div');
       counter.className = 'search-results-counter';
       counter.style.cssText = `
+        margin-top: var(-1 * --space-2);
         padding: var(--space-2) var(--space-5);
         font-size: var(--font-size-xs);
         color: var(--text-tertiary);
@@ -577,14 +577,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // Clear search functionality
-  clearSearchBtn.onclick = () => {
-    search.value = '';
-    updateClearButton();
-    render();
-    search.focus();
-  };
-  
   // Keyboard shortcuts
   document.addEventListener('keydown', (e) => {
     // Escape key clears search or closes modal
