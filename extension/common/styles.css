@@ -105,6 +105,7 @@ body {
   font-size: var(--font-size-sm);
   line-height: 1.5;
   transition: background-color var(--transition-base), color var(--transition-base);
+  border: 2px solid var(--border-color);
 }
 
 body.dark-mode {
