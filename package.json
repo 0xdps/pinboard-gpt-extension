@@ -1,7 +1,6 @@
 {
   "name": "pingpt-extension",
   "version": "2.0.0",
-  "type": "module",
   "description": "Pin individual ChatGPT messages, not the entire chat. Add custom names and tags, search instantly, and jump back to the original conversation. Features dark mode support for comfortable viewing.",
   "scripts": {
     "clean": "rm -rf build && rm -rf pack && rm -rf extension/common/icons/*.png && rm -rf website/images/*.png && rm -rf website/images/favicon.ico && rm -rf assets/icons/",
