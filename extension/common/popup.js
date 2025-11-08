@@ -10,6 +10,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   const themeText = document.getElementById('themeText');
   const themeToggle = document.getElementById('themeToggle');
   
+  // Filter tabs
+  const filterAll = document.getElementById('filterAll');
+  const filterChats = document.getElementById('filterChats');
+  const filterMessages = document.getElementById('filterMessages');
+  let currentFilter = 'all'; // 'all', 'chats', 'messages'
+  
   // Settings Modal Elements
   const settingsBtn = document.getElementById('settingsBtn');
   const coffeeBtn = document.getElementById('coffeeBtn');
@@ -292,6 +298,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     pinElement.removeAttribute('id');
     pinElement.style.display = 'flex';
     pinElement.setAttribute('data-pin-id', pin.id);
+    pinElement.setAttribute('data-pin-type', pin.type || 'message');
+    
+    // Add visual indicator for chat pins
+    if (pin.type === 'chat') {
+      pinElement.classList.add('chat-pin');
+    }
     
     // Add click handler to the entire card (for opening)
     pinElement.style.cursor = 'pointer';
@@ -312,12 +324,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     const deleteBtn = pinElement.querySelector('.deleteBtn');
     const infoBtn = pinElement.querySelector('.infoBtn');
     
-    // Populate content with better text handling
-    const title = pin.name ? escapeHtml(pin.name.trim()) : '';
-    const messageLength = 200; // Increased length
-    const messagePreview = pin.messageText.length > messageLength 
-      ? pin.messageText.slice(0, messageLength).trim() + '…' 
-      : pin.messageText;
+    // Handle different pin types
+    let title, messagePreview;
+    
+    if (pin.type === 'chat') {
+      // Chat pin
+      title = '💬 ' + (pin.chatTitle || 'Untitled Chat');
+      // Show description if available, otherwise show default text
+      messagePreview = pin.description || pin.messageText || 'Entire conversation pinned';
+    } else {
+      // Message pin
+      title = pin.name ? escapeHtml(pin.name.trim()) : '';
+      const messageLength = 200;
+      messagePreview = pin.messageText && pin.messageText.length > messageLength 
+        ? pin.messageText.slice(0, messageLength).trim() + '…' 
+        : (pin.messageText || '');
+    }
     
     // Set title (hide if empty)
     if (title) {
@@ -426,6 +448,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     
     const filtered = pins.filter(p => {
+      // Apply filter type
+      if (currentFilter === 'chats' && p.type !== 'chat') return false;
+      if (currentFilter === 'messages' && p.type === 'chat') return false;
+      
       if (!q) return true;
       
       // Handle tag-specific search
@@ -438,6 +464,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const searchTerms = q.split(' ').filter(term => term.length > 0);
       return searchTerms.every(term => 
         (p.name && p.name.toLowerCase().includes(term)) ||
+        (p.chatTitle && p.chatTitle.toLowerCase().includes(term)) ||
         (p.messageText && p.messageText.toLowerCase().includes(term)) ||
         (p.tags && p.tags.join(' ').toLowerCase().includes(term)) ||
         (p.site && p.site.toLowerCase().includes(term))
@@ -451,11 +478,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         return bRelevance - aRelevance;
       }
       
-      return b.pinnedAt - a.pinnedAt;
+      // Sort by pinnedAt (most recent first), fallback to timestamp
+      const aTime = a.pinnedAt || a.timestamp || 0;
+      const bTime = b.pinnedAt || b.timestamp || 0;
+      return bTime - aTime;
     });
     
-    // Update search results counter
-    updateSearchResults(filtered.length, pins.length, q);
+    // Only show counter when actively searching, not when using filter tabs
+    if (q) {
+      updateSearchResults(filtered.length, pins.length, q);
+    } else {
+      // Remove counter when not searching (including filter tabs)
+      const existingCounter = document.querySelector('.search-results-counter');
+      if (existingCounter) {
+        existingCounter.remove();
+      }
+    }
     
     
     if (!filtered.length) {
@@ -478,6 +516,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (q) {
         // Search found no results
         messageP.innerHTML = `No pins found for "<strong>${escapeHtml(q)}</strong>"`;
+      } else if (currentFilter === 'chats') {
+        // No chat pins
+        messageP.innerHTML = 'No chat pins yet!<br><br>Visit ChatGPT and click the "Pin Chat" button to save entire conversations here.';
+      } else if (currentFilter === 'messages') {
+        // No message pins
+        messageP.innerHTML = 'No message pins yet!<br><br>Visit ChatGPT and click the pin button next to any message to save it here.';
       } else {
         // No pins at all
         messageP.innerHTML = 'No pins yet!<br><br>Visit ChatGPT and click the pin button next to any message to save it here.';
@@ -708,6 +752,19 @@ document.addEventListener('DOMContentLoaded', async () => {
       chrome.tabs.create({ url: 'https://github.com/0xdps/gpt-pinboard-extension' });
     }
   });
+
+  // Filter tab handlers
+  function setActiveFilter(filter) {
+    currentFilter = filter;
+    filterAll.classList.toggle('active', filter === 'all');
+    filterChats.classList.toggle('active', filter === 'chats');
+    filterMessages.classList.toggle('active', filter === 'messages');
+    render();
+  }
+  
+  filterAll.addEventListener('click', () => setActiveFilter('all'));
+  filterChats.addEventListener('click', () => setActiveFilter('chats'));
+  filterMessages.addEventListener('click', () => setActiveFilter('messages'));
 
   await updateSyncStatus();
   updateClearButton();

@@ -490,44 +490,25 @@ function createPinDialog(messageText, pinData, isDarkMode, resolve, reject = res
     
     // Create dialog elements safely with DOM methods
     
-    // Header with SVG icon
+    // Header with extension icon
     const header = document.createElement('h2');
     header.style.cssText = `margin: 0 0 20px 0; font-size: 20px; color: ${colors.headingText}; display: flex; align-items: center; gap: 8px;`;
     
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('width', '20');
-    svg.setAttribute('height', '20');
-    svg.setAttribute('viewBox', '0 0 24 24');
+    // Use extension icon
+    try {
+      const runtime = chrome.runtime || browser.runtime;
+      if (runtime && runtime.getURL) {
+        const iconImg = document.createElement('img');
+        iconImg.src = runtime.getURL('icons/icon-32.png');
+        iconImg.width = 24;
+        iconImg.height = 24;
+        iconImg.style.cssText = 'display: block; flex-shrink: 0;';
+        header.appendChild(iconImg);
+      }
+    } catch (error) {
+      console.log('GPT Pinboard: Could not load icon for dialog');
+    }
     
-    const ellipse = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
-    ellipse.setAttribute('cx', '12');
-    ellipse.setAttribute('cy', '8');
-    ellipse.setAttribute('rx', '6');
-    ellipse.setAttribute('ry', '5');
-    ellipse.setAttribute('fill', '#febf00');
-    ellipse.setAttribute('stroke', '#999');
-    ellipse.setAttribute('stroke-width', '0.5');
-    ellipse.setAttribute('opacity', '0.9');
-    
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('d', 'M 12 13 L 10 20 L 14 20 Z');
-    path.setAttribute('fill', '#333');
-    
-    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    text.setAttribute('x', '12');
-    text.setAttribute('y', '9.5');
-    text.setAttribute('text-anchor', 'middle');
-    text.setAttribute('font-family', 'Arial, sans-serif');
-    text.setAttribute('font-size', '3.5');
-    text.setAttribute('font-weight', 'bold');
-    text.setAttribute('fill', '#4a71f6');
-    text.textContent = 'PIN';
-    
-    svg.appendChild(ellipse);
-    svg.appendChild(path);
-    svg.appendChild(text);
-    
-    header.appendChild(svg);
     header.appendChild(document.createTextNode('Pin Message'));
     
     // Preview section
@@ -1047,7 +1028,7 @@ function showNotification(message) {
     position: fixed;
     top: 20px;
     right: 20px;
-    z-index: 10001;
+    z-index: 9999;
     background: #10a37f;
     color: white;
     padding: 12px 20px;
@@ -2127,6 +2108,589 @@ function createMessageSelectionDropdown(messages, onSelect) {
   return dropdown;
 }
 
+// Get current chat ID from URL
+function getChatId() {
+  const path = window.location.pathname;
+  const match = path.match(/\/c\/([a-zA-Z0-9-]+)/);
+  return match ? match[1] : null;
+}
+
+// Get first user message from chat
+function getFirstUserMessage() {
+  const mainContent = document.querySelector('main') || document.body;
+  const messages = mainContent.querySelectorAll('[data-message-author-role="user"]');
+  
+  if (messages.length > 0) {
+    const firstMessage = messages[0];
+    const text = (firstMessage.innerText || firstMessage.textContent || '').trim();
+    // Return first 200 chars
+    return text.length > 200 ? text.slice(0, 200) + '...' : text;
+  }
+  
+  return '';
+}
+
+// Get chat title from page - prioritize sidebar active item
+function getChatTitle() {
+  // Find the active chat in sidebar using data-active attribute
+  const activeLink = document.querySelector('a[data-active]');
+  
+  if (activeLink) {
+    // Get all text content from the link, excluding nested elements we don't want
+    const textContent = activeLink.textContent || activeLink.innerText;
+    if (textContent && textContent.trim()) {
+      const title = textContent.trim();
+      console.log('GPT Pinboard: Found chat title from sidebar:', title);
+      return title;
+    }
+  }
+  
+  // Fallback to page title selectors
+  const titleSelectors = [
+    'h1',
+    '[class*="title"]',
+    'main h1',
+    'main [role="heading"]'
+  ];
+  
+  for (const selector of titleSelectors) {
+    const element = document.querySelector(selector);
+    if (element && element.innerText && element.innerText.trim()) {
+      console.log('GPT Pinboard: Found chat title from page:', element.innerText.trim());
+      return element.innerText.trim();
+    }
+  }
+  
+  console.log('GPT Pinboard: No chat title found, using default');
+  return 'Untitled Chat';
+}
+
+// Check if current chat is pinned
+async function isChatPinned(chatId) {
+  if (!chatId) return false;
+  const pins = await idbGetAll();
+  return pins.some(pin => pin.type === 'chat' && pin.chatId === chatId);
+}
+
+// Pin current chat - opens dialog for name and tags
+async function pinChat(chatId, chatTitle) {
+  if (!chatId) {
+    showNotification('⚠️ Cannot pin this chat. Please navigate to a specific conversation.');
+    return;
+  }
+  
+  // Open dialog to get name and tags from user
+  await openChatPinDialog(chatId, chatTitle);
+}
+
+// Open dialog for pinning chat with name and tags
+function openChatPinDialog(chatId, chatTitle) {
+  return new Promise(async (resolve) => {
+    // Get theme setting from storage
+    let isDarkMode = false;
+    try {
+      const result = await chrome.storage.local.get(['theme']);
+      isDarkMode = result.theme === 'dark';
+    } catch (err) {
+      console.log('Could not load theme setting:', err);
+    }
+
+    const colors = isDarkMode ? {
+      overlay: 'rgba(0, 0, 0, 0.7)',
+      dialogBg: '#2d2d2d',
+      headingText: '#ffffff',
+      labelText: '#b8b8b8',
+      inputBg: '#1a1a1a',
+      inputBorder: '#404040',
+      inputText: '#e4e4e4',
+      inputPlaceholder: '#808080',
+      tagBg: '#1a3d5f',
+      tagText: '#5da5da',
+      cancelBg: '#1a1a1a',
+      cancelBorder: '#404040',
+      cancelText: '#b8b8b8',
+      cancelHover: '#2d2d2d',
+      saveBg: '#10a37f',
+      saveText: '#ffffff',
+      saveHover: '#0d8a6a',
+      focusBorder: '#10a37f',
+      helpText: '#808080'
+    } : {
+      overlay: 'rgba(0, 0, 0, 0.5)',
+      dialogBg: '#ffffff',
+      headingText: '#202124',
+      labelText: '#5f6368',
+      inputBg: '#ffffff',
+      inputBorder: '#dadce0',
+      inputText: '#202124',
+      inputPlaceholder: '#80868b',
+      tagBg: '#e8f0fe',
+      tagText: '#1a73e8',
+      cancelBg: '#ffffff',
+      cancelBorder: '#dadce0',
+      cancelText: '#5f6368',
+      cancelHover: '#f8f9fa',
+      saveBg: '#10a37f',
+      saveText: '#ffffff',
+      saveHover: '#0d8a6a',
+      focusBorder: '#10a37f',
+      helpText: '#80868b'
+    };
+
+    // Create modal overlay
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: ${colors.overlay};
+      z-index: 100000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+    `;
+
+    // Create dialog
+    const dialog = document.createElement('div');
+    dialog.style.cssText = `
+      background: ${colors.dialogBg};
+      border-radius: 12px;
+      padding: 24px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      font-family: system-ui, -apple-system, sans-serif;
+    `;
+
+    // Header
+    const header = document.createElement('h2');
+    header.style.cssText = `margin: 0 0 20px 0; font-size: 20px; color: ${colors.headingText}; display: flex; align-items: center; gap: 8px;`;
+    
+    // Use extension icon
+    try {
+      const runtime = chrome.runtime || browser.runtime;
+      if (runtime && runtime.getURL) {
+        const iconImg = document.createElement('img');
+        iconImg.src = runtime.getURL('icons/icon-32.png');
+        iconImg.width = 24;
+        iconImg.height = 24;
+        iconImg.style.cssText = 'display: block; flex-shrink: 0;';
+        header.appendChild(iconImg);
+      }
+    } catch (error) {
+      console.log('GPT Pinboard: Could not load icon for dialog');
+    }
+    
+    const headerText = document.createElement('span');
+    headerText.textContent = 'Pin Chat';
+    header.appendChild(headerText);
+
+    // Name input section
+    const nameSection = document.createElement('div');
+    nameSection.style.cssText = 'margin-bottom: 16px;';
+
+    const nameLabel = document.createElement('label');
+    nameLabel.setAttribute('for', 'chat-pin-name');
+    nameLabel.style.cssText = `display: block; font-weight: 600; margin-bottom: 6px; color: ${colors.labelText}; font-size: 14px;`;
+    nameLabel.textContent = 'Chat Name';
+
+    const nameInputEl = document.createElement('input');
+    nameInputEl.type = 'text';
+    nameInputEl.id = 'chat-pin-name';
+    nameInputEl.value = chatTitle || 'Untitled Chat';
+    nameInputEl.placeholder = 'Give this chat a name...';
+    nameInputEl.style.cssText = `
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid ${colors.inputBorder};
+      border-radius: 6px;
+      font-size: 14px;
+      color: ${colors.inputText};
+      background: ${colors.inputBg};
+      font-family: system-ui, -apple-system, sans-serif;
+      box-sizing: border-box;
+      transition: border-color 0.2s;
+    `;
+
+    nameSection.appendChild(nameLabel);
+    nameSection.appendChild(nameInputEl);
+
+    // Description input section
+    const descSection = document.createElement('div');
+    descSection.style.cssText = 'margin-bottom: 16px;';
+
+    const descLabel = document.createElement('label');
+    descLabel.setAttribute('for', 'chat-pin-desc');
+    descLabel.style.cssText = `display: block; font-weight: 600; margin-bottom: 6px; color: ${colors.labelText}; font-size: 14px;`;
+    descLabel.textContent = 'Description (optional)';
+
+    const descInputEl = document.createElement('textarea');
+    descInputEl.id = 'chat-pin-desc';
+    const firstMessage = getFirstUserMessage();
+    descInputEl.value = firstMessage;
+    descInputEl.placeholder = 'Add a description or first prompt...';
+    descInputEl.rows = 3;
+    descInputEl.style.cssText = `
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid ${colors.inputBorder};
+      border-radius: 6px;
+      font-size: 14px;
+      color: ${colors.inputText};
+      background: ${colors.inputBg};
+      font-family: system-ui, -apple-system, sans-serif;
+      box-sizing: border-box;
+      transition: border-color 0.2s;
+      resize: vertical;
+    `;
+
+    descSection.appendChild(descLabel);
+    descSection.appendChild(descInputEl);
+
+    // Tags section
+    const tagsSection = document.createElement('div');
+    tagsSection.style.cssText = 'margin-bottom: 24px;';
+
+    const tagsLabel = document.createElement('label');
+    tagsLabel.style.cssText = `display: block; font-weight: 600; margin-bottom: 6px; color: ${colors.labelText}; font-size: 14px;`;
+    tagsLabel.textContent = 'Tags (optional, max 3)';
+
+    const tagsContainerEl = document.createElement('div');
+    tagsContainerEl.id = 'chat-tags-container';
+    tagsContainerEl.style.cssText = `
+      min-height: 40px;
+      border: 1px solid ${colors.inputBorder};
+      border-radius: 6px;
+      padding: 8px;
+      background: ${colors.inputBg};
+      margin-bottom: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    `;
+
+    const tagInputEl = document.createElement('input');
+    tagInputEl.type = 'text';
+    tagInputEl.id = 'chat-tag-input';
+    tagInputEl.placeholder = 'Add a tag...';
+    tagInputEl.style.cssText = `
+      border: none;
+      outline: none;
+      flex: 1;
+      min-width: 100px;
+      font-size: 14px;
+      color: ${colors.inputText};
+      background: transparent;
+      font-family: system-ui, -apple-system, sans-serif;
+    `;
+
+    tagsContainerEl.appendChild(tagInputEl);
+
+    const tagsHelp = document.createElement('div');
+    tagsHelp.style.cssText = `font-size: 12px; color: ${colors.helpText};`;
+    tagsHelp.textContent = 'Press Enter to add tags';
+
+    tagsSection.appendChild(tagsLabel);
+    tagsSection.appendChild(tagsContainerEl);
+    tagsSection.appendChild(tagsHelp);
+
+    // Tags array
+    const tags = [];
+
+    // Tag input handler
+    tagInputEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && tagInputEl.value.trim() && tags.length < 3) {
+        e.preventDefault();
+        const tag = tagInputEl.value.trim().toLowerCase();
+        if (!tags.includes(tag)) {
+          tags.push(tag);
+          
+          const tagEl = document.createElement('span');
+          tagEl.style.cssText = `
+            background: ${colors.tagBg};
+            color: ${colors.tagText};
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 13px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+          `;
+          tagEl.textContent = tag;
+          
+          const removeBtn = document.createElement('button');
+          removeBtn.textContent = '×';
+          removeBtn.style.cssText = `
+            background: none;
+            border: none;
+            color: ${colors.tagText};
+            font-size: 18px;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+            width: 16px;
+            height: 16px;
+          `;
+          removeBtn.onclick = () => {
+            const index = tags.indexOf(tag);
+            if (index > -1) tags.splice(index, 1);
+            tagEl.remove();
+            if (tags.length < 3) tagInputEl.disabled = false;
+          };
+          
+          tagEl.appendChild(removeBtn);
+          tagsContainerEl.insertBefore(tagEl, tagInputEl);
+          tagInputEl.value = '';
+          
+          if (tags.length >= 3) tagInputEl.disabled = true;
+        }
+      }
+    });
+
+    // Buttons
+    const buttonsDiv = document.createElement('div');
+    buttonsDiv.style.cssText = 'display: flex; gap: 12px; justify-content: flex-end;';
+
+    const cancelBtn = document.createElement('button');
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.style.cssText = `
+      padding: 10px 20px;
+      border: 1px solid ${colors.cancelBorder};
+      background: ${colors.cancelBg};
+      color: ${colors.cancelText};
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    `;
+    cancelBtn.onmouseover = () => cancelBtn.style.background = colors.cancelHover;
+    cancelBtn.onmouseout = () => cancelBtn.style.background = colors.cancelBg;
+    cancelBtn.onclick = () => {
+      overlay.remove();
+      resolve();
+    };
+
+    const saveBtn = document.createElement('button');
+    saveBtn.textContent = 'Pin Chat';
+    saveBtn.style.cssText = `
+      padding: 10px 20px;
+      border: none;
+      background: ${colors.saveBg};
+      color: ${colors.saveText};
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    `;
+    saveBtn.onmouseover = () => saveBtn.style.background = colors.saveHover;
+    saveBtn.onmouseout = () => saveBtn.style.background = colors.saveBg;
+    saveBtn.onclick = async () => {
+      const chatName = nameInputEl.value.trim() || chatTitle || 'Untitled Chat';
+      const description = descInputEl.value.trim();
+      
+      const pin = {
+        id: `chat_${chatId}`,
+        type: 'chat',
+        chatId: chatId,
+        chatTitle: chatName,
+        name: chatName,
+        description: description,
+        messageText: description, // For search compatibility
+        tags: tags,
+        pageUrl: window.location.href,
+        timestamp: Date.now(),
+        pinnedAt: Date.now()
+      };
+      
+      await idbAdd(pin);
+      showNotification('✅ Chat pinned successfully!');
+      updateChatPinButton();
+      overlay.remove();
+      resolve();
+    };
+
+    buttonsDiv.appendChild(cancelBtn);
+    buttonsDiv.appendChild(saveBtn);
+
+    // Assemble dialog
+    dialog.appendChild(header);
+    dialog.appendChild(nameSection);
+    dialog.appendChild(descSection);
+    dialog.appendChild(tagsSection);
+    dialog.appendChild(buttonsDiv);
+    overlay.appendChild(dialog);
+    document.body.appendChild(overlay);
+
+    // Focus name input and select text
+    nameInputEl.focus();
+    nameInputEl.select();
+
+    // Close on escape
+    const escHandler = (e) => {
+      if (e.key === 'Escape') {
+        overlay.remove();
+        resolve();
+        document.removeEventListener('keydown', escHandler);
+      }
+    };
+    document.addEventListener('keydown', escHandler);
+
+    // Close on overlay click
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) {
+        overlay.remove();
+        resolve();
+      }
+    });
+  });
+}
+
+// Unpin current chat
+async function unpinChat(chatId) {
+  if (!chatId) return;
+  await idbDelete(`chat_${chatId}`);
+  showNotification('📌 Chat unpinned');
+  updateChatPinButton();
+}
+
+// Update the chat pin button appearance based on current state
+async function updateChatPinButton() {
+  const chatId = getChatId();
+  const button = document.getElementById('pingpt-chat-pin');
+  if (!button) return;
+  
+  if (!chatId) {
+    button.style.display = 'none';
+    return;
+  }
+  
+  const isPinned = await isChatPinned(chatId);
+  button.style.display = 'flex';
+  
+  const icon = button.querySelector('.chat-pin-icon');
+  const text = button.querySelector('.chat-pin-text');
+  
+  if (isPinned) {
+    // Use extension icon for unpinned state
+    try {
+      const runtime = chrome.runtime || browser.runtime;
+      if (runtime && runtime.getURL) {
+        icon.innerHTML = `<img src="${runtime.getURL('icons/icon-16.png')}" width="16" height="16" style="display: block;" />`;
+      }
+    } catch (error) {
+      icon.innerHTML = `<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="display: block;"><path d="M9.828 3a3.002 3.002 0 0 1-4.243 0L3 1.414 1.414 3l1.828 1.828a3.002 3.002 0 0 0 0 4.243L2 10.414 5.414 14l1.343-1.242a3.002 3.002 0 0 0 4.243 0L13.586 14 15 12.586l-1.828-1.828a3.002 3.002 0 0 0 0-4.243L14.586 5 11.172 1.586 9.828 3z"/></svg>`;
+    }
+    text.textContent = 'Unpin Chat';
+    button.style.background = '#10a37f';
+  } else {
+    // Use extension icon for unpinned state
+    try {
+      const runtime = chrome.runtime || browser.runtime;
+      if (runtime && runtime.getURL) {
+        icon.innerHTML = `<img src="${runtime.getURL('icons/icon-16.png')}" width="16" height="16" style="display: block;" />`;
+      }
+    } catch (error) {
+      icon.innerHTML = `<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="display: block;"><path d="M9.828.722a.5.5 0 0 1 .354.146l4.95 4.95a.5.5 0 0 1 0 .707L11.707 10l2.647 2.646a.5.5 0 0 1-.708.708L11 10.707l-3.525 3.525a.5.5 0 0 1-.707 0L1.818 9.282a.5.5 0 0 1 0-.707l3.525-3.525L2.697 2.404a.5.5 0 0 1 .708-.708L6.05 4.343 9.474.92a.5.5 0 0 1 .354-.146z"/></svg>`;
+    }
+    text.textContent = 'Pin Chat';
+    button.style.background = '#2d3748';
+  }
+}
+
+// Add chat pin button
+function addChatPinButton() {
+  setTimeout(() => {
+    if (document.getElementById('pingpt-chat-pin')) return;
+    
+    const chatPinBtn = document.createElement('button');
+    chatPinBtn.id = 'pingpt-chat-pin';
+    
+    const icon = document.createElement('span');
+    icon.className = 'chat-pin-icon';
+    icon.style.cssText = 'display: flex; align-items: center; justify-content: center; flex-shrink: 0;';
+    
+    const text = document.createElement('span');
+    text.className = 'chat-pin-text';
+    text.style.cssText = 'font-size: 14px; margin-left: 8px;';
+    
+    chatPinBtn.appendChild(icon);
+    chatPinBtn.appendChild(text);
+    
+    chatPinBtn.title = 'Pin this entire conversation for quick access';
+    chatPinBtn.style.cssText = `
+      position: fixed;
+      bottom: 40px;
+      right: 20px;
+      z-index: 10000;
+      background: #2d3748;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      min-width: 160px;
+    `;
+    
+    chatPinBtn.addEventListener('mouseenter', () => {
+      chatPinBtn.style.transform = 'scale(1.05)';
+      chatPinBtn.style.boxShadow = '0 6px 16px rgba(0,0,0,0.3)';
+    });
+    
+    chatPinBtn.addEventListener('mouseleave', () => {
+      chatPinBtn.style.transform = 'scale(1)';
+      chatPinBtn.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
+    });
+    
+    chatPinBtn.addEventListener('click', async () => {
+      const chatId = getChatId();
+      if (!chatId) {
+        showNotification('⚠️ Cannot pin this page. Please navigate to a specific chat conversation.');
+        return;
+      }
+      
+      const isPinned = await isChatPinned(chatId);
+      
+      if (isPinned) {
+        await unpinChat(chatId);
+      } else {
+        const chatTitle = getChatTitle();
+        await pinChat(chatId, chatTitle);
+      }
+    });
+    
+    document.body.appendChild(chatPinBtn);
+    
+    // Initial update
+    updateChatPinButton();
+    
+    // Update when URL changes (for SPA navigation)
+    let lastUrl = location.href;
+    new MutationObserver(() => {
+      const url = location.href;
+      if (url !== lastUrl) {
+        lastUrl = url;
+        updateChatPinButton();
+      }
+    }).observe(document, { subtree: true, childList: true });
+  }, 1500);
+}
+
 // Add a manual pin button to the page for easier access
 function addManualPinButton() {
   // Wait for page to load
@@ -2137,22 +2701,15 @@ function addManualPinButton() {
     const manualBtn = document.createElement('button');
     manualBtn.id = 'pingpt-manual-pin';
     
-    // Use extension icon
-    const iconImg = document.createElement('img');
-    try {
-      const runtime = chrome.runtime;
-      if (runtime && runtime.getURL) {
-        iconImg.src = runtime.getURL('icons/icon-16.png');
-        iconImg.width = 16;
-        iconImg.height = 16;
-        iconImg.style.cssText = 'display: inline-block;';
-      }
-    } catch (error) {
-      // Fallback to simple text if icon fails
-      console.log('GPT Pinboard: Could not load icon for floating button');
-    }
-    
-    manualBtn.appendChild(iconImg);
+    // Use list icon for outline
+    const iconSpan = document.createElement('span');
+    iconSpan.innerHTML = `
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="display: block;">
+        <path d="M2.5 3.5a.5.5 0 0 1 0-1h11a.5.5 0 0 1 0 1h-11zm0 3a.5.5 0 0 1 0-1h11a.5.5 0 0 1 0 1h-11zm0 3a.5.5 0 0 1 0-1h11a.5.5 0 0 1 0 1h-11zm0 3a.5.5 0 0 1 0-1h11a.5.5 0 0 1 0 1h-11z"/>
+      </svg>
+    `;
+    iconSpan.style.cssText = 'display: flex; align-items: center; justify-content: center; flex-shrink: 0;';
+    manualBtn.appendChild(iconSpan);
     
     const buttonText = document.createElement('span');
     buttonText.textContent = 'Chat Outline';
@@ -2179,6 +2736,7 @@ function addManualPinButton() {
       flex-direction: row;
       align-items: center;
       justify-content: center;
+      min-width: 160px;
     `;
     
     manualBtn.addEventListener('mouseenter', () => {
@@ -2247,6 +2805,9 @@ function addManualPinButton() {
 
 // Initialize
 initializePinButtons();
+
+// Add chat pin button (top-right)
+addChatPinButton();
 
 // Add manual pin button
 addManualPinButton();
