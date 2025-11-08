@@ -12,8 +12,8 @@ html {
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     line-height: 1.6;
-    color: #1a1a1a;
-    background-color: #ffffff;
+    color: #f8fafc;
+    background-color: #0f172a;
 }
 
 .container {
@@ -36,12 +36,12 @@ a {
 }
 
 code {
-    background-color: #f1f5f9;
+    background-color: #1e293b;
     padding: 0.2rem 0.4rem;
     border-radius: 0.25rem;
     font-family: 'SF Mono', 'Monaco', 'Cascadia Code', monospace;
     font-size: 0.9em;
-    color: #1a1a1a;
+    color: #cbd5e1;
 }
 
 /* Inline Logo Styles */
@@ -64,9 +64,9 @@ code {
     top: 0;
     left: 0;
     right: 0;
-    background: rgba(255, 255, 255, 0.95);
+    background: rgba(15, 23, 42, 0.95);
     backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     z-index: 1000;
 }
 
@@ -105,7 +105,7 @@ code {
 }
 
 .nav-link {
-    color: #64748b;
+    color: #cbd5e1;
     font-weight: 500;
     padding: 0.5rem 0;
     border-bottom: 2px solid transparent;
@@ -134,7 +134,7 @@ code {
 .mobile-menu-btn span {
     width: 25px;
     height: 3px;
-    background-color: #1a1a1a;
+    background-color: #f8fafc;
     border-radius: 2px;
     transition: all 0.3s ease;
 }
@@ -142,7 +142,7 @@ code {
 /* Hero Section */
 .hero {
     padding: 8rem 0 6rem;
-    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
     position: relative;
     overflow: hidden;
 }
@@ -164,14 +164,14 @@ code {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 4rem;
-    align-items: center;
+    align-items: start;
 }
 
 .hero-title {
     font-size: 3.5rem;
     font-weight: 700;
     margin-bottom: 1.5rem;
-    color: #1a1a1a;
+    color: #f8fafc;
 }
 
 .hero-title .highlight {
@@ -183,7 +183,7 @@ code {
 
 .hero-subtitle {
     font-size: 1.25rem;
-    color: #64748b;
+    color: #cbd5e1;
     margin-bottom: 2.5rem;
     line-height: 1.7;
 }
@@ -244,14 +244,15 @@ code {
 }
 
 .badge {
-    background: rgba(255, 255, 255, 0.8);
+    background: rgba(30, 41, 59, 0.8);
     backdrop-filter: blur(10px);
     padding: 0.5rem 1rem;
     border-radius: 2rem;
     font-size: 0.875rem;
     font-weight: 500;
-    color: #475569;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    color: #cbd5e1;
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .hero-demo {
@@ -261,21 +262,22 @@ code {
 }
 
 .demo-browser {
-    background: white;
+    background: #1e293b;
     border-radius: 1rem;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
     overflow: hidden;
     width: 100%;
     max-width: 500px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .browser-header {
-    background: #f1f5f9;
+    background: #0f172a;
     padding: 1rem;
     display: flex;
     align-items: center;
     gap: 1rem;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .browser-dots {
@@ -294,17 +296,18 @@ code {
 .dot.green { background: #10b981; }
 
 .browser-url {
-    background: white;
+    background: #1e293b;
     padding: 0.5rem 1rem;
     border-radius: 0.5rem;
     font-size: 0.875rem;
-    color: #64748b;
+    color: #cbd5e1;
     flex: 1;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .browser-content {
     aspect-ratio: 16/10;
-    background: #f8fafc;
+    background: #0f172a;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -332,19 +335,19 @@ section {
     font-size: 2.75rem;
     font-weight: 700;
     margin-bottom: 1rem;
-    color: #1a1a1a;
+    color: #f8fafc;
 }
 
 .section-subtitle {
     font-size: 1.25rem;
-    color: #64748b;
+    color: #cbd5e1;
     max-width: 600px;
     margin: 0 auto;
 }
 
 /* Features Section */
 .features {
-    background: white;
+    background: #0f172a;
 }
 
 .features-grid {
@@ -354,8 +357,8 @@ section {
 }
 
 .feature-card {
-    background: #fafbfc;
-    border: 1px solid #e2e8f0;
+    background: #1e293b;
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 1rem;
     padding: 2rem;
     text-align: center;
@@ -364,8 +367,8 @@ section {
 
 .feature-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
-    border-color: #3b82f6;
+    box-shadow: 0 15px 40px rgba(16, 163, 127, 0.2);
+    border-color: #10a37f;
 }
 
 .feature-icon {
@@ -377,17 +380,17 @@ section {
     font-size: 1.5rem;
     font-weight: 600;
     margin-bottom: 1rem;
-    color: #1a1a1a;
+    color: #f8fafc;
 }
 
 .feature-description {
-    color: #64748b;
+    color: #cbd5e1;
     line-height: 1.6;
 }
 
 /* How it Works Section */
 .how-it-works {
-    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
 }
 
 .steps-grid {
@@ -421,26 +424,27 @@ section {
     font-size: 1.25rem;
     font-weight: 600;
     margin-bottom: 0.5rem;
-    color: #1a1a1a;
+    color: #f8fafc;
 }
 
 .step-description {
-    color: #64748b;
+    color: #cbd5e1;
     line-height: 1.6;
 }
 
 .manage-pins {
-    background: white;
+    background: #1e293b;
     border-radius: 1rem;
     padding: 3rem;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .manage-title {
     text-align: center;
     font-size: 1.75rem;
     margin-bottom: 2rem;
-    color: #1a1a1a;
+    color: #f8fafc;
 }
 
 .manage-grid {
@@ -454,9 +458,10 @@ section {
     align-items: center;
     gap: 1rem;
     padding: 1rem;
-    background: #f8fafc;
+    background: #0f172a;
     border-radius: 0.75rem;
-    color: #475569;
+    color: #cbd5e1;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .manage-icon {
@@ -465,7 +470,7 @@ section {
 
 /* Use Cases Section */
 .use-cases {
-    background: white;
+    background: #0f172a;
 }
 
 .use-cases-grid {
@@ -488,11 +493,11 @@ section {
     font-size: 1.5rem;
     font-weight: 600;
     margin-bottom: 1rem;
-    color: #1a1a1a;
+    color: #f8fafc;
 }
 
 .use-case-description {
-    color: #64748b;
+    color: #cbd5e1;
     line-height: 1.6;
 }
 
