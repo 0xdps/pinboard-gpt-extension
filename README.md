@@ -4,9 +4,11 @@
 
 [![Chrome Web Store](https://img.shields.io/badge/Chrome-Web%20Store-blue)](https://chromewebstore.google.com/detail/pingpt-%E2%80%94-chatgpt-message/hdhoaialemjelcfjjmjkkhkffiggbnap)
 [![Firefox Add-ons](https://img.shields.io/badge/Firefox-Add--ons-orange)](https://addons.mozilla.org/en-US/firefox/addon/gpt-pinboard/)
-[![Version](https://img.shields.io/badge/version-1.1.1-green)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2.0.1-green)](CHANGELOG.md)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 [![Website](https://img.shields.io/badge/Website-Live-green)](https://gptpins.dps.codes)
+[![Supports](https://img.shields.io/badge/Supports-ChatGPT-10a37f)](https://chatgpt.com)
+[![Coming Soon](https://img.shields.io/badge/Coming%20Soon-Claude%20%7C%20Gemini%20%7C%20Grok-purple)](https://github.com/0xdps/gpt-pinboard-extension/discussions)
 
 ## 📖 Table of Contents
 - [✨ Features](#-features)
@@ -21,6 +23,8 @@
 
 ## ✨ Features
 
+### Current (ChatGPT Support)
+
 - **Pin individual messages** - Save specific ChatGPT responses that matter
 - **Pin entire chats** - Bookmark complete conversations for later reference
 - **📋 Chat Outline navigation** - See your entire conversation structure and jump to any message instantly
@@ -30,6 +34,18 @@
 - **⚡ Jump back** - Instantly return to the original conversation
 - **💾 Local-first** - Your data stays on your device. No accounts. No sync drama.
 - **🌙 Dark mode support** - Automatic theme detection with seamless integration
+
+### 🚀 Coming Soon - Multi-Platform Support
+
+We're expanding beyond ChatGPT to support all major AI assistants:
+
+- **🤖 Claude** (Anthropic) - Pin conversations from Claude.ai
+- **💎 Gemini** (Google) - Organize your Gemini chats
+- **⚡ Grok** (xAI) - Save important Grok discussions
+- **🔍 DeepSeek** - Manage DeepSeek AI conversations
+- **And more!** - Let us know which AI platforms you'd like to see supported
+
+> 📢 **Vote for your favorite AI platform** in our [GitHub Discussions](https://github.com/0xdps/gpt-pinboard-extension/discussions)!
 
 No accounts. No sync drama. Just fast access to what you actually need.
 
