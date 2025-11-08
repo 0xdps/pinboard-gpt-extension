@@ -435,7 +435,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         gap: var(--space-3);
         color: var(--text-tertiary);
       `;
-      loadingDiv.innerHTML = '<div class="loading"></div> <span>Loading pins...</span>';
+      const loadingSpinner = document.createElement('div');
+      loadingSpinner.className = 'loading';
+      const loadingText = document.createElement('span');
+      loadingText.textContent = 'Loading pins...';
+      loadingDiv.appendChild(loadingSpinner);
+      loadingDiv.appendChild(loadingText);
       listEl.appendChild(loadingDiv);
     }
     
@@ -515,16 +520,23 @@ document.addEventListener('DOMContentLoaded', async () => {
       
       if (q) {
         // Search found no results
-        messageP.innerHTML = `No pins found for "<strong>${escapeHtml(q)}</strong>"`;
+        messageP.textContent = 'No pins found for "';
+        const strongEl = document.createElement('strong');
+        strongEl.textContent = q;
+        messageP.appendChild(strongEl);
+        messageP.appendChild(document.createTextNode('"'));
       } else if (currentFilter === 'chats') {
         // No chat pins
-        messageP.innerHTML = 'No chat pins yet!<br><br>Visit ChatGPT and click the "Pin Chat" button to save entire conversations here.';
+        messageP.textContent = 'No chat pins yet!\n\nVisit ChatGPT and click the "Pin Chat" button to save entire conversations here.';
+        messageP.style.whiteSpace = 'pre-line';
       } else if (currentFilter === 'messages') {
         // No message pins
-        messageP.innerHTML = 'No message pins yet!<br><br>Visit ChatGPT and click the pin button next to any message to save it here.';
+        messageP.textContent = 'No message pins yet!\n\nVisit ChatGPT and click the pin button next to any message to save it here.';
+        messageP.style.whiteSpace = 'pre-line';
       } else {
         // No pins at all
-        messageP.innerHTML = 'No pins yet!<br><br>Visit ChatGPT and click the pin button next to any message to save it here.';
+        messageP.textContent = 'No pins yet!\n\nVisit ChatGPT and click the pin button next to any message to save it here.';
+        messageP.style.whiteSpace = 'pre-line';
       }
       
       emptyDiv.appendChild(iconDiv);

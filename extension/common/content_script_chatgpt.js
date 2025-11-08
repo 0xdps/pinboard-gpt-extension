@@ -86,14 +86,14 @@ function createPinButtonForMessage(messageContainer) {
       // Handle image load errors
       img.onerror = () => {
         // Fallback to text icon
-        pinButton.innerHTML = '📌';
+        pinButton.textContent = '📌';
         pinButton.style.fontSize = '14px';
       };
       
       pinButton.appendChild(img);
     } catch (error) {
       // Fallback to text icon
-      pinButton.innerHTML = '📌';
+      pinButton.textContent = '📌';
       pinButton.style.fontSize = '14px';
     }
     
@@ -936,6 +936,24 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
+// Helper function to create SVG element safely
+function createSVGElement(width, height, viewBox, pathData, styles = {}) {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('width', width);
+  svg.setAttribute('height', height);
+  svg.setAttribute('viewBox', viewBox);
+  svg.setAttribute('fill', 'currentColor');
+  
+  const styleStr = Object.entries(styles).map(([k, v]) => `${k}: ${v}`).join('; ');
+  if (styleStr) svg.setAttribute('style', styleStr);
+  
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('d', pathData);
+  svg.appendChild(path);
+  
+  return svg;
+}
+
 // Highlight specific text within an element
 function highlightTextInElement(element, searchText) {
   const highlightClass = 'gpt-pinboard-text-highlight';
@@ -1590,10 +1608,12 @@ function addPinButtonToPopup(popupContainer) {
     console.log('GPT Pinboard: Could not find content span in cloned button');
     return;
   }
-  console.log('GPT Pinboard: Found content span, current content:', contentSpan.innerHTML);
+  console.log('GPT Pinboard: Found content span, current content:', contentSpan.textContent);
   
   // Clear the content span (this is where the icon and text are)
-  contentSpan.innerHTML = '';
+  while (contentSpan.firstChild) {
+    contentSpan.removeChild(contentSpan.firstChild);
+  }
   console.log('GPT Pinboard: Cleared content span');
   
   // Create our custom icon
@@ -1609,21 +1629,22 @@ function addPinButtonToPopup(popupContainer) {
       
       iconElement.onerror = () => {
         iconElement.style.display = 'none';
-        const svgFallback = document.createElement('div');
-        svgFallback.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="icon" style="flex-shrink: 0; display: block;">
-          <path d="M16 12V4H17V2H7V4H8V12L6 14V16H11V22H13V16H18V14L16 12Z"/>
-        </svg>`;
-        contentSpan.insertBefore(svgFallback.firstChild, contentSpan.firstChild);
+        const svgFallback = createSVGElement('20', '20', '0 0 24 24', 
+          'M16 12V4H17V2H7V4H8V12L6 14V16H11V22H13V16H18V14L16 12Z',
+          {'flex-shrink': '0', 'display': 'block'}
+        );
+        svgFallback.classList.add('icon');
+        contentSpan.insertBefore(svgFallback, contentSpan.firstChild);
       };
     } else {
       throw new Error('Runtime not available');
     }
   } catch (error) {
-    iconElement = document.createElement('div');
-    iconElement.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="icon" style="flex-shrink: 0; display: block;">
-      <path d="M16 12V4H17V2H7V4H8V12L6 14V16H11V22H13V16H18V14L16 12Z"/>
-    </svg>`;
-    iconElement = iconElement.firstChild;
+    iconElement = createSVGElement('20', '20', '0 0 24 24',
+      'M16 12V4H17V2H7V4H8V12L6 14V16H11V22H13V16H18V14L16 12Z',
+      {'flex-shrink': '0', 'display': 'block'}
+    );
+    iconElement.classList.add('icon');
   }
   
   // Create text span that matches ChatGPT's structure
@@ -2580,25 +2601,45 @@ async function updateChatPinButton() {
   
   if (isPinned) {
     // Use extension icon for unpinned state
+    icon.textContent = '';
     try {
       const runtime = chrome.runtime || browser.runtime;
       if (runtime && runtime.getURL) {
-        icon.innerHTML = `<img src="${runtime.getURL('icons/icon-16.png')}" width="16" height="16" style="display: block;" />`;
+        const img = document.createElement('img');
+        img.src = runtime.getURL('icons/icon-16.png');
+        img.width = 16;
+        img.height = 16;
+        img.style.display = 'block';
+        icon.appendChild(img);
       }
     } catch (error) {
-      icon.innerHTML = `<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="display: block;"><path d="M9.828 3a3.002 3.002 0 0 1-4.243 0L3 1.414 1.414 3l1.828 1.828a3.002 3.002 0 0 0 0 4.243L2 10.414 5.414 14l1.343-1.242a3.002 3.002 0 0 0 4.243 0L13.586 14 15 12.586l-1.828-1.828a3.002 3.002 0 0 0 0-4.243L14.586 5 11.172 1.586 9.828 3z"/></svg>`;
+      const svg = createSVGElement('16', '16', '0 0 16 16',
+        'M9.828 3a3.002 3.002 0 0 1-4.243 0L3 1.414 1.414 3l1.828 1.828a3.002 3.002 0 0 0 0 4.243L2 10.414 5.414 14l1.343-1.242a3.002 3.002 0 0 0 4.243 0L13.586 14 15 12.586l-1.828-1.828a3.002 3.002 0 0 0 0-4.243L14.586 5 11.172 1.586 9.828 3z',
+        {'display': 'block'}
+      );
+      icon.appendChild(svg);
     }
     text.textContent = 'Unpin Chat';
     button.style.background = '#10a37f';
   } else {
     // Use extension icon for unpinned state
+    icon.textContent = '';
     try {
       const runtime = chrome.runtime || browser.runtime;
       if (runtime && runtime.getURL) {
-        icon.innerHTML = `<img src="${runtime.getURL('icons/icon-16.png')}" width="16" height="16" style="display: block;" />`;
+        const img = document.createElement('img');
+        img.src = runtime.getURL('icons/icon-16.png');
+        img.width = 16;
+        img.height = 16;
+        img.style.display = 'block';
+        icon.appendChild(img);
       }
     } catch (error) {
-      icon.innerHTML = `<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="display: block;"><path d="M9.828.722a.5.5 0 0 1 .354.146l4.95 4.95a.5.5 0 0 1 0 .707L11.707 10l2.647 2.646a.5.5 0 0 1-.708.708L11 10.707l-3.525 3.525a.5.5 0 0 1-.707 0L1.818 9.282a.5.5 0 0 1 0-.707l3.525-3.525L2.697 2.404a.5.5 0 0 1 .708-.708L6.05 4.343 9.474.92a.5.5 0 0 1 .354-.146z"/></svg>`;
+      const svg = createSVGElement('16', '16', '0 0 16 16',
+        'M9.828.722a.5.5 0 0 1 .354.146l4.95 4.95a.5.5 0 0 1 0 .707L11.707 10l2.647 2.646a.5.5 0 0 1-.708.708L11 10.707l-3.525 3.525a.5.5 0 0 1-.707 0L1.818 9.282a.5.5 0 0 1 0-.707l3.525-3.525L2.697 2.404a.5.5 0 0 1 .708-.708L6.05 4.343 9.474.92a.5.5 0 0 1 .354-.146z',
+        {'display': 'block'}
+      );
+      icon.appendChild(svg);
     }
     text.textContent = 'Pin Chat';
     button.style.background = '#2d3748';
@@ -2703,11 +2744,11 @@ function addManualPinButton() {
     
     // Use list icon for outline
     const iconSpan = document.createElement('span');
-    iconSpan.innerHTML = `
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="display: block;">
-        <path d="M2.5 3.5a.5.5 0 0 1 0-1h11a.5.5 0 0 1 0 1h-11zm0 3a.5.5 0 0 1 0-1h11a.5.5 0 0 1 0 1h-11zm0 3a.5.5 0 0 1 0-1h11a.5.5 0 0 1 0 1h-11zm0 3a.5.5 0 0 1 0-1h11a.5.5 0 0 1 0 1h-11z"/>
-      </svg>
-    `;
+    const svg = createSVGElement('16', '16', '0 0 16 16',
+      'M2.5 3.5a.5.5 0 0 1 0-1h11a.5.5 0 0 1 0 1h-11zm0 3a.5.5 0 0 1 0-1h11a.5.5 0 0 1 0 1h-11zm0 3a.5.5 0 0 1 0-1h11a.5.5 0 0 1 0 1h-11zm0 3a.5.5 0 0 1 0-1h11a.5.5 0 0 1 0 1h-11z',
+      {'display': 'block'}
+    );
+    iconSpan.appendChild(svg);
     iconSpan.style.cssText = 'display: flex; align-items: center; justify-content: center; flex-shrink: 0;';
     manualBtn.appendChild(iconSpan);
     
