@@ -1,3 +1,8 @@
+// Browser API compatibility (for Firefox)
+if (typeof browser !== 'undefined' && typeof chrome === 'undefined') {
+  window.chrome = browser;
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   const listEl = document.getElementById('list');
   const search = document.getElementById('search');
@@ -27,12 +32,22 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function initializeTheme() {
     try {
       const { theme } = await chrome.storage.local.get(['theme']);
-      const isDark = theme === 'dark';
+      // Default to dark mode if no theme is set
+      const isDark = theme !== 'light';
       themeToggle.checked = isDark;
       document.body.classList.toggle('dark-mode', isDark);
       updateThemeText(isDark);
+      
+      // Save default theme if not set
+      if (theme === undefined) {
+        await chrome.storage.local.set({ theme: 'dark' });
+      }
     } catch (err) {
       console.error('Error loading theme:', err);
+      // Default to dark mode on error
+      themeToggle.checked = true;
+      document.body.classList.add('dark-mode');
+      updateThemeText(true);
     }
   }
 

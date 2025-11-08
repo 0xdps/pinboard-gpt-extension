@@ -5,7 +5,20 @@ All notable changes to GPT Pinboard will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Under Review]
+## [Unreleased]
+
+## [2.0.1] - 2025-11-08
+
+### Fixed
+- **Dark Mode Default**: Extension now defaults to dark mode on first install for both Chrome and Firefox
+- **Firefox Theme Persistence**: Fixed theme preference not persisting across browser restarts in Firefox
+- **Browser API Compatibility**: Added compatibility shim for Firefox browser API in popup.js
+- **Removed Development Permissions**: Cleaned up localhost permissions from production manifests
+- **Security Improvements**: All innerHTML replaced with safe DOM manipulation methods for Firefox add-on compliance
+
+### Changed
+- Simplified manifest permissions by removing localhost development URLs
+- Improved theme initialization logic to default to dark mode when no preference is set
 
 ## [2.0.0] - 2025-11-08
 
