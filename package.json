@@ -14,7 +14,7 @@
     "build:assets": "node scripts/generate-assets.js",
     "pack:chrome": "mkdir -p pack && cd build/chrome && zip -r ../../pack/pingpt-chrome-v$(node -p \"require('./manifest.json').version\").zip . -x '*.DS_Store' '*node_modules*'",
     "pack:firefox": "mkdir -p pack && cd build/firefox && zip -r ../../pack/pingpt-firefox-v$(node -p \"require('./manifest.json').version\").zip . -x '*.DS_Store' '*node_modules*'",
-    "pack": "npm run pack:chrome && npm run pack:firefox",
+    "pack": "npm run build && npm run pack:chrome && npm run pack:firefox",
     "dev:chrome": "npm run build:chrome && echo 'Load build/chrome in Chrome'",
     "dev:firefox": "npm run build:firefox && echo 'Load build/firefox in Firefox'",
     "dev": "npm run build && echo 'Built both Chrome and Firefox versions'",
