@@ -427,10 +427,16 @@ npm run feedback:test
 - [ ] Pin messages using hover button
 - [ ] Pin messages using right-click menu
 - [ ] Pin messages using quick pin button
+- [ ] Pin entire chat using Pin Chat button
+- [ ] Chat pin dialog auto-fills name and description
+- [ ] Navigate using Chat Outline button
+- [ ] Chat Outline shows all messages correctly
+- [ ] Click message in Chat Outline jumps to it
+- [ ] Filter tabs switch between All/Chats/Messages
 - [ ] Search pins by name, content, tags
 - [ ] Edit pin names and tags
 - [ ] Delete pins
-- [ ] Export/import pins
+- [ ] Export/import pins (both types)
 - [ ] Jump to original message (highlight works)
 
 #### Website Features  
@@ -573,11 +579,15 @@ pingpt-chrome-extension/
 ### Manual Testing Checklist
 
 #### Pin Creation
-- [ ] Hover pin button appears
+- [ ] Hover pin button appears on messages
 - [ ] Right-click context menu works
-- [ ] Pin dialog accepts input
-- [ ] Tags saved correctly
-- [ ] Pin appears in popup
+- [ ] Message pin dialog accepts input
+- [ ] Chat pin button visible in bottom-right
+- [ ] Chat pin dialog auto-fills name from sidebar
+- [ ] Chat pin description pre-filled with first prompt
+- [ ] Tags saved correctly (up to 3)
+- [ ] Pins appear in popup
+- [ ] Filter tabs show correct pin counts
 
 #### Pin Navigation
 - [ ] Clicking "Open" navigates to conversation

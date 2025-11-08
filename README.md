@@ -21,12 +21,15 @@
 
 ## ✨ Features
 
-- **Pin individual ChatGPT messages** - Not the entire chat, just the messages that matter
-- **🏷️ Add custom names and tags** - Easy organization and categorization
-- **🔍 Search instantly** - Filter by text, name, or tags
+- **Pin individual messages** - Save specific ChatGPT responses that matter
+- **Pin entire chats** - Bookmark complete conversations for later reference
+- **📋 Chat Outline navigation** - See your entire conversation structure and jump to any message instantly
+- **🏷️ Custom names and tags** - Add up to 3 tags for easy organization
+- **🔍 Instant search** - Filter by text, name, or tags across all pins
+- **📦 Filter tabs** - Switch between all pins, chat pins, or message pins
 - **⚡ Jump back** - Instantly return to the original conversation
 - **💾 Local-first** - Your data stays on your device. No accounts. No sync drama.
-- **🌙 Dark mode support** - Automatic theme detection with seamless light/dark mode integration
+- **🌙 Dark mode support** - Automatic theme detection with seamless integration
 
 No accounts. No sync drama. Just fast access to what you actually need.
 
@@ -35,8 +38,6 @@ No accounts. No sync drama. Just fast access to what you actually need.
 ### Install from Browser Stores
 
 **Chrome:** [🚀 Install from Chrome Web Store](https://chromewebstore.google.com/detail/pingpt-%E2%80%94-chatgpt-message/hdhoaialemjelcfjjmjkkhkffiggbnap)
-
-**Chrome:** [🔗 Install from Chrome Web Store](https://chromewebstore.google.com/detail/pingpt-%E2%80%94-chatgpt-message/hdhoaialemjelcfjjmjkkhkffiggbnap)
 
 **Firefox:** [🦊 Install from Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/gpt-pinboard/)
 
@@ -67,9 +68,25 @@ npm install
 2. **Right-Click** - Select text → Right-click → "Pin selection to GPT Pinboard"
 3. **Quick Pin** - Click the "Pin Message" button (bottom-right of ChatGPT)
 
+### Pin an Entire Chat
+
+1. Click the **"Pin Chat"** button (bottom-right, below Chat Outline)
+2. Name is auto-filled from sidebar
+3. Description is pre-filled with your first prompt (editable)
+4. Add up to 3 tags
+5. Click "Pin Chat"
+
+### Navigate Long Conversations
+
+1. Click the **"Chat Outline"** button (bottom-right of ChatGPT)
+2. See all messages in a scrollable list
+3. Click any message to jump directly to it
+4. Perfect for lengthy debugging sessions or tutorials
+
 ### Manage Pins
 
 - **View all pins** - Click extension icon in toolbar
+- **Filter pins** - Use tabs to view All / Chats / Messages
 - **Search** - Type in search box to filter by name, content, or tags
 - **Jump to message** - Click "Open" to navigate and highlight
 - **Export/Import** - Backup pins or sync across devices
@@ -211,10 +228,10 @@ See [DEVELOPMENT.md](DEVELOPMENT.md) for complete setup, testing, and contributi
 
 | User Type | Use Cases |
 |-----------|-----------|
-| **Developers** | Code snippets, debugging solutions, API examples |
-| **Researchers** | Knowledge organization, insight tracking, topic categorization |
-| **Students** | Study notes, homework help, exam preparation |
-| **Writers** | Creative ideas, style guides, research references |
+| **Developers** | Pin code snippets or entire debugging sessions; use Chat Outline to navigate complex technical discussions |
+| **Researchers** | Pin specific insights or complete research conversations; organize with filter tabs |
+| **Students** | Pin study notes or full tutorial conversations; use Chat Outline for lengthy learning sessions |
+| **Writers** | Pin templates or entire brainstorming sessions; navigate long creative discussions easily |
 
 ## 🔧 Technical Stack
 

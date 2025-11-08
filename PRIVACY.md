@@ -28,10 +28,10 @@ These justifications explain why each permission is necessary for GPT Pinboard t
 ## Privacy Statements
 
 ### Single Purpose Description
-Pin individual ChatGPT messages for instant access later. Never lose that perfect answer buried in a long chat.
+Pin individual ChatGPT messages or entire conversations for instant access later. Navigate long chats with Chat Outline and never lose that perfect answer.
 
 ### Detailed Description
-GPT Pinboard saves and organizes individual ChatGPT messages locally (not entire chats). Add custom names and tags, search instantly by text or tags, and jump directly back to the original conversation. All data stays on your device for complete privacy.
+GPT Pinboard saves and organizes individual ChatGPT messages or entire conversations locally. Use Chat Outline to navigate long conversations instantly. Add custom names and tags, search by text or tags, filter between message and chat pins, and jump directly back to the original conversation. All data stays on your device for complete privacy.
 
 ### Data Use Certification
 All pin data is stored locally in the browser and is not sent to any external servers. No analytics or remote tracking is used.
