@@ -5,7 +5,6 @@
   "version": "1.1.1",
   "permissions": [
     "storage",
-    "contextMenus",
     "activeTab",
     "tabs",
     "https://chatgpt.com/*",
@@ -55,7 +54,7 @@
   "homepage_url": "https://gptpins.dps.codes",
   "applications": {
     "gecko": {
-      "id": "gpt-pinboard@dps.codes"
+      "id": "gptpins@dps.codes"
     }
   }
 }

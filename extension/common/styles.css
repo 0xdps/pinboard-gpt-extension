@@ -451,8 +451,7 @@ body.dark-mode #list::-webkit-scrollbar-thumb:hover {
 }
 
 .theme-setting,
-.sync-setting,
-.context-menu-setting {
+.sync-setting {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -464,15 +463,13 @@ body.dark-mode #list::-webkit-scrollbar-thumb:hover {
 }
 
 .theme-setting:hover,
-.sync-setting:hover,
-.context-menu-setting:hover {
+.sync-setting:hover {
   background: var(--bg-tertiary);
   border-color: var(--border-hover);
 }
 
 .theme-info,
-.sync-info,
-.context-menu-info {
+.sync-info {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
@@ -480,8 +477,7 @@ body.dark-mode #list::-webkit-scrollbar-thumb:hover {
 }
 
 .theme-info span,
-.sync-info span,
-.context-menu-info span {
+.sync-info span {
   font-weight: 600;
   font-size: var(--font-size-sm);
   color: var(--text-primary);
@@ -495,8 +491,7 @@ body.dark-mode #list::-webkit-scrollbar-thumb:hover {
 }
 
 .theme-info small,
-.sync-info small,
-.context-menu-info small {
+.sync-info small {
   font-size: var(--font-size-xs);
   color: var(--text-tertiary);
   line-height: 1.4;

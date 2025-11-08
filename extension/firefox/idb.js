@@ -53,8 +53,7 @@ async function idbGet(id) {
 async function getSettings() {
   const result = await browser.storage.local.get([SETTINGS_KEY]);
   return result[SETTINGS_KEY] || {
-    theme: 'light',
-    enableContextMenu: false
+    theme: 'dark'
   };
 }
 
