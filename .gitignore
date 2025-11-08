@@ -771,3 +771,6 @@ extension/common/icons/*.png
 website/images/icon.svg
 website/images/favicon-*.png
 website/images/favicon.ico
+
+CHROME_*.md
+FIREFOX_*.md
