@@ -2394,7 +2394,7 @@ function openChatPinDialog(chatId, chatTitle) {
 
     const tagsHelp = document.createElement('div');
     tagsHelp.style.cssText = `font-size: 12px; color: ${colors.helpText};`;
-    tagsHelp.textContent = 'Press Enter to add tags';
+    tagsHelp.textContent = 'Press Enter to add tags or type and press Enter';
 
     tagsSection.appendChild(tagsLabel);
     tagsSection.appendChild(tagsContainerEl);
