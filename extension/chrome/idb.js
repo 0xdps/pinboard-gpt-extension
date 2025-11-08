@@ -11,11 +11,6 @@ const SETTINGS_KEY = 'settings';
 const SYNC_QUOTA_BYTES = 102400; // 100KB total
 const SYNC_MAX_ITEMS = 512;
 
-// Validate Chrome extension environment
-if (typeof chrome === 'undefined' || !chrome.storage?.sync) {
-  throw new Error('GPT Pinboard requires Chrome extension environment with storage.sync permission');
-}
-
 async function idbAdd(pin) {
   const result = await chrome.storage.sync.get([STORAGE_KEY]);
   const pins = result[STORAGE_KEY] || [];
@@ -54,7 +49,7 @@ async function idbGet(id) {
   return pins.find(p => p.id === id) || null;
 }
 
-// Settings management using chrome.storage.local (for non-synced preferences)
+// Settings management using browser.storage.local (for non-synced preferences)
 async function getSettings() {
   const result = await chrome.storage.local.get([SETTINGS_KEY]);
   return result[SETTINGS_KEY] || {

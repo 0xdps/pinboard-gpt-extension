@@ -1,5 +1,5 @@
 /**
- * Firefox Storage API wrapper  
+ * Firefox Storage API wrapper
  * Uses browser.storage.sync for automatic syncing across devices
  * Firefox extension specific - no cross-browser compatibility
  */
@@ -10,11 +10,6 @@ const SETTINGS_KEY = 'settings';
 // Firefox sync quota limits (for reference)
 const SYNC_QUOTA_BYTES = 102400; // 100KB total
 const SYNC_MAX_ITEMS = 512;
-
-// Validate Firefox extension environment
-if (typeof browser === 'undefined' || !browser.storage?.sync) {
-  throw new Error('GPT Pinboard requires Firefox extension environment with storage permission');
-}
 
 async function idbAdd(pin) {
   const result = await browser.storage.sync.get([STORAGE_KEY]);
