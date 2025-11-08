@@ -54,7 +54,7 @@
   "homepage_url": "https://gptpins.dps.codes",
   "applications": {
     "gecko": {
-      "id": "gptpins@dps.codes"
+      "id": "pingpt@devendrapratap.dev"
     }
   }
 }
