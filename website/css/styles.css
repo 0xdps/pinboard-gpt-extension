@@ -1235,6 +1235,19 @@ section {
     color: #fbbf24;
 }
 
+/* Buttons inside callouts */
+.callout .btn-primary {
+    background: linear-gradient(135deg, #10a37f, #0f766e);
+    color: white !important;
+    display: inline-block;
+    margin-top: 1rem;
+}
+
+.callout .btn-primary:hover {
+    background: linear-gradient(135deg, #0d9488, #0e7490);
+    color: white !important;
+}
+
 /* Use Case Examples */
 .use-case-example {
     background: #1e293b;

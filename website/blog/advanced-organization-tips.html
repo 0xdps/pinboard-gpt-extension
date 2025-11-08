@@ -66,6 +66,10 @@
                     <li><strong>Layer 2: Subdomain</strong> — Specific area (<code>python</code>, <code>api</code>, <code>database</code>)</li>
                     <li><strong>Layer 3: Type or Project</strong> — How you'll use it (<code>template</code>, <code>reference</code>, <code>project-x</code>)</li>
                 </ul>
+                <p>
+                    <strong>Pro tip:</strong> Your tagging strategy applies to both message pins (individual responses) and 
+                    chat pins (entire conversations). Use the same system for consistency.
+                </p>
 
                 <div class="callout callout-success">
                     <h3>✨ Example: Developer Pin</h3>
@@ -114,24 +118,43 @@
                     GPT Pinboard search is deceptively powerful. Here's how to use it like a pro.
                 </p>
 
+                <h3>Filter Tabs: Your First Line of Organization</h3>
+                <p>Before you even search, use the filter tabs at the top of your popup:</p>
+                <ul>
+                    <li><strong>All</strong> — Shows both message pins and chat pins together</li>
+                    <li><strong>Chats</strong> — Only shows pinned entire conversations</li>
+                    <li><strong>Messages</strong> — Only shows pinned individual responses</li>
+                </ul>
+                <p>
+                    <strong>Use case:</strong> Looking for that debugging tutorial you saved? Switch to the "Chats" tab. 
+                    Need a specific code snippet? Switch to "Messages" tab. This cuts your search space in half instantly.
+                </p>
+
                 <h3>What Search Actually Does</h3>
                 <p>When you type in the search bar, GPT Pinboard searches:</p>
                 <ol>
                     <li><strong>Pin names</strong> — The title you gave the pin</li>
-                    <li><strong>Message content</strong> — The full text of the ChatGPT response</li>
+                    <li><strong>Message content</strong> — For message pins: the response text; for chat pins: the description/first prompt</li>
                     <li><strong>Tags</strong> — All tags attached to the pin</li>
                 </ol>
                 <p>Results update in real-time as you type. No need to press Enter.</p>
 
                 <h3>Search Strategies</h3>
 
-                <h4>Strategy 1: Tag Filtering</h4>
+                <h4>Strategy 1: Filter First, Search Second</h4>
+                <p>
+                    Always start with filter tabs to narrow your scope. If you're looking for a complete tutorial, 
+                    switch to "Chats" tab first. Then search within that filtered view.
+                </p>
+                <p><strong>Use case:</strong> You want to find a Python debugging conversation. Click "Chats" tab, then search "python debug".</p>
+
+                <h4>Strategy 2: Tag Filtering</h4>
                 <p>
                     Click any tag on any pin to instantly filter by that tag. This is faster than typing when you're browsing.
                 </p>
                 <p><strong>Use case:</strong> You want to see all Python-related pins. Click <code>python</code> on any pin.</p>
 
-                <h4>Strategy 2: Partial Matching</h4>
+                <h4>Strategy 3: Partial Matching</h4>
                 <p>
                     Search works on partial matches. Typing "api" finds:
                 </p>
@@ -141,12 +164,12 @@
                     <li>Pins containing "REST API" in the message</li>
                 </ul>
 
-                <h4>Strategy 3: Keyword Combinations</h4>
+                <h4>Strategy 4: Keyword Combinations</h4>
                 <p>
                     Type multiple keywords to narrow results. "python async" finds pins containing both words in name, content, or tags.
                 </p>
 
-                <h4>Strategy 4: Search by Date (Manual)</h4>
+                <h4>Strategy 5: Search by Date (Manual)</h4>
                 <p>
                     While there's no date filter, you can use naming conventions to add temporal context:
                 </p>
@@ -174,14 +197,23 @@
                 <ol>
                     <li><strong>Pin During Development</strong>
                         <ul>
-                            <li>When ChatGPT solves a bug → Pin with tags <code>debugging</code>, <code>[language]</code></li>
-                            <li>When you get a good code snippet → Pin with tags <code>snippet</code>, <code>[language]</code>, <code>[framework]</code></li>
+                            <li>When ChatGPT solves a bug → Pin the solution message with tags <code>debugging</code>, <code>[language]</code></li>
+                            <li>When you get a good code snippet → Pin just that message with tags <code>snippet</code>, <code>[language]</code>, <code>[framework]</code></li>
+                            <li>When you complete a multi-step implementation → Pin the entire chat with <code>tutorial</code>, <code>[feature]</code></li>
                             <li>When you understand a concept → Pin with tags <code>learning</code>, <code>reference</code></li>
+                        </ul>
+                    </li>
+                    <li><strong>Navigate Long Debugging Sessions</strong>
+                        <ul>
+                            <li>In lengthy debugging conversations, use Chat Outline to jump between attempts</li>
+                            <li>See all your prompts and ChatGPT's responses in a structured list</li>
+                            <li>Quickly find the solution that worked without scrolling</li>
                         </ul>
                     </li>
                     <li><strong>Search When Stuck</strong>
                         <ul>
                             <li>Before asking ChatGPT, search your pins: "Have I solved this before?"</li>
+                            <li>Use "Messages" tab for quick snippets, "Chats" tab for full implementations</li>
                             <li>Search by error type, language, or framework</li>
                             <li>If found, jump to original conversation for full context</li>
                         </ul>
@@ -332,14 +364,33 @@
                     <li>❌ "SQL Query"</li>
                     <li>✅ "SQL Recursive CTE for Org Chart Hierarchy"</li>
                 </ul>
+                <p>
+                    For chat pins, the description is auto-filled with your first prompt but you can edit it. 
+                    Make it descriptive enough to remember why you pinned the entire conversation.
+                </p>
 
-                <h3>2. Pin Related Conversations Together</h3>
+                <h3>2. Know When to Pin Messages vs Entire Chats</h3>
+                <p><strong>Pin individual messages when:</strong></p>
+                <ul>
+                    <li>You need a specific code snippet or answer</li>
+                    <li>One response has exactly what you need</li>
+                    <li>You want to extract just the solution</li>
+                </ul>
+                <p><strong>Pin entire chats when:</strong></p>
+                <ul>
+                    <li>The conversation shows a complete implementation process</li>
+                    <li>Multiple back-and-forth exchanges were needed to reach the solution</li>
+                    <li>You want to preserve the full context and iteration history</li>
+                    <li>It's a tutorial or learning session you'll revisit</li>
+                </ul>
+
+                <h3>3. Pin Related Conversations Together</h3>
                 <p>
                     If multiple ChatGPT responses relate to the same topic, pin them all with identical tags. 
                     Later, search by that tag to see all related pins in one view.
                 </p>
 
-                <h3>3. Create "Index" Pins</h3>
+                <h3>4. Create "Index" Pins</h3>
                 <p>
                     When working on a big project, create a pin that lists all related pins:
                 </p>
@@ -349,7 +400,13 @@
                     <strong>Tags:</strong> <code>project-x</code>, <code>index</code>, <code>reference</code></p>
                 </blockquote>
 
-                <h3>4. Share Pin Collections</h3>
+                <h3>5. Use Chat Outline for Long Conversations</h3>
+                <p>
+                    Before pinning from a lengthy chat, use Chat Outline to navigate and find the exact message you need. 
+                    This is especially useful when a conversation has 50+ exchanges and you need to pin a specific point.
+                </p>
+
+                <h3>6. Share Pin Collections</h3>
                 <p>
                     Export pins with specific tags to create shareable collections:
                 </p>
@@ -359,7 +416,7 @@
                     <li>Public knowledge bases (export all, share on GitHub)</li>
                 </ul>
 
-                <h3>5. Version Your Pins</h3>
+                <h3>7. Version Your Pins</h3>
                 <p>
                     If you iterate on solutions, version your pins:
                 </p>

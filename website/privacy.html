@@ -44,34 +44,44 @@
     </nav>
 
     <!-- Privacy Content -->
-    <section class="hero" style="padding-top: 120px; min-height: auto;">
-        <div class="container">
-            <div style="max-width: 900px; margin: 0 auto;">
-                <h1 style="font-size: 2.5rem; margin-bottom: 1rem; color: #10a37f;">Privacy Policy</h1>
-                <p style="font-size: 1.1rem; color: #666; margin-bottom: 3rem;">Last updated: November 4, 2025</p>
+    <article class="blog-article">
+        <header class="article-header">
+            <div class="container" style="max-width: 800px;">
+                <div class="article-meta">
+                    <span class="article-tag">Legal</span>
+                    <span class="article-date">Last updated: November 4, 2025</span>
+                </div>
+                <h1 class="article-title">Privacy Policy</h1>
+                <p class="article-subtitle">
+                    Your data stays local - no accounts, no tracking, no external servers.
+                </p>
+            </div>
+        </header>
 
-                <div style="line-height: 1.8; color: #333;">
-                    <h2 style="font-size: 1.8rem; margin-top: 2rem; margin-bottom: 1rem; color: #1a1a1a;">Our Commitment to Privacy</h2>
-                    <p style="margin-bottom: 1.5rem;">
-                        GPT Pinboard is built with privacy as a core principle. Your data is yours, stored locally on your device, 
-                        and never transmitted to external servers or third parties.
-                    </p>
+        <div class="article-content">
+            <div class="container" style="max-width: 800px;">
+                
+                <h2>Our Commitment to Privacy</h2>
+                <p>
+                    GPT Pinboard is built with privacy as a core principle. Your data is yours, stored locally on your device, 
+                    and never transmitted to external servers or third parties.
+                </p>
 
-                    <h2 style="font-size: 1.8rem; margin-top: 2rem; margin-bottom: 1rem; color: #1a1a1a;">What Data We Collect</h2>
-                    <p style="margin-bottom: 1rem;"><strong>Local Storage Only:</strong></p>
-                    <ul style="margin-left: 2rem; margin-bottom: 1.5rem;">
+                <h2>What Data We Collect</h2>
+                <p><strong>Local Storage Only:</strong></p>
+                <ul>
                         <li>ChatGPT message content that you choose to pin</li>
                         <li>Custom names and tags you add to pins</li>
                         <li>URLs of ChatGPT conversations for navigation</li>
                         <li>Timestamps of when pins are created</li>
                     </ul>
-                    <p style="margin-bottom: 1.5rem;">
+                    <p>
                         All of this data is stored exclusively in your browser's local storage using IndexedDB. 
                         It never leaves your device.
                     </p>
 
-                    <h2 style="font-size: 1.8rem; margin-top: 2rem; margin-bottom: 1rem; color: #1a1a1a;">What We Don't Do</h2>
-                    <ul style="margin-left: 2rem; margin-bottom: 1.5rem;">
+                <h2>What We Don't Do</h2>
+                <ul>
                         <li>❌ No analytics or tracking</li>
                         <li>❌ No user accounts or authentication</li>
                         <li>❌ No data transmission to external servers</li>
@@ -80,72 +90,70 @@
                         <li>❌ No advertising or monetization</li>
                     </ul>
 
-                    <h2 style="font-size: 1.8rem; margin-top: 2rem; margin-bottom: 1rem; color: #1a1a1a;">Permissions Explained</h2>
-                    <p style="margin-bottom: 1rem;">GPT Pinboard requests the following browser permissions:</p>
-                    
-                    <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem;">
-                        <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;">Storage</h3>
-                        <p><strong>Why:</strong> To save your pins locally in IndexedDB.</p>
-                        <p><strong>Data:</strong> Only pin data you explicitly create.</p>
-                    </div>
-
-                    <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem;">
-                        <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;">Context Menus</h3>
-                        <p><strong>Why:</strong> To add the right-click "Pin selection" option.</p>
-                        <p><strong>Data:</strong> Only text you select and choose to pin.</p>
-                    </div>
-
-                    <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem;">
-                        <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;">Active Tab & Tabs</h3>
-                        <p><strong>Why:</strong> To navigate to pinned messages and highlight them in context.</p>
-                        <p><strong>Data:</strong> No data collected; only used for navigation.</p>
-                    </div>
-
-                    <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
-                        <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;">Host Permissions (chatgpt.com, chat.openai.com)</h3>
-                        <p><strong>Why:</strong> To interact with ChatGPT pages for pinning and highlighting.</p>
-                        <p><strong>Data:</strong> Only messages you choose to pin.</p>
-                    </div>
-
-                    <h2 style="font-size: 1.8rem; margin-top: 2rem; margin-bottom: 1rem; color: #1a1a1a;">Your Data Rights</h2>
-                    <ul style="margin-left: 2rem; margin-bottom: 1.5rem;">
-                        <li><strong>Full Control:</strong> You can export, import, or delete all your pins at any time</li>
-                        <li><strong>No Lock-in:</strong> Export your data as JSON and use it however you like</li>
-                        <li><strong>Complete Removal:</strong> Uninstalling the extension removes all local data</li>
-                    </ul>
-
-                    <h2 style="font-size: 1.8rem; margin-top: 2rem; margin-bottom: 1rem; color: #1a1a1a;">Open Source Transparency</h2>
-                    <p style="margin-bottom: 1.5rem;">
-                        GPT Pinboard is fully open source. You can review our code on 
-                        <a href="https://github.com/0xdps/gpt-pinboard-extension" style="color: #10a37f; text-decoration: underline;" target="_blank">GitHub</a> 
-                        to verify our privacy claims. We encourage code audits and welcome security researchers.
-                    </p>
-
-                    <h2 style="font-size: 1.8rem; margin-top: 2rem; margin-bottom: 1rem; color: #1a1a1a;">Changes to This Policy</h2>
-                    <p style="margin-bottom: 1.5rem;">
-                        If we make changes to this privacy policy, we will update the "Last updated" date at the top of this page. 
-                        We will never make changes that compromise your privacy without clear notification.
-                    </p>
-
-                    <h2 style="font-size: 1.8rem; margin-top: 2rem; margin-bottom: 1rem; color: #1a1a1a;">Contact</h2>
-                    <p style="margin-bottom: 1.5rem;">
-                        Questions about privacy? Contact us at 
-                        <a href="mailto:dps.manit@gmail.com" style="color: #10a37f; text-decoration: underline;">dps.manit@gmail.com</a> 
-                        or open an issue on 
-                        <a href="https://github.com/0xdps/gpt-pinboard-extension/issues" style="color: #10a37f; text-decoration: underline;" target="_blank">GitHub</a>.
-                    </p>
-
-                    <div style="background: #e6f7f1; padding: 2rem; border-radius: 8px; margin-top: 3rem; margin-bottom: 3rem;">
-                        <h3 style="font-size: 1.5rem; margin-bottom: 1rem; color: #10a37f;">🔒 Privacy First</h3>
-                        <p style="margin-bottom: 0;">
-                            Local-first means your data stays on your device. No accounts, no sync drama, no privacy concerns. 
-                            That's a promise.
-                        </p>
-                    </div>
+                <h2>Permissions Explained</h2>
+                <p>GPT Pinboard requests the following browser permissions:</p>
+                
+                <div class="callout callout-info">
+                    <h3>Storage</h3>
+                    <p><strong>Why:</strong> To save your pins locally in IndexedDB.</p>
+                    <p><strong>Data:</strong> Only pin data you explicitly create.</p>
                 </div>
-            </div>
+
+                <div class="callout callout-info">
+                    <h3>Context Menus</h3>
+                    <p><strong>Why:</strong> To add the right-click "Pin selection" option.</p>
+                    <p><strong>Data:</strong> Only text you select and choose to pin.</p>
+                </div>
+
+                <div class="callout callout-info">
+                    <h3>Active Tab & Tabs</h3>
+                    <p><strong>Why:</strong> To navigate to pinned messages and highlight them in context.</p>
+                    <p><strong>Data:</strong> No data collected; only used for navigation.</p>
+                </div>
+
+                <div class="callout callout-info">
+                    <h3>Host Permissions (chatgpt.com, chat.openai.com)</h3>
+                    <p><strong>Why:</strong> To interact with ChatGPT pages for pinning and highlighting.</p>
+                    <p><strong>Data:</strong> Only messages you choose to pin.</p>
+                </div>
+
+                <h2>Your Data Rights</h2>
+                <ul>
+                    <li><strong>Full Control:</strong> You can export, import, or delete all your pins at any time</li>
+                    <li><strong>No Lock-in:</strong> Export your data as JSON and use it however you like</li>
+                    <li><strong>Complete Removal:</strong> Uninstalling the extension removes all local data</li>
+                </ul>
+
+                <h2>Open Source Transparency</h2>
+                <p>
+                    GPT Pinboard is fully open source. You can review our code on 
+                    <a href="https://github.com/0xdps/gpt-pinboard-extension" target="_blank">GitHub</a> 
+                    to verify our privacy claims. We encourage code audits and welcome security researchers.
+                </p>
+
+                <h2>Changes to This Policy</h2>
+                <p>
+                    If we make changes to this privacy policy, we will update the "Last updated" date at the top of this page. 
+                    We will never make changes that compromise your privacy without clear notification.
+                </p>
+
+                <h2>Contact</h2>
+                <p>
+                    Questions about privacy? Contact us at 
+                    <a href="mailto:dps.manit@gmail.com">dps.manit@gmail.com</a> 
+                    or open an issue on 
+                    <a href="https://github.com/0xdps/gpt-pinboard-extension/issues" target="_blank">GitHub</a>.
+                </p>
+
+                <div class="callout callout-success">
+                    <h3>🔒 Privacy First</h3>
+                    <p>
+                        Local-first means your data stays on your device. No accounts, no sync drama, no privacy concerns. 
+                        That's a promise.
+                    </p>
+                </div>
         </div>
-    </section>
+    </article>
 
     <!-- Footer -->
     <footer class="footer">
