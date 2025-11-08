@@ -4,6 +4,12 @@
   "installCommand": "npm install",
   "devCommand": "npm run dev:website",
   "ignoreCommand": "bash scripts/vercel-ignore-build.sh",
+  "rewrites": [
+    {
+      "source": "/install",
+      "destination": "/api/install"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",

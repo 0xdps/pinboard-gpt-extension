@@ -7,7 +7,6 @@
     "copy:extension-icons": "mkdir -p extension/common/icons && cp assets/icons/icon-*.png extension/common/icons/",
     "copy:website-icons": "mkdir -p website/images && cp assets/icons/favicon-*.png assets/icons/favicon.ico website/images/",
     "copy:icons": "npm run copy:extension-icons && npm run copy:website-icons",
-
     "build:chrome": "npm run build:assets && npm run copy:icons && rm -rf build/chrome && mkdir -p build/chrome && cp -r extension/common/* build/chrome/ && cp extension/chrome/idb.js build/chrome/ && cp extension/chrome/manifest.json build/chrome/ && node scripts/replace-browser-text.js chrome build/chrome/popup.html",
     "build:firefox": "npm run build:assets && npm run copy:icons && rm -rf build/firefox && mkdir -p build/firefox && cp -r extension/common/* build/firefox/ && cp extension/firefox/idb.js build/firefox/ && cp extension/firefox/manifest.json build/firefox/ && node scripts/replace-browser-text.js firefox build/firefox/popup.html",
     "build": "npm run clean && npm run build:chrome && npm run build:firefox",
@@ -16,7 +15,6 @@
     "pack:chrome": "mkdir -p pack && cd build/chrome && zip -r ../../pack/pingpt-chrome-v$(node -p \"require('./manifest.json').version\").zip . -x '*.DS_Store' '*node_modules*'",
     "pack:firefox": "mkdir -p pack && cd build/firefox && zip -r ../../pack/pingpt-firefox-v$(node -p \"require('./manifest.json').version\").zip . -x '*.DS_Store' '*node_modules*'",
     "pack": "npm run pack:chrome && npm run pack:firefox",
-    "dev:chrome": "npm run build:chrome && echo 'Load build/chrome in Chrome'",
     "dev:chrome": "npm run build:chrome && echo 'Load build/chrome in Chrome'",
     "dev:firefox": "npm run build:firefox && echo 'Load build/firefox in Firefox'",
     "dev": "npm run build && echo 'Built both Chrome and Firefox versions'",
@@ -30,7 +28,8 @@
     "feedback:test": "node scripts/test-feedback.js",
     "feedback:logs": "vercel logs --follow",
     "feedback:issues": "echo '📊 View feedback issues:' && echo 'https://github.com/0xdps/gpt-pinboard-extension/issues?q=is%3Aissue+label%3Afeedback'",
-    "feedback:env": "vercel env ls"
+    "feedback:env": "vercel env ls",
+    "install:test": "node scripts/test-install.js"
   },
   "dependencies": {
     "canvas": "^3.2.0",
