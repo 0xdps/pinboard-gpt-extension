@@ -1796,13 +1796,16 @@ try {
       }
       
       if (msg.action === 'highlight-pin' && msg.pin) {
-    highlightPin(msg.pin).then(result => {
-      sendResponse(result);
-      }).catch(err => {
-        sendResponse({ found: false, error: err.message });
-      });
-      return true; // Will respond asynchronously
-    }
+        console.log('GPT Pinboard: Content script received highlight-pin message for pin:', msg.pin.id);
+        highlightPin(msg.pin).then(result => {
+          console.log('GPT Pinboard: Highlight result:', result);
+          sendResponse(result);
+        }).catch(err => {
+          console.log('GPT Pinboard: Highlight error:', err);
+          sendResponse({ found: false, error: err.message });
+        });
+        return true; // Will respond asynchronously
+      }
     
     return false;
   });

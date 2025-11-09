@@ -645,7 +645,23 @@ body.dark-mode .toggle-slider:hover {
   box-shadow: var(--shadow-sm);
 }
 
+.delete-all-btn {
+  background: var(--bg-primary);
+  border-color: #dc3545;
+  color: #dc3545;
+}
 
+.delete-all-btn:hover {
+  background: #dc3545;
+  color: white;
+  border-color: #dc3545;
+}
+
+.delete-warning {
+  color: #dc3545;
+  font-size: var(--font-size-xs);
+  margin-top: var(--space-2);
+}
 
 /* Pin Template (Hidden) */
 #pinTemplate {

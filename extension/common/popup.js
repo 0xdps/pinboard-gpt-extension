@@ -27,6 +27,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const settingsModal = document.getElementById('settingsModal');
   const closeSettings = document.getElementById('closeSettings');
   const versionNumber = document.getElementById('versionNumber');
+  const deleteAllBtn = document.getElementById('deleteAllBtn');
 
   // Initialize theme
   async function initializeTheme() {
@@ -99,6 +100,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Coffee Button Handler
   coffeeBtn.onclick = () => {
     chrome.tabs.create({ url: 'https://www.buymeacoffee.com/0xdps' });
+  };
+
+  // Delete All Pins Handler
+  deleteAllBtn.onclick = () => {
+    deleteAllPins();
   };
 
   closeSettings.onclick = () => {
@@ -178,13 +184,27 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function openPin(pinId) {
     const stored = (await getPins()).find(x => x.id === pinId);
     if (stored?.pageUrl) {
+      console.log('GPT Pinboard: Opening pin:', stored.id, stored.pageUrl);
       chrome.runtime.sendMessage({ action: 'open-and-highlight', pin: stored }, (resp) => {
+        console.log('GPT Pinboard: Response from background script:', resp, 'Error:', chrome.runtime.lastError);
         if (chrome.runtime.lastError) {
-          // Fallback: just open the URL
-          chrome.tabs.create({ url: stored.pageUrl });
+          console.log('GPT Pinboard: Background script error:', chrome.runtime.lastError.message);
+          showNotification('Error communicating with background script', 'error');
+          return;
+        } else if (resp?.success) {
+          if (resp.highlighted) {
+            // Success - pin was highlighted
+            window.close();
+          } else {
+            // Pin was opened but not highlighted
+            showNotification('Pin opened but message not found on page', 'warning');
+            setTimeout(() => window.close(), 1500);
+          }
         } else {
-          // Close popup after opening
-          window.close();
+          // Error response from background script
+          console.log('GPT Pinboard: Highlighting failed:', resp?.error);
+          showNotification('Pin opened but highlighting failed', 'warning');
+          setTimeout(() => window.close(), 1500);
         }
       });
     } else {
@@ -238,10 +258,41 @@ document.addEventListener('DOMContentLoaded', async () => {
       try {
         await idbDelete(pinId);
         await render();
-        showNotification('Pin deleted successfully', 'success');
       } catch (err) {
-        showNotification('Failed to delete pin', 'error');
+        console.error('Failed to delete pin:', err);
       }
+    }
+  }
+
+  // Delete all pins function with confirmation
+  async function deleteAllPins() {
+    try {
+      const pins = await getPins();
+      if (pins.length === 0) {
+        showNotification('No pins to delete.', 'info');
+        return;
+      }
+
+      const confirmed = await showConfirmation(
+        'Delete All Pins', 
+        `Are you sure you want to delete all ${pins.length} pins? This action cannot be undone.`
+      );
+      
+      if (confirmed) {
+        // Delete all pins using the proper IndexedDB clear function
+        await idbClear();
+        
+        // Close settings modal
+        settingsModal.style.display = 'none';
+        
+        // Re-render the UI
+        await render();
+        
+        showNotification(`Successfully deleted all ${pins.length} pins.`, 'success');
+      }
+    } catch (err) {
+      console.error('Failed to delete all pins:', err);
+      showNotification('Failed to delete all pins.', 'error');
     }
   }
 

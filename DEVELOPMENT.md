@@ -437,7 +437,13 @@ npm run feedback:test
 - [ ] Edit pin names and tags
 - [ ] Delete pins
 - [ ] Export/import pins (both types)
-- [ ] Jump to original message (highlight works)
+- [x] Jump to original message (highlight works)
+
+**Pin Navigation Flow:**
+1. User clicks pin in popup → `openPin()` sends `'open-and-highlight'` message
+2. Background script handles message → finds/creates appropriate ChatGPT tab
+3. Background script sends `'highlight-pin'` message to content script in target tab
+4. Content script locates pin using XPath/text anchors → scrolls to message with smooth animation
 
 #### Website Features  
 - [ ] Browser detection shows correct install button
