@@ -5,7 +5,52 @@ All notable changes to GPT Pinboard will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [Under Review]
+
+## [2.1.0] - 2025-11-09
+
+### Added
+- **🐛 Debug Logging System**: Comprehensive debug logging with persistent on/off toggle
+  - 189+ console statements replaced with smart debug functions
+  - Settings toggle in Advanced section (off by default)
+  - Persistent across browser sessions and page reloads
+  - Available in all extension components (popup, background, content script)
+- **💾 Enhanced Delete All Confirmation**: Smart 3-button confirmation dialog
+  - "Cancel" to abort deletion
+  - "Export First" to backup pins before deleting
+  - "Delete" to proceed with deletion
+  - Automatic re-prompt after successful export
+  - Prevents accidental data loss with backup suggestions
+- **🎨 Consolidated Settings UI**: All toggles now grouped in single "General Settings" section
+  - Streamlined interface with connected visual design
+  - Rounded container with thin separator lines between options
+  - Ultra-thin 3px scrollbar for better visual integration
+  - Hidden tab behavior setting (not working yet)
+
+### Improved
+- **🏗️ Build Architecture**: Enhanced prepend-browser.js system
+  - Browser-specific code injected at top of files for immediate availability
+  - Eliminated dynamic import compatibility issues with service workers
+  - Cleaner code organization with browser APIs available from start
+- **🎛️ Settings Interface**: Better visual hierarchy and user experience
+  - Settings grouped logically under single section header
+  - Improved spacing and visual connections between related options
+  - More compact and mobile-app-like appearance
+- **⚙️ Cross-browser Compatibility**: Enhanced Firefox and Chrome support
+  - Service worker compatibility through build-time code injection
+  - Proper API availability without initialization race conditions
+
+### Fixed
+- **🔧 Service Worker Issues**: Resolved "import() is disallowed on ServiceWorkerGlobalScope" errors
+- **🎯 Settings Persistence**: All settings now persist properly across browser sessions
+- **🖼️ Icon Loading**: Fixed missing 16px icon references in manifests
+- **📜 Scrollbar Positioning**: Thin scrollbar now properly contained within modal bounds
+
+### Technical
+- **📦 Build System**: New prepend-browser.js replaces append-browser.js for better code organization
+- **🧹 Code Quality**: Replaced 189 console.log/error statements with debugLog/debugError system
+- **🔒 Architecture**: Clean separation of browser-specific and common code
+- **🎨 CSS Improvements**: Enhanced settings UI with proper container styling and custom scrollbars
 
 ## [2.0.1] - 2025-11-08
 

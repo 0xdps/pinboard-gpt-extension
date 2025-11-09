@@ -4,7 +4,7 @@
 
 [![Chrome Web Store](https://img.shields.io/badge/Chrome-Web%20Store-blue)](https://chromewebstore.google.com/detail/pingpt-%E2%80%94-chatgpt-message/hdhoaialemjelcfjjmjkkhkffiggbnap)
 [![Firefox Add-ons](https://img.shields.io/badge/Firefox-Add--ons-orange)](https://addons.mozilla.org/en-US/firefox/addon/gpt-pinboard/)
-[![Version](https://img.shields.io/badge/version-2.0.1-green)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2.1.0-green)](CHANGELOG.md)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 [![Website](https://img.shields.io/badge/Website-Live-green)](https://gptpins.dps.codes)
 [![Supports](https://img.shields.io/badge/Supports-ChatGPT-10a37f)](https://chatgpt.com)
@@ -32,6 +32,9 @@
 - **🔍 Instant search** - Filter by text, name, or tags across all pins
 - **📦 Filter tabs** - Switch between all pins, chat pins, or message pins
 - **⚡ Jump back** - Instantly return to the original conversation
+- **💾 Smart delete protection** - Export-first confirmation prevents accidental data loss
+- **🐛 Debug logging system** - Comprehensive troubleshooting with persistent debug toggle
+- **🎨 Streamlined settings** - Consolidated interface with modern visual design
 - **💾 Local-first** - Your data stays on your device. No accounts. No sync drama.
 - **🌙 Dark mode support** - Automatic theme detection with seamless integration
 

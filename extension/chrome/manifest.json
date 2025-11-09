@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "GPT Pinboard — ChatGPT Message Pinner",
   "description": "Pin individual ChatGPT messages. Add names and tags, search instantly, jump back to conversations. Dark mode support. Local storage.",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "permissions": [
     "storage",
     "activeTab",

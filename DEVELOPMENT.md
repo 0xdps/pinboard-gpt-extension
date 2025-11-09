@@ -92,7 +92,9 @@ This project supports **Chrome** and **Firefox** from a single codebase with bro
 gpt-pinboard-extension/
 ├── assets/                # Source images for icon generation
 ├── scripts/               # Build scripts and tools
-│   └── generate-assets.js # Icon generation from PNG sources
+│   ├── generate-assets.js # Icon generation from PNG sources
+│   ├── prepend-browser.js # Injects browser-specific code at top of files
+│   └── replace-browser-text.js # Updates browser-specific text in HTML
 ├── extension/             # Extension source code
 │   ├── common/          # Shared extension code (JS, HTML, CSS, icons)
 │   ├── chrome/          # Chrome-specific manifest.json
@@ -117,9 +119,11 @@ gpt-pinboard-extension/
 The build system automatically:
 - Creates separate builds for Chrome and Firefox
 - Copies all necessary files to `build/chrome/` and `build/firefox/`
+- **Prepends browser-specific code** to common files using `prepend-browser.js`
 - Handles manifest differences between browsers
 - Packages extensions for distribution
 - **Copies icons from `assets/icons/` to appropriate locations during build**
+- **Injects browser APIs at top of files** for immediate availability
 
 ### Commands
 
@@ -359,6 +363,39 @@ npm run feedback:env     # Check environment configuration
 ```
 
 ## 🔍 Debugging
+
+### Debug Logging System
+
+GPT Pinboard includes a comprehensive debug logging system added in v2.1.0:
+
+#### Enabling Debug Mode
+1. Open extension popup
+2. Click settings (⚙️)
+3. Enable "Debug mode" toggle
+4. Reload ChatGPT page
+
+#### Debug Features
+- **189+ Debug Points**: Comprehensive logging throughout extension
+- **Persistent Setting**: Debug mode survives browser restarts
+- **Cross-Component**: Logs from popup, background, and content script
+- **Smart Functions**: `debugLog()` and `debugError()` replace console statements
+
+#### Viewing Debug Output
+```javascript
+// Enable debug mode, then check console (F12):
+// Popup logs: Extension popup console
+// Content script logs: ChatGPT page console  
+// Background logs: Extension service worker console
+```
+
+#### For Developers
+```javascript
+// Use debug functions instead of console.log:
+debugLog('Operation completed:', result);
+debugError('Something went wrong:', error);
+
+// These only output when debug mode is enabled
+```
 
 ### Browser Console Debugging
 
@@ -622,9 +659,24 @@ Test on:
 
 ## 🏗️ Architecture
 
+### Build Architecture
+
+#### Prepend System (`prepend-browser.js`)
+- **Browser-specific code injection**: Injects Chrome/Firefox APIs at top of common files
+- **Service worker compatibility**: Eliminates dynamic import issues
+- **Immediate API availability**: Browser APIs available from script start
+- **Clean separation**: Common code remains browser-agnostic
+
+#### Build Process
+1. **Copy common files** to build directories
+2. **Prepend browser code** using `prepend-browser.js` 
+3. **Replace browser text** in HTML files
+4. **Copy manifest files** with browser-specific differences
+
 ### Components
 
 #### Background Service Worker (`background.js`)
+- **Browser APIs prepended** at build time for immediate access
 - Manages context menus
 - Handles tab navigation for "Open" functionality
 - Routes messages between popup and content scripts
