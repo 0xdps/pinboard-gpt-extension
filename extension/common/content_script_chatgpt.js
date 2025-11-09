@@ -601,6 +601,9 @@ function createPinDialog(messageText, pinData, isDarkMode, resolve, reject = res
     tagInputEl.type = 'text';
     tagInputEl.id = 'tag-input';
     tagInputEl.placeholder = 'Add a tag...';
+    tagInputEl.autocomplete = 'off';
+    tagInputEl.spellcheck = false;
+    tagInputEl.setAttribute('data-lpignore', 'true'); // Ignore LastPass
     tagInputEl.style.cssText = `
       border: none;
       outline: none;
@@ -617,7 +620,7 @@ function createPinDialog(messageText, pinData, isDarkMode, resolve, reject = res
     
     const tagsHelp = document.createElement('div');
     tagsHelp.style.cssText = `font-size: 12px; color: ${colors.helpText};`;
-    tagsHelp.textContent = 'Press Enter to add tags or type and press Enter';
+    tagsHelp.textContent = 'Type to see suggestions from existing tags, or press Enter to add new tags';
     
     tagsSection.appendChild(tagsLabel);
     tagsSection.appendChild(tagsContainerEl);
@@ -807,12 +810,175 @@ function createPinDialog(messageText, pinData, isDarkMode, resolve, reject = res
       }
     }
     
-    // Tag input handlers
-    tagInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
+    // Get all existing tags from all pins for autosuggestion
+    async function getAllExistingTags() {
+      try {
+        const allPins = await idbGetAll();
+        console.log('GPT Pinboard: All pins retrieved for message dialog:', allPins.length, 'pins');
+        
+        const allTags = new Set();
+        allPins.forEach(pin => {
+          if (pin.tags && Array.isArray(pin.tags)) {
+            console.log('GPT Pinboard: Pin tags found for message dialog:', pin.tags);
+            pin.tags.forEach(tag => allTags.add(tag.toLowerCase()));
+          }
+        });
+        
+        const sortedTags = Array.from(allTags).sort();
+        console.log('GPT Pinboard: Final sorted tags for message dialog:', sortedTags);
+        return sortedTags;
+      } catch (err) {
+        console.error('GPT Pinboard: Error getting existing tags for message dialog:', err);
+        return [];
+      }
+    }
+
+    // Create suggestion dropdown for message dialog
+    const suggestionDropdown = document.createElement('div');
+    suggestionDropdown.id = 'tag-suggestions-message';
+    suggestionDropdown.style.cssText = `
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: ${colors.inputBg};
+      border: 1px solid ${colors.inputBorder};
+      border-top: none;
+      border-radius: 0 0 6px 6px;
+      max-height: 150px;
+      overflow-y: auto;
+      z-index: 10000;
+      display: none;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    `;
+    
+    console.log('GPT Pinboard: Message dialog suggestion dropdown created with colors:', colors);
+
+    // Make tags container relative for absolute positioning of dropdown
+    tagsContainer.style.position = 'relative';
+    tagsContainer.appendChild(suggestionDropdown);
+
+    let selectedSuggestionIndex = -1;
+    let availableSuggestions = [];
+
+    // Show suggestions based on input
+    async function showSuggestions(inputValue) {
+      console.log('GPT Pinboard: Message dialog showSuggestions called with:', inputValue);
+      
+      if (!inputValue.trim()) {
+        suggestionDropdown.style.display = 'none';
+        return;
+      }
+
+      const existingTags = await getAllExistingTags();
+      console.log('GPT Pinboard: Message dialog existing tags found:', existingTags);
+      
+      const query = inputValue.toLowerCase().trim();
+      availableSuggestions = existingTags
+        .filter(tag => tag.includes(query) && !currentTags.includes(tag))
+        .slice(0, 8); // Limit to 8 suggestions
+
+      console.log('GPT Pinboard: Message dialog available suggestions:', availableSuggestions, 'for query:', query);
+
+      if (availableSuggestions.length === 0) {
+        suggestionDropdown.style.display = 'none';
+        console.log('GPT Pinboard: Message dialog no suggestions found, hiding dropdown');
+        return;
+      }
+
+      suggestionDropdown.innerHTML = '';
+      availableSuggestions.forEach((tag, index) => {
+        const suggestionEl = document.createElement('div');
+        suggestionEl.className = 'tag-suggestion';
+        suggestionEl.style.cssText = `
+          padding: 8px 12px;
+          cursor: pointer;
+          font-size: 14px;
+          color: ${colors.inputText};
+          border-bottom: 1px solid ${colors.inputBorder};
+          transition: background-color 0.2s;
+        `;
+        suggestionEl.textContent = tag;
+        
+        suggestionEl.addEventListener('mouseenter', () => {
+          selectedSuggestionIndex = index;
+          updateSuggestionHighlight();
+        });
+        
+        suggestionEl.addEventListener('click', () => {
+          selectSuggestion(tag);
+        });
+        
+        suggestionDropdown.appendChild(suggestionEl);
+      });
+
+      suggestionDropdown.style.display = 'block';
+      selectedSuggestionIndex = -1;
+      updateSuggestionHighlight();
+      
+      console.log('GPT Pinboard: Message dialog dropdown shown with', availableSuggestions.length, 'suggestions');
+      console.log('GPT Pinboard: Message dialog dropdown element:', suggestionDropdown);
+      console.log('GPT Pinboard: Message dialog dropdown parent:', suggestionDropdown.parentNode);
+    }
+
+    // Update suggestion highlight
+    function updateSuggestionHighlight() {
+      const suggestions = suggestionDropdown.querySelectorAll('.tag-suggestion');
+      suggestions.forEach((el, index) => {
+        if (index === selectedSuggestionIndex) {
+          el.style.backgroundColor = colors.primary || '#e8f0fe';
+          el.style.color = colors.primaryText || '#1a73e8';
+        } else {
+          el.style.backgroundColor = 'transparent';
+          el.style.color = colors.inputText;
+        }
+      });
+    }
+
+    // Select a suggestion
+    function selectSuggestion(tag) {
+      if (currentTags.length < 3 && !currentTags.includes(tag)) {
+        if (addTag(tag)) {
+          tagInput.value = '';
+          suggestionDropdown.style.display = 'none';
+        }
+      }
+    }
+
+    // Enhanced tag input handlers with autosuggestion
+    tagInput.addEventListener('keydown', (e) => {
+      if (suggestionDropdown.style.display === 'block' && availableSuggestions.length > 0) {
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          selectedSuggestionIndex = Math.min(selectedSuggestionIndex + 1, availableSuggestions.length - 1);
+          updateSuggestionHighlight();
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          selectedSuggestionIndex = Math.max(selectedSuggestionIndex - 1, -1);
+          updateSuggestionHighlight();
+        } else if (e.key === 'Enter') {
+          e.preventDefault();
+          if (selectedSuggestionIndex >= 0) {
+            selectSuggestion(availableSuggestions[selectedSuggestionIndex]);
+          } else if (tagInput.value.trim() && currentTags.length < 3) {
+            // Add as new tag if no suggestion selected
+            const value = tagInput.value.trim();
+            if (!addTag(value)) {
+              // Flash border red if couldn't add tag
+              tagsContainer.style.borderColor = '#ea4335';
+              setTimeout(() => {
+                tagsContainer.style.borderColor = '#dadce0';
+              }, 500);
+            }
+          }
+        } else if (e.key === 'Escape') {
+          suggestionDropdown.style.display = 'none';
+          selectedSuggestionIndex = -1;
+        }
+      } else if (e.key === 'Enter') {
         e.preventDefault();
         const value = tagInput.value.trim();
-        if (value) {
+        if (value && currentTags.length < 3) {
           if (!addTag(value)) {
             // Flash border red if couldn't add tag
             tagsContainer.style.borderColor = '#ea4335';
@@ -821,6 +987,20 @@ function createPinDialog(messageText, pinData, isDarkMode, resolve, reject = res
             }, 500);
           }
         }
+      }
+    });
+
+    // Show suggestions on input
+    tagInput.addEventListener('input', (e) => {
+      console.log('GPT Pinboard: Message dialog input event fired, value:', e.target.value);
+      showSuggestions(e.target.value);
+    });
+
+    // Hide suggestions when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!tagsContainer.contains(e.target)) {
+        suggestionDropdown.style.display = 'none';
+        selectedSuggestionIndex = -1;
       }
     });
     
@@ -900,7 +1080,17 @@ function createPinDialog(messageText, pinData, isDarkMode, resolve, reject = res
       } catch (err) {
         console.error('GPT Pinboard: Error saving pin:', err);
         console.error('GPT Pinboard: Pin data that failed:', pin);
-        showNotification('❌ Failed to save pin: ' + err.message);
+        
+        // Provide user-friendly error messages
+        let errorMessage = err.message;
+        if (err.message.includes('Extension context invalidated') || 
+            err.message.includes('Extension context is invalid')) {
+          errorMessage = 'Extension was reloaded. Please refresh this page and try again.';
+        } else if (err.message.includes('QUOTA_BYTES_PER_ITEM quota exceeded')) {
+          errorMessage = 'Pin is too large. Try shortening the message or removing some content.';
+        }
+        
+        showNotification('❌ Failed to save pin: ' + errorMessage);
         overlay.remove();
         reject ? reject(err) : resolve();
       }
@@ -934,6 +1124,379 @@ function escapeHtml(text) {
   const div = document.createElement('div');
   div.textContent = text;
   return div.innerHTML;
+}
+
+// Unified pin dialog that can handle both message pins and chat pins
+function createUnifiedPinDialog(options, resolve, reject = resolve) {
+  const {
+    messageText = '',
+    chatTitle = '',
+    pinData = {},
+    isDarkMode = false,
+    showMessagePreview = true,
+    showDescriptionField = false,
+    dialogTitle = 'Create Pin',
+    onSave = null
+  } = options;
+
+  try {
+    console.log('GPT Pinboard: Creating unified pin dialog with options:', options);
+    
+    // Get theme colors
+    const colors = isDarkMode ? {
+      overlay: 'rgba(0, 0, 0, 0.7)',
+      dialogBg: '#2d2d2d',
+      dialogText: '#e4e4e4',
+      headingText: '#ffffff',
+      labelText: '#b8b8b8',
+      previewBg: '#1a1a1a',
+      previewBorder: '#404040',
+      previewText: '#b8b8b8',
+      inputBg: '#1a1a1a',
+      inputBorder: '#404040',
+      inputText: '#e4e4e4',
+      tagBg: '#1a3d5f',
+      tagText: '#5da5da',
+      cancelBg: '#1a1a1a',
+      cancelBorder: '#404040',
+      cancelText: '#b8b8b8',
+      cancelHover: '#2d2d2d',
+      saveBg: '#10a37f',
+      saveText: '#ffffff',
+      saveHover: '#0d8a6a',
+      focusBorder: '#10a37f',
+      helpText: '#808080',
+      primary: '#e8f0fe',
+      primaryText: '#1a73e8'
+    } : {
+      overlay: 'rgba(0, 0, 0, 0.5)',
+      dialogBg: '#ffffff',
+      dialogText: '#202124',
+      headingText: '#202124',
+      labelText: '#5f6368',
+      previewBg: '#f8f9fa',
+      previewBorder: '#e8eaed',
+      previewText: '#5f6368',
+      inputBg: '#ffffff',
+      inputBorder: '#dadce0',
+      inputText: '#202124',
+      tagBg: '#e8f0fe',
+      tagText: '#1a73e8',
+      cancelBg: '#ffffff',
+      cancelBorder: '#dadce0',
+      cancelText: '#5f6368',
+      cancelHover: '#f8f9fa',
+      saveBg: '#1a73e8',
+      saveText: '#ffffff',
+      saveHover: '#1557b0',
+      focusBorder: '#1a73e8',
+      helpText: '#5f6368',
+      primary: '#e8f0fe',
+      primaryText: '#1a73e8'
+    };
+
+    // Create overlay
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: ${colors.overlay};
+      z-index: 100000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+    `;
+    
+    // Create dialog
+    const dialog = document.createElement('div');
+    dialog.style.cssText = `
+      background: ${colors.dialogBg};
+      border-radius: 12px;
+      padding: 24px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      font-family: system-ui, -apple-system, sans-serif;
+      color: ${colors.dialogText};
+    `;
+
+    // Header with extension icon
+    const header = document.createElement('h2');
+    header.style.cssText = `margin: 0 0 20px 0; font-size: 20px; color: ${colors.headingText}; display: flex; align-items: center; gap: 8px;`;
+    
+    // Use extension icon
+    try {
+      const runtime = chrome.runtime || browser.runtime;
+      if (runtime && runtime.getURL) {
+        const iconImg = document.createElement('img');
+        iconImg.src = runtime.getURL('icons/icon-32.png');
+        iconImg.width = 24;
+        iconImg.height = 24;
+        iconImg.style.cssText = 'display: block; flex-shrink: 0;';
+        header.appendChild(iconImg);
+      }
+    } catch (error) {
+      console.log('GPT Pinboard: Could not load icon for unified dialog');
+    }
+    
+    header.appendChild(document.createTextNode(dialogTitle));
+
+    // Message preview section (conditional)
+    let previewSection = null;
+    if (showMessagePreview && messageText) {
+      previewSection = document.createElement('div');
+      previewSection.style.cssText = 'margin-bottom: 16px;';
+      
+      const previewLabel = document.createElement('label');
+      previewLabel.style.cssText = `display: block; font-weight: 600; margin-bottom: 6px; color: ${colors.labelText}; font-size: 14px;`;
+      previewLabel.textContent = 'Message Preview';
+      
+      const previewDiv = document.createElement('div');
+      previewDiv.style.cssText = `
+        padding: 12px;
+        background: ${colors.previewBg};
+        border: 1px solid ${colors.previewBorder};
+        border-radius: 6px;
+        font-size: 14px;
+        color: ${colors.previewText};
+        max-height: 120px;
+        overflow-y: auto;
+        white-space: pre-wrap;
+        word-break: break-word;
+      `;
+      
+      const messagePreview = messageText.length > 300 ? messageText.slice(0, 300) + '...' : messageText;
+      previewDiv.textContent = messagePreview;
+      
+      previewSection.appendChild(previewLabel);
+      previewSection.appendChild(previewDiv);
+    }
+
+    // Name input section
+    const nameSection = document.createElement('div');
+    nameSection.style.cssText = 'margin-bottom: 16px;';
+
+    const nameLabel = document.createElement('label');
+    nameLabel.setAttribute('for', 'unified-pin-name');
+    nameLabel.style.cssText = `display: block; font-weight: 600; margin-bottom: 6px; color: ${colors.labelText}; font-size: 14px;`;
+    nameLabel.textContent = showDescriptionField ? 'Name' : 'Pin Name (optional)';
+
+    const nameInputEl = document.createElement('input');
+    nameInputEl.type = 'text';
+    nameInputEl.id = 'unified-pin-name';
+    nameInputEl.value = pinData.name || chatTitle || '';
+    nameInputEl.placeholder = showDescriptionField ? 'Give this pin a name...' : 'Optional name for this pin...';
+    nameInputEl.style.cssText = `
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid ${colors.inputBorder};
+      border-radius: 6px;
+      font-size: 14px;
+      color: ${colors.inputText};
+      background: ${colors.inputBg};
+      font-family: system-ui, -apple-system, sans-serif;
+      box-sizing: border-box;
+      transition: border-color 0.2s;
+    `;
+
+    nameSection.appendChild(nameLabel);
+    nameSection.appendChild(nameInputEl);
+
+    // Description section (conditional)
+    let descSection = null;
+    let descInputEl = null;
+    if (showDescriptionField) {
+      descSection = document.createElement('div');
+      descSection.style.cssText = 'margin-bottom: 16px;';
+
+      const descLabel = document.createElement('label');
+      descLabel.setAttribute('for', 'unified-pin-desc');
+      descLabel.style.cssText = `display: block; font-weight: 600; margin-bottom: 6px; color: ${colors.labelText}; font-size: 14px;`;
+      descLabel.textContent = 'Description (optional)';
+
+      descInputEl = document.createElement('textarea');
+      descInputEl.id = 'unified-pin-desc';
+      descInputEl.value = pinData.description || '';
+      descInputEl.placeholder = 'Add a description...';
+      descInputEl.rows = 3;
+      descInputEl.style.cssText = `
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid ${colors.inputBorder};
+        border-radius: 6px;
+        font-size: 14px;
+        color: ${colors.inputText};
+        background: ${colors.inputBg};
+        font-family: system-ui, -apple-system, sans-serif;
+        box-sizing: border-box;
+        transition: border-color 0.2s;
+        resize: vertical;
+      `;
+
+      descSection.appendChild(descLabel);
+      descSection.appendChild(descInputEl);
+    }
+
+    dialog.appendChild(header);
+    if (previewSection) dialog.appendChild(previewSection);
+    dialog.appendChild(nameSection);
+    if (descSection) dialog.appendChild(descSection);
+    
+    // Now add the unified tag section with autosuggestion
+    // [Tag section will be added here - using the same autosuggestion code]
+    
+    // For now, let's create a simple version and then enhance it
+    const tagsSection = document.createElement('div');
+    tagsSection.style.cssText = 'margin-bottom: 24px;';
+    
+    const tagsLabel = document.createElement('label');
+    tagsLabel.style.cssText = `display: block; font-weight: 600; margin-bottom: 6px; color: ${colors.labelText}; font-size: 14px;`;
+    tagsLabel.textContent = 'Tags (optional, max 3)';
+    
+    const tagsContainerEl = document.createElement('div');
+    tagsContainerEl.id = 'unified-tags-container';
+    tagsContainerEl.style.cssText = `
+      min-height: 40px;
+      border: 1px solid ${colors.inputBorder};
+      border-radius: 6px;
+      padding: 8px;
+      background: ${colors.inputBg};
+      margin-bottom: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      position: relative;
+    `;
+    
+    const tagInputEl = document.createElement('input');
+    tagInputEl.type = 'text';
+    tagInputEl.id = 'unified-tag-input';
+    tagInputEl.placeholder = 'Add a tag...';
+    tagInputEl.autocomplete = 'off';
+    tagInputEl.spellcheck = false;
+    tagInputEl.setAttribute('data-lpignore', 'true'); // Ignore LastPass
+    tagInputEl.style.cssText = `
+      border: none;
+      outline: none;
+      flex: 1;
+      min-width: 100px;
+      font-size: 14px;
+      color: ${colors.inputText};
+      background: transparent;
+      font-family: system-ui, -apple-system, sans-serif;
+    `;
+    
+    tagsContainerEl.appendChild(tagInputEl);
+    
+    const tagsHelp = document.createElement('div');
+    tagsHelp.style.cssText = `font-size: 12px; color: ${colors.helpText};`;
+    tagsHelp.textContent = 'Type to see suggestions from existing tags, or press Enter to add new tags';
+    
+    tagsSection.appendChild(tagsLabel);
+    tagsSection.appendChild(tagsContainerEl);
+    tagsSection.appendChild(tagsHelp);
+    
+    dialog.appendChild(tagsSection);
+    
+    // TODO: Add the complete autosuggestion functionality here
+    // (This would be the same code we have in both dialogs, but unified)
+    
+    // Buttons section
+    const buttonsSection = document.createElement('div');
+    buttonsSection.style.cssText = 'display: flex; gap: 10px; justify-content: flex-end;';
+    
+    const cancelBtnEl = document.createElement('button');
+    cancelBtnEl.textContent = 'Cancel';
+    cancelBtnEl.style.cssText = `
+      padding: 10px 20px;
+      border: 1px solid ${colors.cancelBorder};
+      border-radius: 6px;
+      background: ${colors.cancelBg};
+      color: ${colors.cancelText};
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    `;
+    
+    const saveBtnEl = document.createElement('button');
+    saveBtnEl.textContent = 'Save Pin';
+    saveBtnEl.style.cssText = `
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      background: ${colors.saveBg};
+      color: ${colors.saveText};
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    `;
+    
+    buttonsSection.appendChild(cancelBtnEl);
+    buttonsSection.appendChild(saveBtnEl);
+    dialog.appendChild(buttonsSection);
+    
+    overlay.appendChild(dialog);
+    document.body.appendChild(overlay);
+    
+    // Handle close
+    const closeDialog = () => {
+      overlay.remove();
+      resolve();
+    };
+    
+    cancelBtnEl.addEventListener('click', closeDialog);
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closeDialog();
+    });
+    
+    // Handle save
+    saveBtnEl.addEventListener('click', async () => {
+      const name = nameInputEl.value.trim();
+      const description = descInputEl ? descInputEl.value.trim() : '';
+      const tags = []; // TODO: Get tags from the tag system
+      
+      if (onSave) {
+        await onSave({
+          name,
+          description,
+          tags,
+          pinData
+        });
+      }
+      
+      closeDialog();
+    });
+    
+    // Handle Enter key to save (only for name input)
+    nameInputEl.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        saveBtnEl.click();
+      }
+    });
+    
+    // Handle Escape key to cancel
+    document.addEventListener('keydown', function escapeHandler(e) {
+      if (e.key === 'Escape') {
+        closeDialog();
+        document.removeEventListener('keydown', escapeHandler);
+      }
+    });
+    
+  } catch (error) {
+    console.error('GPT Pinboard: Error creating unified pin dialog:', error);
+    showNotification('❌ Failed to create pin dialog: ' + error.message);
+    if (reject) reject(error);
+    else resolve();
+  }
 }
 
 // Helper function to create SVG element safely
@@ -1127,6 +1690,13 @@ function findByTextAnchors(anchors) {
 
 // Highlight a pinned message
 async function highlightPin(pin) {
+  
+  // For chat pins, just confirm we're on the right page - don't scroll or highlight
+  if (pin.type === 'chat') {
+    console.log('GPT Pinboard: Chat pin opened - no scrolling or highlighting needed');
+    showNotification('✅ Chat opened successfully!');
+    return { found: true, type: 'chat' };
+  }
   
   // Wait for page to be fully loaded and rendered
   await new Promise(resolve => {
@@ -1348,10 +1918,10 @@ async function highlightPin(pin) {
   
   // Scroll to element with retries
   try {
-    // Use more precise scrolling - scroll to center of element
+    // Use more precise scrolling - scroll to start of element
     element.scrollIntoView({ 
       behavior: 'smooth', 
-      block: 'center',  // Changed from 'start' to 'center' for better positioning
+      block: 'start',  // Always scroll to start for consistent positioning
       inline: 'nearest' 
     });
   } catch (err) {
@@ -1764,7 +2334,17 @@ function addPinButtonToPopup(popupContainer) {
       
     } catch (error) {
       console.error('GPT Pinboard: Error creating pin from popup:', error);
-      showNotification('❌ Failed to create pin: ' + error.message);
+      
+      // Provide user-friendly error messages
+      let errorMessage = error.message;
+      if (error.message.includes('Extension context invalidated') || 
+          error.message.includes('Extension context is invalid')) {
+        errorMessage = 'Extension was reloaded. Please refresh this page and try again.';
+      } else if (error.message.includes('QUOTA_BYTES_PER_ITEM quota exceeded')) {
+        errorMessage = 'Pin is too large. Try shortening the message or removing some content.';
+      }
+      
+      showNotification('❌ Failed to create pin: ' + errorMessage);
     }
   });
   
@@ -2403,6 +2983,9 @@ function openChatPinDialog(chatId, chatTitle) {
     tagInputEl.type = 'text';
     tagInputEl.id = 'chat-tag-input';
     tagInputEl.placeholder = 'Add a tag...';
+    tagInputEl.autocomplete = 'off';
+    tagInputEl.spellcheck = false;
+    tagInputEl.setAttribute('data-lpignore', 'true'); // Ignore LastPass
     tagInputEl.style.cssText = `
       border: none;
       outline: none;
@@ -2418,7 +3001,7 @@ function openChatPinDialog(chatId, chatTitle) {
 
     const tagsHelp = document.createElement('div');
     tagsHelp.style.cssText = `font-size: 12px; color: ${colors.helpText};`;
-    tagsHelp.textContent = 'Press Enter to add tags or type and press Enter';
+    tagsHelp.textContent = 'Type to see suggestions from existing tags, or press Enter to add new tags';
 
     tagsSection.appendChild(tagsLabel);
     tagsSection.appendChild(tagsContainerEl);
@@ -2427,53 +3010,224 @@ function openChatPinDialog(chatId, chatTitle) {
     // Tags array
     const tags = [];
 
-    // Tag input handler
+    // Get all existing tags from all pins for autosuggestion
+    async function getAllExistingTags() {
+      try {
+        const allPins = await idbGetAll();
+        console.log('GPT Pinboard: All pins retrieved:', allPins.length, 'pins');
+        
+        const allTags = new Set();
+        allPins.forEach(pin => {
+          if (pin.tags && Array.isArray(pin.tags)) {
+            console.log('GPT Pinboard: Pin tags found:', pin.tags);
+            pin.tags.forEach(tag => allTags.add(tag.toLowerCase()));
+          }
+        });
+        
+        const sortedTags = Array.from(allTags).sort();
+        console.log('GPT Pinboard: Final sorted tags:', sortedTags);
+        return sortedTags;
+      } catch (err) {
+        console.error('GPT Pinboard: Error getting existing tags:', err);
+        return [];
+      }
+    }
+
+    // Create suggestion dropdown
+    const suggestionDropdown = document.createElement('div');
+    suggestionDropdown.id = 'tag-suggestions';
+    suggestionDropdown.style.cssText = `
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: ${colors.inputBg};
+      border: 1px solid ${colors.inputBorder};
+      border-top: none;
+      border-radius: 0 0 6px 6px;
+      max-height: 150px;
+      overflow-y: auto;
+      z-index: 10000;
+      display: none;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    `;
+    
+    console.log('GPT Pinboard: Suggestion dropdown created with colors:', colors);
+
+    // Make tags container relative for absolute positioning of dropdown
+    tagsContainerEl.style.position = 'relative';
+    tagsContainerEl.appendChild(suggestionDropdown);
+
+    let selectedSuggestionIndex = -1;
+    let availableSuggestions = [];
+
+    // Show suggestions based on input
+    async function showSuggestions(inputValue) {
+      console.log('GPT Pinboard: showSuggestions called with:', inputValue);
+      
+      if (!inputValue.trim()) {
+        suggestionDropdown.style.display = 'none';
+        return;
+      }
+
+      const existingTags = await getAllExistingTags();
+      console.log('GPT Pinboard: Existing tags found:', existingTags);
+      
+      const query = inputValue.toLowerCase().trim();
+      availableSuggestions = existingTags
+        .filter(tag => tag.includes(query) && !tags.includes(tag))
+        .slice(0, 8); // Limit to 8 suggestions
+
+      console.log('GPT Pinboard: Available suggestions:', availableSuggestions, 'for query:', query);
+
+      if (availableSuggestions.length === 0) {
+        suggestionDropdown.style.display = 'none';
+        console.log('GPT Pinboard: No suggestions found, hiding dropdown');
+        return;
+      }
+
+      suggestionDropdown.innerHTML = '';
+      availableSuggestions.forEach((tag, index) => {
+        const suggestionEl = document.createElement('div');
+        suggestionEl.className = 'tag-suggestion';
+        suggestionEl.style.cssText = `
+          padding: 8px 12px;
+          cursor: pointer;
+          font-size: 14px;
+          color: ${colors.inputText};
+          border-bottom: 1px solid ${colors.inputBorder};
+          transition: background-color 0.2s;
+        `;
+        suggestionEl.textContent = tag;
+        
+        suggestionEl.addEventListener('mouseenter', () => {
+          selectedSuggestionIndex = index;
+          updateSuggestionHighlight();
+        });
+        
+        suggestionEl.addEventListener('click', () => {
+          selectSuggestion(tag);
+        });
+        
+        suggestionDropdown.appendChild(suggestionEl);
+      });
+
+      suggestionDropdown.style.display = 'block';
+      selectedSuggestionIndex = -1;
+      updateSuggestionHighlight();
+      
+      console.log('GPT Pinboard: Dropdown shown with', availableSuggestions.length, 'suggestions');
+      console.log('GPT Pinboard: Dropdown element:', suggestionDropdown);
+      console.log('GPT Pinboard: Dropdown parent:', suggestionDropdown.parentNode);
+    }
+
+    // Update suggestion highlight
+    function updateSuggestionHighlight() {
+      const suggestions = suggestionDropdown.querySelectorAll('.tag-suggestion');
+      suggestions.forEach((el, index) => {
+        if (index === selectedSuggestionIndex) {
+          el.style.backgroundColor = colors.primary || '#e8f0fe';
+          el.style.color = colors.primaryText || '#1a73e8';
+        } else {
+          el.style.backgroundColor = 'transparent';
+          el.style.color = colors.inputText;
+        }
+      });
+    }
+
+    // Select a suggestion
+    function selectSuggestion(tag) {
+      if (tags.length < 3 && !tags.includes(tag)) {
+        tags.push(tag);
+        
+        const tagEl = document.createElement('span');
+        tagEl.style.cssText = `
+          background: ${colors.tagBg};
+          color: ${colors.tagText};
+          padding: 4px 8px;
+          border-radius: 4px;
+          font-size: 13px;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+        `;
+        tagEl.textContent = tag;
+        
+        const removeBtn = document.createElement('button');
+        removeBtn.textContent = '×';
+        removeBtn.style.cssText = `
+          background: none;
+          border: none;
+          color: ${colors.tagText};
+          font-size: 18px;
+          cursor: pointer;
+          padding: 0;
+          line-height: 1;
+          width: 16px;
+          height: 16px;
+        `;
+        removeBtn.onclick = () => {
+          const index = tags.indexOf(tag);
+          if (index > -1) tags.splice(index, 1);
+          tagEl.remove();
+          if (tags.length < 3) tagInputEl.disabled = false;
+        };
+        
+        tagEl.appendChild(removeBtn);
+        tagsContainerEl.insertBefore(tagEl, tagInputEl);
+        tagInputEl.value = '';
+        suggestionDropdown.style.display = 'none';
+        
+        if (tags.length >= 3) tagInputEl.disabled = true;
+      }
+    }
+
+    // Enhanced tag input handler with autosuggestion
     tagInputEl.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && tagInputEl.value.trim() && tags.length < 3) {
+      if (suggestionDropdown.style.display === 'block' && availableSuggestions.length > 0) {
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          selectedSuggestionIndex = Math.min(selectedSuggestionIndex + 1, availableSuggestions.length - 1);
+          updateSuggestionHighlight();
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          selectedSuggestionIndex = Math.max(selectedSuggestionIndex - 1, -1);
+          updateSuggestionHighlight();
+        } else if (e.key === 'Enter') {
+          e.preventDefault();
+          if (selectedSuggestionIndex >= 0) {
+            selectSuggestion(availableSuggestions[selectedSuggestionIndex]);
+          } else if (tagInputEl.value.trim() && tags.length < 3) {
+            // Add as new tag if no suggestion selected
+            const tag = tagInputEl.value.trim().toLowerCase();
+            if (!tags.includes(tag)) {
+              selectSuggestion(tag);
+            }
+          }
+        } else if (e.key === 'Escape') {
+          suggestionDropdown.style.display = 'none';
+          selectedSuggestionIndex = -1;
+        }
+      } else if (e.key === 'Enter' && tagInputEl.value.trim() && tags.length < 3) {
         e.preventDefault();
         const tag = tagInputEl.value.trim().toLowerCase();
         if (!tags.includes(tag)) {
-          tags.push(tag);
-          
-          const tagEl = document.createElement('span');
-          tagEl.style.cssText = `
-            background: ${colors.tagBg};
-            color: ${colors.tagText};
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 13px;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-          `;
-          tagEl.textContent = tag;
-          
-          const removeBtn = document.createElement('button');
-          removeBtn.textContent = '×';
-          removeBtn.style.cssText = `
-            background: none;
-            border: none;
-            color: ${colors.tagText};
-            font-size: 18px;
-            cursor: pointer;
-            padding: 0;
-            line-height: 1;
-            width: 16px;
-            height: 16px;
-          `;
-          removeBtn.onclick = () => {
-            const index = tags.indexOf(tag);
-            if (index > -1) tags.splice(index, 1);
-            tagEl.remove();
-            if (tags.length < 3) tagInputEl.disabled = false;
-          };
-          
-          tagEl.appendChild(removeBtn);
-          tagsContainerEl.insertBefore(tagEl, tagInputEl);
-          tagInputEl.value = '';
-          
-          if (tags.length >= 3) tagInputEl.disabled = true;
+          selectSuggestion(tag);
         }
+      }
+    });
+
+    // Show suggestions on input
+    tagInputEl.addEventListener('input', (e) => {
+      console.log('GPT Pinboard: Input event fired, value:', e.target.value);
+      showSuggestions(e.target.value);
+    });
+
+    // Hide suggestions when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!tagsContainerEl.contains(e.target)) {
+        suggestionDropdown.style.display = 'none';
+        selectedSuggestionIndex = -1;
       }
     });
 

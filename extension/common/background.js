@@ -48,31 +48,96 @@ async function handleOpenAndHighlight(pin, sendResponse) {
     const pinUrl = new URL(pin.pageUrl);
     const tabs = await chrome.tabs.query({});
     
+    console.log('GPT Pinboard: Pin URL details:', {
+      hostname: pinUrl.hostname,
+      pathname: pinUrl.pathname,
+      href: pinUrl.href
+    });
+    
     // Find tabs that match the ChatGPT conversation
     const matchingTabs = tabs.filter(tab => {
       if (!tab.url) return false;
       try {
         const tabUrl = new URL(tab.url);
+        console.log('GPT Pinboard: Checking tab URL:', {
+          hostname: tabUrl.hostname,
+          pathname: tabUrl.pathname,
+          href: tabUrl.href
+        });
+        
         // Match ChatGPT domains and conversation paths
         if ((tabUrl.hostname === 'chatgpt.com' || tabUrl.hostname === 'chat.openai.com') &&
             (pinUrl.hostname === 'chatgpt.com' || pinUrl.hostname === 'chat.openai.com')) {
           // For ChatGPT, match the conversation ID in the path
           const pinPath = pinUrl.pathname;
           const tabPath = tabUrl.pathname;
-          // Extract conversation ID (format: /c/conversation-id)
-          const pinConversationMatch = pinPath.match(/\/c\/([^\/\?]+)/);
-          const tabConversationMatch = tabPath.match(/\/c\/([^\/\?]+)/);
           
-          if (pinConversationMatch && tabConversationMatch) {
-            return pinConversationMatch[1] === tabConversationMatch[1];
+          // Try multiple conversation ID patterns:
+          // /c/conversation-id (old format)
+          // /chat/conversation-id (possible new format)  
+          // /conversation/conversation-id (another possible format)
+          const conversationPatterns = [
+            /\/c\/([^\/\?]+)/,
+            /\/chat\/([^\/\?]+)/,
+            /\/conversation\/([^\/\?]+)/
+          ];
+          
+          let pinConversationId = null;
+          let tabConversationId = null;
+          
+          // Try to extract conversation ID from pin URL
+          for (const pattern of conversationPatterns) {
+            const match = pinPath.match(pattern);
+            if (match) {
+              pinConversationId = match[1];
+              break;
+            }
+          }
+          
+          // Try to extract conversation ID from tab URL
+          for (const pattern of conversationPatterns) {
+            const match = tabPath.match(pattern);
+            if (match) {
+              tabConversationId = match[1];
+              break;
+            }
+          }
+          
+          console.log('GPT Pinboard: Conversation ID match attempt:', {
+            pinPath,
+            tabPath,
+            pinConversationId,
+            tabConversationId
+          });
+          
+          if (pinConversationId && tabConversationId) {
+            const matches = pinConversationId === tabConversationId;
+            console.log('GPT Pinboard: Conversation IDs match:', matches);
+            return matches;
+          }
+          
+          // If we're on ChatGPT domains but couldn't extract conversation IDs,
+          // and one of the URLs is the main ChatGPT page, consider them as potentially same conversation
+          if ((pinPath === '/' || pinPath === '') && (tabPath.includes('/c/') || tabPath.includes('/chat/'))) {
+            console.log('GPT Pinboard: Pin is main page, tab has conversation - treating as same');
+            return true;
+          }
+          if ((tabPath === '/' || tabPath === '') && (pinPath.includes('/c/') || pinPath.includes('/chat/'))) {
+            console.log('GPT Pinboard: Tab is main page, pin has conversation - treating as same');
+            return true;
           }
         }
         // Fallback to exact URL match
-        return tab.url === pin.pageUrl;
+        const exactMatch = tab.url === pin.pageUrl;
+        console.log('GPT Pinboard: Exact URL match:', exactMatch);
+        return exactMatch;
       } catch (e) {
+        console.log('GPT Pinboard: Error parsing tab URL:', e);
         return tab.url === pin.pageUrl;
       }
     });
+    
+    console.log('GPT Pinboard: Found matching tabs:', matchingTabs.length);
     
     if (matchingTabs.length > 0) {
       // Tab already exists, switch to it and highlight
