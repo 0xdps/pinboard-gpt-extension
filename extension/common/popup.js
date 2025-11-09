@@ -357,29 +357,87 @@ document.addEventListener('DOMContentLoaded', async () => {
       const titleEl = document.getElementById('confirmTitle');
       const messageEl = document.getElementById('confirmMessage');
       const cancelBtn = document.getElementById('confirmCancel');
+      const exportBtn = document.getElementById('confirmExport');
       const okBtn = document.getElementById('confirmOK');
       
       titleEl.textContent = title;
       messageEl.textContent = message;
+      
+      // Hide export button by default
+      exportBtn.style.display = 'none';
+      
       modal.style.display = 'flex';
       
       function cleanup() {
         modal.style.display = 'none';
         cancelBtn.removeEventListener('click', handleCancel);
+        exportBtn.removeEventListener('click', handleExport);
         okBtn.removeEventListener('click', handleOK);
       }
       
       function handleCancel() {
         cleanup();
-        resolve(false);
+        resolve('cancel');
+      }
+      
+      function handleExport() {
+        cleanup();
+        resolve('export');
       }
       
       function handleOK() {
         cleanup();
-        resolve(true);
+        resolve('delete');
       }
       
       cancelBtn.addEventListener('click', handleCancel);
+      exportBtn.addEventListener('click', handleExport);
+      okBtn.addEventListener('click', handleOK);
+    });
+  }
+
+  // Enhanced confirmation modal with export option for delete all
+  function showDeleteAllConfirmation(title, message) {
+    return new Promise((resolve) => {
+      const modal = document.getElementById('confirmModal');
+      const titleEl = document.getElementById('confirmTitle');
+      const messageEl = document.getElementById('confirmMessage');
+      const cancelBtn = document.getElementById('confirmCancel');
+      const exportBtn = document.getElementById('confirmExport');
+      const okBtn = document.getElementById('confirmOK');
+      
+      titleEl.textContent = title;
+      messageEl.textContent = message;
+      
+      // Show export button for delete all
+      exportBtn.style.display = 'inline-block';
+      
+      modal.style.display = 'flex';
+      
+      function cleanup() {
+        modal.style.display = 'none';
+        cancelBtn.removeEventListener('click', handleCancel);
+        exportBtn.removeEventListener('click', handleExport);
+        okBtn.removeEventListener('click', handleOK);
+      }
+      
+      function handleCancel() {
+        cleanup();
+        resolve('cancel');
+      }
+      
+      function handleExport() {
+        cleanup();
+        resolve('export');
+      }
+      
+      function handleOK() {
+        cleanup();
+        resolve('delete');
+      }
+      
+      cancelBtn.addEventListener('click', handleCancel);
+      exportBtn.addEventListener('click', handleExport);
       okBtn.addEventListener('click', handleOK);
     });
   }
@@ -411,12 +469,39 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
       }
 
-      const confirmed = await showConfirmation(
+      const result = await showDeleteAllConfirmation(
         'Delete All Pins', 
-        `Are you sure you want to delete all ${pins.length} pins? This action cannot be undone.`
+        `Are you sure you want to delete all ${pins.length} pins? This action cannot be undone. Consider exporting first to create a backup.`
       );
       
-      if (confirmed) {
+      if (result === 'export') {
+        // Export pins first, then ask again
+        try {
+          const exportData = {
+            version: '1.0',
+            exportDate: new Date().toISOString(),
+            pinCount: pins.length,
+            pins: pins
+          };
+          
+          const blob = new Blob([JSON.stringify(exportData, null, 2)], {type: 'application/json'});
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          const dateStr = new Date().toISOString().split('T')[0];
+          a.download = `gpt-pinboard-backup-${dateStr}.json`;
+          a.click();
+          URL.revokeObjectURL(url);
+          
+          showNotification(`Exported ${pins.length} pins successfully. You can now safely delete all pins.`, 'success');
+          
+          // Ask again after export
+          setTimeout(() => deleteAllPins(), 1000);
+        } catch (err) {
+          debugError('Export failed:', err);
+          showNotification('Export failed. Please try again.', 'error');
+        }
+      } else if (result === 'delete') {
         // Delete all pins using the proper IndexedDB clear function
         await idbClear();
         
@@ -428,6 +513,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         showNotification(`Successfully deleted all ${pins.length} pins.`, 'success');
       }
+      // If result === 'cancel', do nothing
     } catch (err) {
       debugError('Failed to delete all pins:', err);
       showNotification('Failed to delete all pins.', 'error');
