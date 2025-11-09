@@ -2032,9 +2032,9 @@ async function highlightPin(pin) {
   
   // Use a very subtle highlight that's easy on the eyes - no border, no margin/padding
   element.style.transition = 'all 0.4s ease';
-  element.style.background = 'rgba(16, 163, 127, 0.08)'; // Slightly more visible green tint
-  element.style.boxShadow = '0 2px 12px rgba(16, 163, 127, 0.2)'; // Soft shadow glow, no border effect
-  element.style.borderRadius = '12px';
+  element.style.background = 'rgba(16, 163, 127, 0.03)'; // Much more subtle green tint
+  element.style.boxShadow = '0 1px 6px rgba(16, 163, 127, 0.1)'; // Very soft shadow glow
+  element.style.borderRadius = '8px';
   
   // Ensure the element doesn't expand too wide
   if (!originalMaxWidth) {
@@ -2680,13 +2680,27 @@ function createMessageNavigationDropdown(messages) {
           message.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
         
-        // Highlight the message briefly
-        const originalBg = message.style.backgroundColor;
-        message.style.backgroundColor = '#fff3cd';
-        message.style.transition = 'background-color 0.3s';
+        // Highlight the message briefly with subtle styling
+        const originalBg = message.style.background;
+        const originalBoxShadow = message.style.boxShadow;
+        const originalBorderRadius = message.style.borderRadius;
+        const originalTransition = message.style.transition;
+        
+        message.style.transition = 'all 0.4s ease';
+        message.style.background = 'rgba(255, 193, 7, 0.03)'; // Very subtle yellow tint
+        message.style.boxShadow = '0 1px 6px rgba(255, 193, 7, 0.1)'; // Soft yellow shadow
+        message.style.borderRadius = '8px';
         
         setTimeout(() => {
-          message.style.backgroundColor = originalBg;
+          message.style.transition = 'all 0.6s ease';
+          message.style.background = originalBg;
+          message.style.boxShadow = originalBoxShadow;
+          message.style.borderRadius = originalBorderRadius;
+          
+          // Clean up transition after animation completes
+          setTimeout(() => {
+            message.style.transition = originalTransition;
+          }, 600);
         }, 2000);
       }, 100);
     });
