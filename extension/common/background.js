@@ -30,11 +30,23 @@ function generateInstallToken() {
 
 // Handle internal messages (from popup, content scripts, etc.)
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  console.log('GPT Pinboard: Received message:', request.action, request);
+  console.log('GPT Pinboard: Background received message:', request.action, request);
+  console.log('GPT Pinboard: Browser info:', {
+    isFirefox: typeof browser !== 'undefined',
+    isChrome: typeof chrome !== 'undefined',
+    userAgent: navigator.userAgent.includes('Firefox') ? 'Firefox' : 'Chrome/Other'
+  });
 
   if (request.action === 'open-and-highlight' && request.pin) {
-    handleOpenAndHighlight(request.pin, sendResponse);
-    return true; // Will respond asynchronously
+    console.log('GPT Pinboard: About to handle open-and-highlight');
+    try {
+      handleOpenAndHighlight(request.pin, sendResponse);
+      return true; // Will respond asynchronously
+    } catch (error) {
+      console.log('GPT Pinboard: Error in handleOpenAndHighlight:', error);
+      sendResponse({ success: false, error: error.message });
+      return false;
+    }
   }
   
   return false;
@@ -44,9 +56,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 async function handleOpenAndHighlight(pin, sendResponse) {
   try {
     console.log('GPT Pinboard: Handling open-and-highlight for pin:', pin.id, pin.pageUrl);
+    
+    // Check which API is available
+    const isFirefox = typeof browser !== 'undefined';
+    const tabsAPI = isFirefox ? browser.tabs : chrome.tabs;
+    console.log('GPT Pinboard: Using', isFirefox ? 'browser.tabs' : 'chrome.tabs', 'API for tab query');
+    
     // First, check if there's already a tab with this URL or similar ChatGPT URL
     const pinUrl = new URL(pin.pageUrl);
-    const tabs = await chrome.tabs.query({});
+    const tabs = await tabsAPI.query({});
     
     console.log('GPT Pinboard: Pin URL details:', {
       hostname: pinUrl.hostname,
@@ -143,18 +161,19 @@ async function handleOpenAndHighlight(pin, sendResponse) {
       // Tab already exists, switch to it and highlight
       const existingTab = matchingTabs[0];
       console.log('GPT Pinboard: Switching to existing tab:', existingTab.id);
-      await chrome.tabs.update(existingTab.id, { active: true });
+      await tabsAPI.update(existingTab.id, { active: true });
       
       // Wait a moment for tab to become active, then send highlight message
       setTimeout(() => {
         console.log('GPT Pinboard: Sending highlight message to existing tab');
-        chrome.tabs.sendMessage(existingTab.id, {
+        tabsAPI.sendMessage(existingTab.id, {
           action: 'highlight-pin',
           pin: pin
         }, (response) => {
-          if (chrome.runtime.lastError) {
-            console.log('GPT Pinboard: Error highlighting pin:', chrome.runtime.lastError.message);
-            sendResponse({ success: true, highlighted: false, error: chrome.runtime.lastError.message });
+          const lastError = isFirefox ? browser.runtime.lastError : chrome.runtime.lastError;
+          if (lastError) {
+            console.log('GPT Pinboard: Error highlighting pin:', lastError.message);
+            sendResponse({ success: true, highlighted: false, error: lastError.message });
           } else {
             console.log('GPT Pinboard: Highlight response from existing tab:', response);
             sendResponse({ success: true, highlighted: response?.found || false });
@@ -163,13 +182,27 @@ async function handleOpenAndHighlight(pin, sendResponse) {
       }, 1000);
     } else {
       // Create new tab with the URL
-      const newTab = await chrome.tabs.create({ url: pin.pageUrl });
-      console.log('GPT Pinboard: Created new tab:', newTab.id, pin.pageUrl);
+      console.log('GPT Pinboard: About to create new tab with URL:', pin.pageUrl);
+      
+      // Check which API is available
+      const isFirefox = typeof browser !== 'undefined';
+      const tabsAPI = isFirefox ? browser.tabs : chrome.tabs;
+      console.log('GPT Pinboard: Using', isFirefox ? 'browser.tabs' : 'chrome.tabs', 'API for tab creation');
+      
+      let newTab;
+      try {
+        newTab = await tabsAPI.create({ url: pin.pageUrl });
+        console.log('GPT Pinboard: Successfully created new tab:', newTab.id, pin.pageUrl);
+      } catch (tabError) {
+        console.log('GPT Pinboard: Error creating tab:', tabError);
+        sendResponse({ success: false, error: 'Failed to create tab: ' + tabError.message });
+        return;
+      }
       
       // Set up timeout for the whole operation
       let responseTimeout = setTimeout(() => {
         console.log('GPT Pinboard: Tab load timeout');
-        chrome.tabs.onUpdated.removeListener(onTabUpdate);
+        tabsAPI.onUpdated.removeListener(onTabUpdate);
         sendResponse({ success: true, highlighted: false, error: 'Tab load timeout' });
       }, 15000);
       
@@ -177,18 +210,19 @@ async function handleOpenAndHighlight(pin, sendResponse) {
       const onTabUpdate = (tabId, changeInfo, tab) => {
         if (tabId === newTab.id && changeInfo.status === 'complete') {
           console.log('GPT Pinboard: Tab loaded, sending highlight message');
-          chrome.tabs.onUpdated.removeListener(onTabUpdate);
+          tabsAPI.onUpdated.removeListener(onTabUpdate);
           clearTimeout(responseTimeout);
           
           // Additional wait for content script to be ready
           setTimeout(() => {
-            chrome.tabs.sendMessage(newTab.id, {
+            tabsAPI.sendMessage(newTab.id, {
               action: 'highlight-pin',
               pin: pin
             }, (response) => {
-              if (chrome.runtime.lastError) {
-                console.log('GPT Pinboard: Error highlighting pin:', chrome.runtime.lastError.message);
-                sendResponse({ success: true, highlighted: false, error: chrome.runtime.lastError.message });
+              const lastError = isFirefox ? browser.runtime.lastError : chrome.runtime.lastError;
+              if (lastError) {
+                console.log('GPT Pinboard: Error highlighting pin:', lastError.message);
+                sendResponse({ success: true, highlighted: false, error: lastError.message });
               } else {
                 console.log('GPT Pinboard: Highlight response:', response);
                 sendResponse({ success: true, highlighted: response?.found || false });
@@ -198,7 +232,7 @@ async function handleOpenAndHighlight(pin, sendResponse) {
         }
       };
       
-      chrome.tabs.onUpdated.addListener(onTabUpdate);
+      tabsAPI.onUpdated.addListener(onTabUpdate);
     }
   } catch (error) {
     console.log('GPT Pinboard: Error in open-and-highlight:', error);
