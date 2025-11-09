@@ -358,28 +358,36 @@ body.dark-mode .clear-search-btn:hover {
 }
 
 /* Custom Scrollbar */
-#list::-webkit-scrollbar {
-  width: 6px;
+#list::-webkit-scrollbar,
+.modal-content::-webkit-scrollbar {
+  width: 3px;
 }
 
-#list::-webkit-scrollbar-track {
+#list::-webkit-scrollbar-track,
+.modal-content::-webkit-scrollbar-track {
   background: transparent;
+  margin: 2px;
 }
 
-#list::-webkit-scrollbar-thumb {
+#list::-webkit-scrollbar-thumb,
+.modal-content::-webkit-scrollbar-thumb {
   background: var(--gray-300);
-  border-radius: 3px;
+  border-radius: 1.5px;
+  margin: 2px;
 }
 
-#list::-webkit-scrollbar-thumb:hover {
+#list::-webkit-scrollbar-thumb:hover,
+.modal-content::-webkit-scrollbar-thumb:hover {
   background: var(--gray-400);
 }
 
-body.dark-mode #list::-webkit-scrollbar-thumb {
+body.dark-mode #list::-webkit-scrollbar-thumb,
+body.dark-mode .modal-content::-webkit-scrollbar-thumb {
   background: var(--gray-600);
 }
 
-body.dark-mode #list::-webkit-scrollbar-thumb:hover {
+body.dark-mode #list::-webkit-scrollbar-thumb:hover,
+body.dark-mode .modal-content::-webkit-scrollbar-thumb:hover {
   background: var(--gray-500);
 }
 
@@ -404,6 +412,7 @@ body.dark-mode #list::-webkit-scrollbar-thumb:hover {
   border: 1px solid var(--border-color);
   border-radius: var(--radius-xl);
   padding: var(--space-6);
+  padding-right: calc(var(--space-6) - 3px);
   width: 90%;
   max-width: 400px;
   max-height: 80vh;
@@ -490,26 +499,51 @@ body.dark-mode #list::-webkit-scrollbar-thumb:hover {
   letter-spacing: 0.05em;
 }
 
+/* Settings group container with border radius */
+.settings-group {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
 .theme-setting,
-.sync-setting {
+.tab-setting,
+.sync-setting,
+.debug-setting {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: var(--space-4);
   background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
+  border: none;
+  border-bottom: 1px solid var(--border-color);
   transition: all var(--transition-fast);
 }
 
+/* Hide tab behavior setting (not working yet) - must come after general rule */
+.tab-setting {
+  display: none !important;
+}
+
+.theme-setting:last-child,
+.tab-setting:last-child,
+.sync-setting:last-child,
+.debug-setting:last-child {
+  border-bottom: none;
+}
+
 .theme-setting:hover,
-.sync-setting:hover {
+.tab-setting:hover,
+.sync-setting:hover,
+.debug-setting:hover {
   background: var(--bg-tertiary);
   border-color: var(--border-hover);
 }
 
 .theme-info,
-.sync-info {
+.tab-info,
+.sync-info,
+.debug-info {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
@@ -517,7 +551,9 @@ body.dark-mode #list::-webkit-scrollbar-thumb:hover {
 }
 
 .theme-info span,
-.sync-info span {
+.tab-info span,
+.sync-info span,
+.debug-info span {
   font-weight: 600;
   font-size: var(--font-size-sm);
   color: var(--text-primary);
@@ -531,7 +567,9 @@ body.dark-mode #list::-webkit-scrollbar-thumb:hover {
 }
 
 .theme-info small,
-.sync-info small {
+.tab-info small,
+.sync-info small,
+.debug-info small {
   font-size: var(--font-size-xs);
   color: var(--text-tertiary);
   line-height: 1.4;

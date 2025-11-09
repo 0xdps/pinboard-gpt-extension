@@ -58,58 +58,52 @@
       </div>
       
       <div class="settings-section">
-        <h4>Appearance</h4>
-        <div class="theme-setting">
-          <div class="theme-info">
-            <span id="themeText">🌙 Dark mode</span>
-            <small id="themeDesc">Switch between light and dark themes</small>
+        <h4>General Settings</h4>
+        
+        <div class="settings-group">
+          <div class="theme-setting">
+            <div class="theme-info">
+              <span id="themeText">🌙 Dark mode</span>
+              <small id="themeDesc">Switch between light and dark themes</small>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="themeToggle">
+              <span class="toggle-slider"></span>
+            </label>
           </div>
-          <label class="toggle-switch">
-            <input type="checkbox" id="themeToggle">
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-      </div>
 
-      <div class="settings-section">
-        <h4>Tab Behavior</h4>
-        <div class="tab-setting">
-          <div class="tab-info">
-            <span id="tabBehaviorText">🗂️ Always open in new tab</span>
-            <small id="tabBehaviorDesc">Choose whether pins open in new tabs or reuse existing ChatGPT tabs</small>
+          <div class="tab-setting">
+            <div class="tab-info">
+              <span id="tabBehaviorText">🗂️ Always open in new tab</span>
+              <small id="tabBehaviorDesc">Choose whether pins open in new tabs or reuse existing ChatGPT tabs</small>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="tabBehaviorToggle" checked>
+              <span class="toggle-slider"></span>
+            </label>
           </div>
-          <label class="toggle-switch">
-            <input type="checkbox" id="tabBehaviorToggle" checked>
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-      </div>
 
-      <div class="settings-section">
-        <h4>Sync</h4>
-        <div class="sync-setting">
-          <div class="sync-info">
-            <span id="syncText">🔄 Syncing across devices</span>
-            <small id="syncDesc">Automatically sync pins across your Chrome devices using Chrome sync storage</small>
+          <div class="sync-setting">
+            <div class="sync-info">
+              <span id="syncText">🔄 Syncing across devices</span>
+              <small id="syncDesc">Automatically sync pins across your Chrome devices using Chrome sync storage</small>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="syncToggle" checked>
+              <span class="toggle-slider"></span>
+            </label>
           </div>
-          <label class="toggle-switch">
-            <input type="checkbox" id="syncToggle" checked>
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-      </div>
-      
-      <div class="settings-section">
-        <h4>Advanced</h4>
-        <div class="debug-setting">
-          <div class="debug-info">
-            <span id="debugText">🐛 Debug mode</span>
-            <small id="debugDesc">Enable detailed console logging for troubleshooting (requires page reload)</small>
+
+          <div class="debug-setting">
+            <div class="debug-info">
+              <span id="debugText">🐛 Debug mode</span>
+              <small id="debugDesc">Enable detailed console logging for troubleshooting (requires page reload)</small>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="debugToggle">
+              <span class="toggle-slider"></span>
+            </label>
           </div>
-          <label class="toggle-switch">
-            <input type="checkbox" id="debugToggle">
-            <span class="toggle-slider"></span>
-          </label>
         </div>
       </div>
       
