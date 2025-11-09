@@ -1051,7 +1051,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.addEventListener('click', (e) => {
     if (e.target.id === 'helpLink') {
       e.preventDefault();
-      chrome.tabs.create({ url: 'https://github.com/0xdps/gpt-pinboard-extension' });
+      chrome.tabs.create({ url: 'https://gptpins.dps.codes/support.html' });
     }
   });
 
