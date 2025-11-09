@@ -1,55 +1,21 @@
-/**
- * Firefox Storage API wrapper
- * Uses browser.storage.sync for automatic syncing across devices
- * Firefox extension specific - no cross-browser compatibility
- */
+// ============================================================================
+// Firefox browser code (auto-appended during build)
+// ============================================================================
 
-const STORAGE_KEY = 'pins';
-const SETTINGS_KEY = 'settings';
+// Firefox storage API wrapper
+const STORAGE_KEY = 'gpt-pinboard-pins';
+const SETTINGS_KEY = 'gpt-pinboard-settings';
 
-// Firefox sync quota limits (for reference)
-const SYNC_QUOTA_BYTES = 102400; // 100KB total
-const SYNC_MAX_ITEMS = 512;
-
-// Check if extension context is still valid
 function isExtensionContextValid() {
   try {
-    return browser && browser.runtime && !browser.runtime.lastError;
+    return !!(browser.runtime && browser.runtime.id);
   } catch (e) {
     return false;
   }
 }
 
-async function idbAdd(pin) {
-  // Check if extension context is valid before attempting storage operations
-  if (!isExtensionContextValid()) {
-    throw new Error('Extension context is invalid. Please reload the page and try again.');
-  }
-  
-  try {
-    const result = await browser.storage.sync.get([STORAGE_KEY]);
-    const pins = result[STORAGE_KEY] || [];
-    
-    // Find and update existing pin or add new one
-    const existingIndex = pins.findIndex(p => p.id === pin.id);
-    if (existingIndex >= 0) {
-      pins[existingIndex] = pin;
-    } else {
-      pins.push(pin);
-    }
-    
-    await browser.storage.sync.set({ [STORAGE_KEY]: pins });
-    return pin;
-  } catch (error) {
-    // Re-throw with more context if it's an extension context error
-    if (error.message.includes('Extension context invalidated')) {
-      throw new Error('Extension context is invalid. Please reload the page and try again.');
-    }
-    throw error;
-  }
-}
-
-async function idbGetAll() {
+// Firefox storage functions
+async function getAllPins() {
   if (!isExtensionContextValid()) {
     throw new Error('Extension context is invalid. Please reload the page and try again.');
   }
@@ -65,7 +31,7 @@ async function idbGetAll() {
   }
 }
 
-async function idbDelete(id) {
+async function savePin(pin) {
   if (!isExtensionContextValid()) {
     throw new Error('Extension context is invalid. Please reload the page and try again.');
   }
@@ -73,8 +39,16 @@ async function idbDelete(id) {
   try {
     const result = await browser.storage.sync.get([STORAGE_KEY]);
     const pins = result[STORAGE_KEY] || [];
-    const filtered = pins.filter(p => p.id !== id);
-    await browser.storage.sync.set({ [STORAGE_KEY]: filtered });
+    
+    const existingIndex = pins.findIndex(p => p.id === pin.id);
+    if (existingIndex >= 0) {
+      pins[existingIndex] = pin;
+    } else {
+      pins.push(pin);
+    }
+    
+    await browser.storage.sync.set({ [STORAGE_KEY]: pins });
+    return pin;
   } catch (error) {
     if (error.message.includes('Extension context invalidated')) {
       throw new Error('Extension context is invalid. Please reload the page and try again.');
@@ -83,13 +57,19 @@ async function idbDelete(id) {
   }
 }
 
-async function idbClear() {
+async function deletePin(pinId) {
   if (!isExtensionContextValid()) {
     throw new Error('Extension context is invalid. Please reload the page and try again.');
   }
   
   try {
-    await browser.storage.sync.set({ [STORAGE_KEY]: [] });
+    const result = await browser.storage.sync.get([STORAGE_KEY]);
+    const pins = result[STORAGE_KEY] || [];
+    
+    const filteredPins = pins.filter(pin => pin.id !== pinId);
+    await browser.storage.sync.set({ [STORAGE_KEY]: filteredPins });
+    
+    return true;
   } catch (error) {
     if (error.message.includes('Extension context invalidated')) {
       throw new Error('Extension context is invalid. Please reload the page and try again.');
@@ -98,13 +78,6 @@ async function idbClear() {
   }
 }
 
-// Get a single pin by ID
-async function idbGet(id) {
-  const pins = await idbGetAll();
-  return pins.find(p => p.id === id) || null;
-}
-
-// Settings management using browser.storage.local (for non-synced preferences)
 async function getSettings() {
   const result = await browser.storage.local.get([SETTINGS_KEY]);
   return result[SETTINGS_KEY] || {
@@ -119,7 +92,6 @@ async function updateSettings(newSettings) {
   return updatedSettings;
 }
 
-// Settings storage functions
 async function getSetting(key) {
   if (!isExtensionContextValid()) {
     throw new Error('Extension context is invalid. Please reload the page and try again.');
@@ -162,16 +134,7 @@ async function getSettings(keys = []) {
   }
 }
 
-// Get storage statistics
-async function getStorageStats() {
-  const pins = await idbGetAll();
-  const dataSize = new Blob([JSON.stringify(pins)]).size;
-  
-  return {
-    pinCount: pins.length,
-    dataSize,
-    quotaUsed: ((dataSize / SYNC_QUOTA_BYTES) * 100).toFixed(2),
-    maxPins: SYNC_MAX_ITEMS,
-    maxSize: SYNC_QUOTA_BYTES
-  };
-}
+// Firefox browser APIs
+const tabsAPI = browser.tabs;
+const runtimeAPI = browser.runtime;
+const isFirefox = true;

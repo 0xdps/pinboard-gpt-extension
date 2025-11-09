@@ -14,6 +14,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const syncToggle = document.getElementById('syncToggle');
   const themeText = document.getElementById('themeText');
   const themeToggle = document.getElementById('themeToggle');
+  const tabBehaviorText = document.getElementById('tabBehaviorText');
+  const tabBehaviorToggle = document.getElementById('tabBehaviorToggle');
   
   // Filter tabs
   const filterAll = document.getElementById('filterAll');
@@ -52,7 +54,42 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
+  // Initialize tab behavior setting
+  async function initializeTabBehavior() {
+    try {
+      console.log('GPT Pinboard: Loading tab behavior setting...');
+      
+      const alwaysNewTab = await getSetting('alwaysNewTab');
+      console.log('GPT Pinboard: Loaded alwaysNewTab setting:', alwaysNewTab);
+      
+      // Default to always new tab (true) if not set
+      const useNewTab = alwaysNewTab !== false;
+      tabBehaviorToggle.checked = useNewTab;
+      updateTabBehaviorText(useNewTab);
+      console.log('GPT Pinboard: Set tab behavior toggle to:', useNewTab);
+      
+      // Save default setting if not set
+      if (alwaysNewTab === undefined) {
+        console.log('GPT Pinboard: Setting default alwaysNewTab to true');
+        await setSetting('alwaysNewTab', true);
+      }
+    } catch (err) {
+      console.error('GPT Pinboard: Error loading tab behavior:', err);
+      // Default to new tab on error
+      tabBehaviorToggle.checked = true;
+      updateTabBehaviorText(true);
+    }
+  }
 
+  function updateTabBehaviorText(useNewTab) {
+    if (useNewTab) {
+      tabBehaviorText.textContent = '🗂️ Always open in new tab';
+      tabBehaviorText.style.color = '#19c37d';
+    } else {
+      tabBehaviorText.textContent = '♻️ Reuse existing tab';
+      tabBehaviorText.style.color = '#10a37f';
+    }
+  }
 
   function updateThemeText(isDark) {
     if (isDark) {
@@ -77,6 +114,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   };
 
+  // Tab behavior toggle handler
+  tabBehaviorToggle.onchange = async () => {
+    const useNewTab = tabBehaviorToggle.checked;
+    console.log('GPT Pinboard: Tab behavior changed to:', useNewTab);
+    updateTabBehaviorText(useNewTab);
+    
+    try {
+      await setSetting('alwaysNewTab', useNewTab);
+      console.log('GPT Pinboard: Successfully saved alwaysNewTab setting:', useNewTab);
+      
+      // Verify it was saved
+      const alwaysNewTab = await getSetting('alwaysNewTab');
+      console.log('GPT Pinboard: Verified saved setting:', alwaysNewTab);
+    } catch (err) {
+      console.error('GPT Pinboard: Error saving tab behavior:', err);
+    }
+  };
+
 
 
   // Load version from manifest
@@ -87,8 +142,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // Initialize theme on load
+  // Initialize theme and tab behavior on load
   await initializeTheme();
+  await initializeTabBehavior();
   loadVersion();
 
   // Settings Modal Handlers
