@@ -293,7 +293,7 @@ function getXPath(element) {
   const parts = [];
   let current = element;
   
-  while (current && current !== document.body) {
+  while (current && current !== document.documentElement) {
     let index = 1;
     let sibling = current.previousSibling;
     
@@ -309,6 +309,9 @@ function getXPath(element) {
     parts.unshift(part);
     current = current.parentElement;
   }
+  
+  // Add html element at the beginning
+  parts.unshift('html[1]');
   
   return '/' + parts.join('/');
 }
@@ -1647,15 +1650,24 @@ function findByXPath(xpath) {
 function findByTextAnchors(anchors) {
   if (!anchors) return null;
   
+  console.log('GPT Pinboard: Starting text anchor search with:', {
+    fullLength: anchors.full?.length || 0,
+    prefixLength: anchors.prefix?.length || 0,
+    suffixLength: anchors.suffix?.length || 0
+  });
+  
   // Try to find in main content area first
   const mainContent = document.querySelector('main') || document.body;
   // ONLY search actual message containers - be very specific
   const allElements = mainContent.querySelectorAll('[data-message-author-role]');
   
+  console.log('GPT Pinboard: Found', allElements.length, 'message elements to search');
+  
   // Normalize text for better matching
   const normalizeText = (text) => text.trim().replace(/\s+/g, ' ');
   
-  for (const el of allElements) {
+  for (let i = 0; i < allElements.length; i++) {
+    const el = allElements[i];
     const text = normalizeText(el.innerText || el.textContent || '');
     
     if (text.length < 10) continue; // Skip empty elements
@@ -1664,6 +1676,8 @@ function findByTextAnchors(anchors) {
     if (anchors.full) {
       const normalizedFull = normalizeText(anchors.full);
       if (text.includes(normalizedFull)) {
+        console.log('GPT Pinboard: MATCH found via full anchor at element', i);
+        console.log('GPT Pinboard: Element text preview:', text.slice(0, 150));
         return el;
       }
     }
@@ -1672,6 +1686,8 @@ function findByTextAnchors(anchors) {
     if (anchors.prefix) {
       const normalizedPrefix = normalizeText(anchors.prefix);
       if (text.includes(normalizedPrefix)) {
+        console.log('GPT Pinboard: MATCH found via prefix anchor at element', i);
+        console.log('GPT Pinboard: Element text preview:', text.slice(0, 150));
         return el;
       }
     }
@@ -1680,6 +1696,8 @@ function findByTextAnchors(anchors) {
     if (anchors.suffix) {
       const normalizedSuffix = normalizeText(anchors.suffix);
       if (text.includes(normalizedSuffix)) {
+        console.log('GPT Pinboard: MATCH found via suffix anchor at element', i);
+        console.log('GPT Pinboard: Element text preview:', text.slice(0, 150));
         return el;
       }
     }
@@ -1747,23 +1765,38 @@ async function highlightPin(pin) {
   // Fallback to text anchors if XPath fails
   if (!element && pin.anchors) {
     console.log('GPT Pinboard: XPath failed, trying text anchors');
+    console.log('GPT Pinboard: Available anchors:', {
+      full: pin.anchors.full ? pin.anchors.full.slice(0, 100) + '...' : 'None',
+      prefix: pin.anchors.prefix ? pin.anchors.prefix.slice(0, 50) + '...' : 'None', 
+      suffix: pin.anchors.suffix ? pin.anchors.suffix.slice(0, 50) + '...' : 'None'
+    });
+    console.log('GPT Pinboard: Looking for selection text:', pin.selectionText?.slice(0, 100) || 'None');
+    
     element = findByTextAnchors(pin.anchors);
     if (element) {
       console.log('GPT Pinboard: Found element using text anchors:', element.tagName);
       console.log('GPT Pinboard: Anchor element bounds:', element.getBoundingClientRect());
       
-      // Try to find a more specific child element if this seems too broad
       const elementText = (element.innerText || element.textContent || '').trim();
+      console.log('GPT Pinboard: Found element full text preview:', elementText.slice(0, 200) + '...');
+      
+      // Try to find a more specific child element if this seems too broad
       const searchText = pin.selectionText || pin.messageText.slice(0, 50);
       
       if (elementText.length > searchText.length * 3) {
         console.log('GPT Pinboard: Text anchor element seems too broad, searching for specific child');
+        console.log('GPT Pinboard: Searching for text:', searchText);
         const specificChild = findSpecificElementByText(searchText, element);
         if (specificChild && specificChild !== element) {
           console.log('GPT Pinboard: Found more specific child element:', specificChild.tagName);
+          console.log('GPT Pinboard: Child element text preview:', (specificChild.innerText || '').slice(0, 100));
           element = specificChild;
+        } else {
+          console.log('GPT Pinboard: No more specific child found, using original element');
         }
       }
+    } else {
+      console.log('GPT Pinboard: No element found via text anchors');
     }
   }
   
@@ -1865,6 +1898,17 @@ async function highlightPin(pin) {
   
   const textMatches = finalElementText.includes(expectedText);
   console.log('GPT Pinboard: Element contains expected text:', textMatches);
+  console.log('GPT Pinboard: DETAILED COMPARISON:');
+  console.log('GPT Pinboard: Expected text (length ' + expectedText.length + '):', JSON.stringify(expectedText));
+  console.log('GPT Pinboard: Found text (length ' + finalElementText.length + '):', JSON.stringify(finalElementText.slice(0, 200)));
+  console.log('GPT Pinboard: Includes check result:', finalElementText.includes(expectedText));
+  
+  // If includes returns true, find WHERE in the text the match occurs
+  if (finalElementText.includes(expectedText)) {
+    const matchIndex = finalElementText.indexOf(expectedText);
+    console.log('GPT Pinboard: Match found at index:', matchIndex);
+    console.log('GPT Pinboard: Context around match:', JSON.stringify(finalElementText.substring(Math.max(0, matchIndex - 50), matchIndex + expectedText.length + 50)));
+  }
   
   if (!textMatches) {
     if (isFullMessage) {
@@ -1909,11 +1953,48 @@ async function highlightPin(pin) {
   
   // Get element position before scroll
   const elementRect = element.getBoundingClientRect();
+  
+  // Log comprehensive pin and element details
+  console.log('GPT Pinboard: Pin details for scrolling:', {
+    pinId: pin.id,
+    pinType: pin.type,
+    pinXpath: pin.xpath || 'No XPath available',
+    hasAnchors: pin.anchors ? 'Yes' : 'No',
+    selectionType: pin.selectionType || 'Unknown'
+  });
+  
+  // Create and log the current XPath of the found element
+  function getElementXPath(element) {
+    if (element.id) {
+      return `//*[@id="${element.id}"]`;
+    }
+    if (element === document.body) {
+      return '/html/body';
+    }
+    
+    let ix = 0;
+    const siblings = element.parentNode?.childNodes || [];
+    for (let i = 0; i < siblings.length; i++) {
+      const sibling = siblings[i];
+      if (sibling === element) {
+        return getElementXPath(element.parentNode) + '/' + element.tagName.toLowerCase() + '[' + (ix + 1) + ']';
+      }
+      if (sibling.nodeType === 1 && sibling.tagName === element.tagName) {
+        ix++;
+      }
+    }
+  }
+  
+  const currentElementXPath = getElementXPath(element);
+  console.log('GPT Pinboard: Current element XPath:', currentElementXPath);
   console.log('GPT Pinboard: About to scroll to element at position:', {
     top: elementRect.top,
     left: elementRect.left,
     width: elementRect.width,
-    height: elementRect.height
+    height: elementRect.height,
+    tagName: element.tagName,
+    className: element.className || 'No class',
+    textPreview: (element.innerText || element.textContent || '').slice(0, 100)
   });
   
   // Scroll to element with retries
@@ -2029,13 +2110,21 @@ function findMessageContainerByText(searchText) {
 function findSpecificElementByText(searchText, messageContainer) {
   if (!messageContainer) return null;
   
+  console.log('GPT Pinboard: findSpecificElementByText called with:', searchText.slice(0, 50));
+  console.log('GPT Pinboard: Container element:', messageContainer.tagName, messageContainer.className);
+  
   // Find all text nodes containing the search text
   const walker = document.createTreeWalker(
     messageContainer,
     NodeFilter.SHOW_TEXT,
     {
       acceptNode: function(node) {
-        return node.textContent.includes(searchText) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+        const nodeText = node.textContent || '';
+        const matches = nodeText.includes(searchText);
+        if (matches) {
+          console.log('GPT Pinboard: Found matching text node:', JSON.stringify(nodeText.slice(0, 100)));
+        }
+        return matches ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
       }
     }
   );
@@ -2046,7 +2135,12 @@ function findSpecificElementByText(searchText, messageContainer) {
     textNodes.push(node);
   }
   
-  if (textNodes.length === 0) return messageContainer;
+  console.log('GPT Pinboard: Found', textNodes.length, 'text nodes containing search text');
+  
+  if (textNodes.length === 0) {
+    console.log('GPT Pinboard: No text nodes found, returning original container');
+    return messageContainer;
+  }
   
   // Use the first matching text node's parent element
   let targetElement = textNodes[0].parentElement;
@@ -2528,8 +2622,63 @@ function createMessageNavigationDropdown(messages) {
       
       // Small delay to ensure dropdown is closed before scrolling
       setTimeout(() => {
-        // Scroll to message and highlight it
-        message.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        try {
+          // Check if message element is still in DOM
+          if (!document.body.contains(message)) {
+            console.log('GPT Pinboard: Message element no longer in DOM');
+            return;
+          }
+          
+          // Scroll to message with gap at top
+          const messageRect = message.getBoundingClientRect();
+          const topGap = 80; // 80px gap from top of viewport
+          
+          // Calculate where we need to scroll to position the message
+          const targetScrollY = window.scrollY + messageRect.top - topGap;
+          
+          // Only prevent negative scroll if it would go above the document
+          const documentHeight = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+          const maxScroll = documentHeight - window.innerHeight;
+          const finalScrollY = Math.max(0, Math.min(targetScrollY, maxScroll));
+          
+          console.log('GPT Pinboard: Chat outline scrolling to message with gap:', {
+            messageElement: message.tagName,
+            messageClass: message.className,
+            currentScrollY: window.scrollY,
+            messageTop: messageRect.top,
+            messageRect: messageRect,
+            topGap: topGap,
+            targetScrollY: targetScrollY,
+            finalScrollY: finalScrollY
+          });
+          
+          // Check if the calculation looks reasonable
+          if (isNaN(finalScrollY)) {
+            console.log('GPT Pinboard: Invalid scroll calculation (NaN), using fallback');
+            message.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          } else if (messageRect.top < -5000 || messageRect.top > window.innerHeight + 5000) {
+            // Message is way off screen, the calculation might be wrong - use fallback
+            console.log('GPT Pinboard: Message too far off screen, using fallback scrollIntoView');
+            message.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          } else {
+            // For messages above the viewport, we need to scroll up
+            const absoluteScrollY = messageRect.top < 0 ? 
+              window.scrollY + messageRect.top - topGap : 
+              window.scrollY + messageRect.top - topGap;
+            
+            const safeScrollY = Math.max(0, absoluteScrollY);
+            
+            console.log('GPT Pinboard: Using calculated scroll position:', safeScrollY);
+            window.scrollTo({ 
+              top: safeScrollY, 
+              behavior: 'smooth' 
+            });
+          }
+        } catch (error) {
+          console.log('GPT Pinboard: Chat outline scroll error, using fallback:', error);
+          // Fallback to original method
+          message.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
         
         // Highlight the message briefly
         const originalBg = message.style.backgroundColor;
