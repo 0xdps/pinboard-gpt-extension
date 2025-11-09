@@ -3,7 +3,7 @@ runtimeAPI.setUninstallURL('https://gptpins.dps.codes/goodbye.html');
 
 // Handle extension installation
 runtimeAPI.onInstalled.addListener((details) => {
-  console.log('GPT Pinboard: Extension installed/updated', details.reason);
+  debugLog('GPT Pinboard: Extension installed/updated', details.reason);
   
   if (details.reason === 'install') {
     const installationData = {
@@ -25,22 +25,32 @@ function generateInstallToken() {
 
 // Handle internal messages (from popup, content scripts, etc.)
 runtimeAPI.onMessage.addListener((request, sender, sendResponse) => {
-  console.log('GPT Pinboard: Background received message:', request.action, request);
-  console.log('GPT Pinboard: Browser info:', {
+  debugLog('GPT Pinboard: Background received message:', request.action, request);
+  debugLog('GPT Pinboard: Browser info:', {
     isFirefox: isFirefox,
     userAgent: navigator.userAgent.includes('Firefox') ? 'Firefox' : 'Chrome/Other'
   });
 
   if (request.action === 'open-and-highlight' && request.pin) {
-    console.log('GPT Pinboard: About to handle open-and-highlight');
+    debugLog('GPT Pinboard: About to handle open-and-highlight');
     try {
       handleOpenAndHighlight(request.pin, sendResponse);
       return true; // Will respond asynchronously
     } catch (error) {
-      console.log('GPT Pinboard: Error in handleOpenAndHighlight:', error);
+      debugLog('GPT Pinboard: Error in handleOpenAndHighlight:', error);
       sendResponse({ success: false, error: error.message });
       return false;
     }
+  }
+  
+  if (request.action === 'get-debug-setting') {
+    debugLog('GPT Pinboard: Content script requesting debug setting');
+    getSetting('debugMode').then(debugMode => {
+      sendResponse({ debugEnabled: debugMode === true });
+    }).catch(() => {
+      sendResponse({ debugEnabled: false });
+    });
+    return true; // Will respond asynchronously
   }
   
   return false;
@@ -49,13 +59,13 @@ runtimeAPI.onMessage.addListener((request, sender, sendResponse) => {
 // Handle open-and-highlight requests
 async function handleOpenAndHighlight(pin, sendResponse) {
   try {
-    console.log('GPT Pinboard: Handling open-and-highlight for pin:', pin.id, pin.pageUrl);
-    console.log('GPT Pinboard: Using browser-specific tabsAPI for tab query');
+    debugLog('GPT Pinboard: Handling open-and-highlight for pin:', pin.id, pin.pageUrl);
+    debugLog('GPT Pinboard: Using browser-specific tabsAPI for tab query');
     
     // Check user's tab behavior preference using centralized storage
     const alwaysNewTab = await getSetting('alwaysNewTab');
     const shouldAlwaysNewTab = alwaysNewTab !== false; // Default to true
-    console.log('GPT Pinboard: Tab behavior setting - Always new tab:', shouldAlwaysNewTab);
+    debugLog('GPT Pinboard: Tab behavior setting - Always new tab:', shouldAlwaysNewTab);
     
     const pinUrl = new URL(pin.pageUrl);
     let matchingTabs = [];
@@ -65,7 +75,7 @@ async function handleOpenAndHighlight(pin, sendResponse) {
       // Check if there's already a tab with this URL or similar ChatGPT URL
       const tabs = await tabsAPI.query({});
       
-      console.log('GPT Pinboard: Pin URL details:', {
+      debugLog('GPT Pinboard: Pin URL details:', {
         hostname: pinUrl.hostname,
         pathname: pinUrl.pathname,
         href: pinUrl.href
@@ -76,7 +86,7 @@ async function handleOpenAndHighlight(pin, sendResponse) {
         if (!tab.url) return false;
         try {
           const tabUrl = new URL(tab.url);
-          console.log('GPT Pinboard: Checking tab URL:', {
+          debugLog('GPT Pinboard: Checking tab URL:', {
             hostname: tabUrl.hostname,
             pathname: tabUrl.pathname,
             href: tabUrl.href
@@ -120,7 +130,7 @@ async function handleOpenAndHighlight(pin, sendResponse) {
               }
             }
             
-            console.log('GPT Pinboard: Conversation ID match attempt:', {
+            debugLog('GPT Pinboard: Conversation ID match attempt:', {
               pinPath,
               tabPath,
               pinConversationId,
@@ -129,52 +139,52 @@ async function handleOpenAndHighlight(pin, sendResponse) {
             
             if (pinConversationId && tabConversationId) {
               const matches = pinConversationId === tabConversationId;
-              console.log('GPT Pinboard: Conversation IDs match:', matches);
+              debugLog('GPT Pinboard: Conversation IDs match:', matches);
               return matches;
             }
             
             // If we're on ChatGPT domains but couldn't extract conversation IDs,
             // and one of the URLs is the main ChatGPT page, consider them as potentially same conversation
             if ((pinPath === '/' || pinPath === '') && (tabPath.includes('/c/') || tabPath.includes('/chat/'))) {
-              console.log('GPT Pinboard: Pin is main page, tab has conversation - treating as same');
+              debugLog('GPT Pinboard: Pin is main page, tab has conversation - treating as same');
               return true;
             }
             if ((tabPath === '/' || tabPath === '') && (pinPath.includes('/c/') || pinPath.includes('/chat/'))) {
-              console.log('GPT Pinboard: Tab is main page, pin has conversation - treating as same');
+              debugLog('GPT Pinboard: Tab is main page, pin has conversation - treating as same');
               return true;
             }
           }
           // Fallback to exact URL match
           const exactMatch = tab.url === pin.pageUrl;
-          console.log('GPT Pinboard: Exact URL match:', exactMatch);
+          debugLog('GPT Pinboard: Exact URL match:', exactMatch);
           return exactMatch;
         } catch (e) {
-          console.log('GPT Pinboard: Error parsing tab URL:', e);
+          debugLog('GPT Pinboard: Error parsing tab URL:', e);
           return tab.url === pin.pageUrl;
         }
       });
       
-      console.log('GPT Pinboard: Found matching tabs:', matchingTabs.length);
+      debugLog('GPT Pinboard: Found matching tabs:', matchingTabs.length);
       
       if (matchingTabs.length > 0) {
         // Tab already exists, switch to it and highlight
         const existingTab = matchingTabs[0];
-        console.log('GPT Pinboard: Switching to existing tab:', existingTab.id);
+        debugLog('GPT Pinboard: Switching to existing tab:', existingTab.id);
         await tabsAPI.update(existingTab.id, { active: true });
         
         // Wait a moment for tab to become active, then send highlight message
         setTimeout(() => {
-          console.log('GPT Pinboard: Sending highlight message to existing tab');
+          debugLog('GPT Pinboard: Sending highlight message to existing tab');
           tabsAPI.sendMessage(existingTab.id, {
             action: 'highlight-pin',
             pin: pin
           }, (response) => {
             const lastError = runtimeAPI.lastError;
             if (lastError) {
-              console.log('GPT Pinboard: Error highlighting pin:', lastError.message);
+              debugLog('GPT Pinboard: Error highlighting pin:', lastError.message);
               sendResponse({ success: true, highlighted: false, error: lastError.message });
             } else {
-              console.log('GPT Pinboard: Highlight response from existing tab:', response);
+              debugLog('GPT Pinboard: Highlight response from existing tab:', response);
               sendResponse({ success: true, highlighted: response?.found || false });
             }
           });
@@ -184,15 +194,15 @@ async function handleOpenAndHighlight(pin, sendResponse) {
     }
     
     // Create new tab with the URL (either no matching tabs found or user wants always new tab)
-    console.log('GPT Pinboard: Creating new tab with URL:', pin.pageUrl);
+    debugLog('GPT Pinboard: Creating new tab with URL:', pin.pageUrl);
       
     let newTab;
     newTab = await tabsAPI.create({ url: pin.pageUrl });
-    console.log('GPT Pinboard: Successfully created new tab:', newTab.id, pin.pageUrl);
+    debugLog('GPT Pinboard: Successfully created new tab:', newTab.id, pin.pageUrl);
       
       // Set up timeout for the whole operation
       let responseTimeout = setTimeout(() => {
-        console.log('GPT Pinboard: Tab load timeout');
+        debugLog('GPT Pinboard: Tab load timeout');
         tabsAPI.onUpdated.removeListener(onTabUpdate);
         sendResponse({ success: true, highlighted: false, error: 'Tab load timeout' });
       }, 15000);
@@ -200,7 +210,7 @@ async function handleOpenAndHighlight(pin, sendResponse) {
       // Wait for tab to load, then send highlight message
       const onTabUpdate = (tabId, changeInfo, tab) => {
         if (tabId === newTab.id && changeInfo.status === 'complete') {
-          console.log('GPT Pinboard: Tab loaded, sending highlight message');
+          debugLog('GPT Pinboard: Tab loaded, sending highlight message');
           tabsAPI.onUpdated.removeListener(onTabUpdate);
           clearTimeout(responseTimeout);
           
@@ -212,10 +222,10 @@ async function handleOpenAndHighlight(pin, sendResponse) {
             }, (response) => {
               const lastError = runtimeAPI.lastError;
               if (lastError) {
-                console.log('GPT Pinboard: Error highlighting pin:', lastError.message);
+                debugLog('GPT Pinboard: Error highlighting pin:', lastError.message);
                 sendResponse({ success: true, highlighted: false, error: lastError.message });
               } else {
-                console.log('GPT Pinboard: Highlight response:', response);
+                debugLog('GPT Pinboard: Highlight response:', response);
                 sendResponse({ success: true, highlighted: response?.found || false });
               }
             });
@@ -225,7 +235,7 @@ async function handleOpenAndHighlight(pin, sendResponse) {
       
       tabsAPI.onUpdated.addListener(onTabUpdate);
   } catch (error) {
-    console.log('GPT Pinboard: Error in open-and-highlight:', error);
+    debugLog('GPT Pinboard: Error in open-and-highlight:', error);
     sendResponse({ success: false, error: error.message });
   }
 }
@@ -260,4 +270,4 @@ runtimeAPI.onMessageExternal.addListener((request, sender, sendResponse) => {
   return false;
 });
 
-console.log('GPT Pinboard: Background script loaded');
+debugLog('GPT Pinboard: Background script loaded');

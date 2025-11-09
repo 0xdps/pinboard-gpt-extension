@@ -138,3 +138,32 @@ async function getSettings(keys = []) {
 const tabsAPI = browser.tabs;
 const runtimeAPI = browser.runtime;
 const isFirefox = true;
+
+// Debug logging system
+let debugEnabled = false;
+
+// Initialize debug setting on startup
+(async function initializeDebug() {
+  try {
+    debugEnabled = (await getSetting('debugMode')) === true;
+  } catch (error) {
+    // Ignore errors during initialization
+  }
+})();
+
+function debugLog(...args) {
+  if (debugEnabled) {
+    console.log(...args);
+  }
+}
+
+function debugError(...args) {
+  if (debugEnabled) {
+    console.error(...args);
+  }
+}
+
+async function setDebugMode(enabled) {
+  debugEnabled = enabled;
+  await setSetting('debugMode', enabled);
+}

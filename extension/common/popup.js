@@ -3,6 +3,31 @@ if (typeof browser !== 'undefined' && typeof chrome === 'undefined') {
   window.chrome = browser;
 }
 
+// Debug logging system for popup
+let debugEnabled = false;
+
+// Initialize debug setting on popup load
+async function initializePopupDebug() {
+  try {
+    const debugMode = await getSetting('debugMode');
+    debugEnabled = debugMode === true;
+  } catch (error) {
+    // Ignore errors during initialization
+  }
+}
+
+function debugLog(...args) {
+  if (debugEnabled) {
+    console.log(...args);
+  }
+}
+
+function debugError(...args) {
+  if (debugEnabled) {
+    console.error(...args);
+  }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   const listEl = document.getElementById('list');
   const search = document.getElementById('search');
@@ -16,6 +41,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const themeToggle = document.getElementById('themeToggle');
   const tabBehaviorText = document.getElementById('tabBehaviorText');
   const tabBehaviorToggle = document.getElementById('tabBehaviorToggle');
+  const debugText = document.getElementById('debugText');
+  const debugToggle = document.getElementById('debugToggle');
   
   // Filter tabs
   const filterAll = document.getElementById('filterAll');
@@ -46,7 +73,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         await chrome.storage.local.set({ theme: 'dark' });
       }
     } catch (err) {
-      console.error('Error loading theme:', err);
+      debugError('Error loading theme:', err);
       // Default to dark mode on error
       themeToggle.checked = true;
       document.body.classList.add('dark-mode');
@@ -57,27 +84,54 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Initialize tab behavior setting
   async function initializeTabBehavior() {
     try {
-      console.log('GPT Pinboard: Loading tab behavior setting...');
+      debugLog('GPT Pinboard: Loading tab behavior setting...');
       
       const alwaysNewTab = await getSetting('alwaysNewTab');
-      console.log('GPT Pinboard: Loaded alwaysNewTab setting:', alwaysNewTab);
+      debugLog('GPT Pinboard: Loaded alwaysNewTab setting:', alwaysNewTab);
       
       // Default to always new tab (true) if not set
       const useNewTab = alwaysNewTab !== false;
       tabBehaviorToggle.checked = useNewTab;
       updateTabBehaviorText(useNewTab);
-      console.log('GPT Pinboard: Set tab behavior toggle to:', useNewTab);
+      debugLog('GPT Pinboard: Set tab behavior toggle to:', useNewTab);
       
       // Save default setting if not set
       if (alwaysNewTab === undefined) {
-        console.log('GPT Pinboard: Setting default alwaysNewTab to true');
+        debugLog('GPT Pinboard: Setting default alwaysNewTab to true');
         await setSetting('alwaysNewTab', true);
       }
     } catch (err) {
-      console.error('GPT Pinboard: Error loading tab behavior:', err);
+      debugError('GPT Pinboard: Error loading tab behavior:', err);
       // Default to new tab on error
       tabBehaviorToggle.checked = true;
       updateTabBehaviorText(true);
+    }
+  }
+
+  // Initialize debug mode setting
+  async function initializeDebugMode() {
+    try {
+      debugLog('GPT Pinboard: Loading debug mode setting...');
+      
+      const debugMode = await getSetting('debugMode');
+      debugLog('GPT Pinboard: Loaded debug mode setting:', debugMode);
+      
+      // Default to false if not set
+      const isDebugEnabled = debugMode === true;
+      debugToggle.checked = isDebugEnabled;
+      updateDebugText(isDebugEnabled);
+      debugLog('GPT Pinboard: Set debug toggle to:', isDebugEnabled);
+      
+      // Save default setting if not set
+      if (debugMode === undefined) {
+        debugLog('GPT Pinboard: Setting default debug mode to false');
+        await setSetting('debugMode', false);
+      }
+    } catch (err) {
+      debugError('GPT Pinboard: Error loading debug mode:', err);
+      // Default to false on error
+      debugToggle.checked = false;
+      updateDebugText(false);
     }
   }
 
@@ -88,6 +142,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     } else {
       tabBehaviorText.textContent = '♻️ Reuse existing tab';
       tabBehaviorText.style.color = '#10a37f';
+    }
+  }
+
+  function updateDebugText(isEnabled) {
+    if (isEnabled) {
+      debugText.textContent = '🐛 Debug mode ON';
+      debugText.style.color = '#ff6b6b';
+    } else {
+      debugText.textContent = '🐛 Debug mode OFF';
+      debugText.style.color = '#888';
     }
   }
 
@@ -110,29 +174,45 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
       await chrome.storage.local.set({ theme: isDark ? 'dark' : 'light' });
     } catch (err) {
-      console.error('Error saving theme:', err);
+      debugError('Error saving theme:', err);
     }
   };
 
   // Tab behavior toggle handler
   tabBehaviorToggle.onchange = async () => {
     const useNewTab = tabBehaviorToggle.checked;
-    console.log('GPT Pinboard: Tab behavior changed to:', useNewTab);
+    debugLog('GPT Pinboard: Tab behavior changed to:', useNewTab);
     updateTabBehaviorText(useNewTab);
     
     try {
       await setSetting('alwaysNewTab', useNewTab);
-      console.log('GPT Pinboard: Successfully saved alwaysNewTab setting:', useNewTab);
+      debugLog('GPT Pinboard: Successfully saved alwaysNewTab setting:', useNewTab);
       
       // Verify it was saved
       const alwaysNewTab = await getSetting('alwaysNewTab');
-      console.log('GPT Pinboard: Verified saved setting:', alwaysNewTab);
+      debugLog('GPT Pinboard: Verified saved setting:', alwaysNewTab);
     } catch (err) {
-      console.error('GPT Pinboard: Error saving tab behavior:', err);
+      debugError('GPT Pinboard: Error saving tab behavior:', err);
     }
   };
 
-
+  // Debug mode toggle handler
+  debugToggle.onchange = async () => {
+    const isDebugEnabled = debugToggle.checked;
+    debugLog('GPT Pinboard: Debug mode changed to:', isDebugEnabled);
+    updateDebugText(isDebugEnabled);
+    
+    try {
+      await setSetting('debugMode', isDebugEnabled);
+      debugLog('GPT Pinboard: Successfully saved debug mode setting:', isDebugEnabled);
+      
+      // Verify it was saved
+      const debugMode = await getSetting('debugMode');
+      debugLog('GPT Pinboard: Verified saved debug setting:', debugMode);
+    } catch (err) {
+      debugError('GPT Pinboard: Error saving debug mode:', err);
+    }
+  };
 
   // Load version from manifest
   function loadVersion() {
@@ -142,9 +222,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // Initialize theme and tab behavior on load
+  // Initialize theme, tab behavior, and debug mode on load
+  await initializePopupDebug(); // Initialize debug first so other logs work
   await initializeTheme();
   await initializeTabBehavior();
+  await initializeDebugMode();
   loadVersion();
 
   // Settings Modal Handlers
@@ -240,11 +322,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function openPin(pinId) {
     const stored = (await getPins()).find(x => x.id === pinId);
     if (stored?.pageUrl) {
-      console.log('GPT Pinboard: Opening pin:', stored.id, stored.pageUrl);
+      debugLog('GPT Pinboard: Opening pin:', stored.id, stored.pageUrl);
       chrome.runtime.sendMessage({ action: 'open-and-highlight', pin: stored }, (resp) => {
-        console.log('GPT Pinboard: Response from background script:', resp, 'Error:', chrome.runtime.lastError);
+        debugLog('GPT Pinboard: Response from background script:', resp, 'Error:', chrome.runtime.lastError);
         if (chrome.runtime.lastError) {
-          console.log('GPT Pinboard: Background script error:', chrome.runtime.lastError.message);
+          debugLog('GPT Pinboard: Background script error:', chrome.runtime.lastError.message);
           showNotification('Error communicating with background script', 'error');
           return;
         } else if (resp?.success) {
@@ -258,7 +340,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           }
         } else {
           // Error response from background script
-          console.log('GPT Pinboard: Highlighting failed:', resp?.error);
+          debugLog('GPT Pinboard: Highlighting failed:', resp?.error);
           showNotification('Pin opened but highlighting failed', 'warning');
           setTimeout(() => window.close(), 1500);
         }
@@ -315,7 +397,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         await idbDelete(pinId);
         await render();
       } catch (err) {
-        console.error('Failed to delete pin:', err);
+        debugError('Failed to delete pin:', err);
       }
     }
   }
@@ -347,7 +429,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         showNotification(`Successfully deleted all ${pins.length} pins.`, 'success');
       }
     } catch (err) {
-      console.error('Failed to delete all pins:', err);
+      debugError('Failed to delete all pins:', err);
       showNotification('Failed to delete all pins.', 'error');
     }
   }
