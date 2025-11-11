@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Under Review]
 
+## [2.1.2] - 2025-11-11
+
+### Added
+- **🏷️ Popular Preset Tags**: 200 curated tags across 17 categories
+  - Development & Code (28 tags: javascript, typescript, python-script, react-hook, vue, angular, node, kotlin, swift, etc.)
+  - Testing & Quality (14 tags: test-case, unit-test, e2e-test, integration-test, load-test, debugging, code-review, etc.)
+  - Design & Styling (10 tags: css-trick, tailwind, accessibility, responsive, ui-component, animation, etc.)
+  - Infrastructure & DevOps (16 tags: deployment, terraform, docker, kubernetes, ci-cd, aws, azure, etc.)
+  - Architecture & Patterns (14 tags: system-design, microservices, design-pattern, solid-principles, clean-code, etc.)
+  - AI & ML (8 tags: machine-learning, data-science, llm-prompt, neural-network, deep-learning, nlp, etc.)
+  - Database & Data (8 tags: database, mongodb, postgres, redis, migration, schema, query-optimization, etc.)
+  - Documentation & Writing, Learning & Reference, Task Management, Organization, and more
+  - Tags show even for new users with no existing pins
+
+- **🔍 Fuzzy Search for Tags**: Intelligent tag matching algorithm
+  - Type abbreviations: "tst" finds "test-case", "unit-test", "e2e-test"
+  - Multiple matching modes: exact, prefix, substring, character sequence
+  - Smart scoring with consecutive character bonuses
+  - Results sorted by relevance (best matches first)
+  - Faster tag selection and better discovery
+
+### Improved
+- Tag autocomplete combines popular preset tags with user's existing tags
+- Better tag consistency and organization across pins
+- Enhanced tag suggestion relevance with fuzzy matching
+
 ## [2.1.1] - 2025-11-11
 
 ### Changed

@@ -845,6 +845,89 @@ function createPinDialog(messageText, pinData, isDarkMode, resolve, reject = res
       }
     }
     
+    // Popular default tags (shown when no existing tags)
+    const POPULAR_TAGS = [
+      // Development & Code (28 tags)
+      'code-snippet', 'react-hook', 'api-schema', 'javascript', 'typescript', 'python-script',
+      'go', 'rust', 'java', 'bash-script', 'sql-query', 'regex', 'cli-command',
+      'function', 'class', 'api', 'script', 'implementation', 'syntax', 'c-sharp',
+      'php', 'kotlin', 'swift', 'ruby', 'vue', 'angular', 'node', 'express',
+      
+      // Testing & Quality (14 tags)
+      'test-case', 'unit-test', 'e2e-test', 'mock-data', 'debugging', 'error-fix',
+      'bug-report', 'stack-trace', 'runtime-error', 'integration-test', 'snapshot-test',
+      'load-test', 'stress-test', 'code-review',
+      
+      // Design & Styling (10 tags)
+      'css-trick', 'html-template', 'tailwind', 'design-system', 'accessibility',
+      'responsive', 'ui-component', 'ux-pattern', 'animation', 'sass',
+      
+      // Infrastructure & DevOps (16 tags)
+      'deployment', 'infrastructure', 'terraform', 'cloud-config', 'devops',
+      'optimization', 'performance', 'setup', 'config', 'workflow', 'automation',
+      'docker', 'kubernetes', 'ci-cd', 'aws', 'azure',
+      
+      // Architecture & Patterns (14 tags)
+      'architecture', 'system-design', 'microservices', 'monolith', 'data-model',
+      'algorithm', 'pattern', 'best-practice', 'refactor', 'design-pattern',
+      'solid-principles', 'clean-code', 'scalability', 'distributed-system',
+      
+      // AI & ML (8 tags)
+      'machine-learning', 'data-science', 'vector-db', 'llm-prompt', 'neural-network',
+      'deep-learning', 'nlp', 'computer-vision',
+      
+      // Issues & Debugging (12 tags)
+      'memory-leak', 'latency', 'timeout', 'rate-limit', 'network-issue',
+      'cors', 'auth-issue', 'dependency', 'security', 'vulnerability',
+      'hotfix', 'patch',
+      
+      // Documentation & Writing (18 tags)
+      'documentation', 'read-me', 'user-story', 'meeting-notes', 'sop', 'proposal',
+      'blog-post', 'email-template', 'ad-copy', 'social-media', 'headline',
+      'draft-copy', 'marketing-text', 'outline', 'jargon-free', 'changelog',
+      'api-docs', 'guide',
+      
+      // Learning & Reference (18 tags)
+      'tutorial', 'explanation', 'example', 'reference', 'cheat-sheet',
+      'glossary', 'theory', 'concept-explain', 'deep-dive', 'comparison',
+      'definition', 'principles', 'analogy', 'study', 'learning',
+      'how-to', 'quickstart', 'course',
+      
+      // Task Management (16 tags)
+      'todo', 'follow-up', 'review-later', 'pending', 'done', 'backlog',
+      'critical', 'priority', 'progress', 'schedule', 'goal', 'plan', 'action',
+      'milestone', 'deadline', 'sprint',
+      
+      // Organization (11 tags)
+      'important', 'bookmark', 'archive', 'roadmap', 'versioning',
+      'future-project', 'project', 'portfolio', 'collection', 'favorite', 'template',
+      
+      // Ideation & Planning (13 tags)
+      'idea', 'big-idea', 'brainstorm', 'creative', 'inspiration', 'concept',
+      'thought', 'improvement', 'innovation', 'exploration', 'product-vision',
+      'prototype', 'mvp',
+      
+      // Communication (11 tags)
+      'question', 'answer', 'feedback', 'suggestion', 'clarify', 'discussion',
+      'comment', 'review', 'client-feedback', 'stakeholder', 'presentation',
+      
+      // Content & Notes (13 tags)
+      'note', 'summary', 'highlight', 'reminder', 'tip', 'draft',
+      'insight', 'fact', 'analysis', 'resource', 'must-read', 'takeaway', 'key-point',
+      
+      // Workflow (12 tags)
+      'prompt', 'instruction', 'context', 'response', 'completion',
+      'system', 'assistant', 'role', 'query', 'interaction', 'chat', 'conversation',
+      
+      // Professional (11 tags)
+      'work', 'research', 'onboarding', 'interview-prep', 'career',
+      'resume', 'daily-log', 'design-review', 'team', 'collaboration', 'leadership',
+      
+      // Database & Data (8 tags)
+      'database', 'mongodb', 'postgres', 'redis', 'migration', 'schema',
+      'indexing', 'query-optimization'
+    ];
+
     // Get all existing tags from all pins for autosuggestion
     async function getAllExistingTags() {
       try {
@@ -852,6 +935,11 @@ function createPinDialog(messageText, pinData, isDarkMode, resolve, reject = res
         debugLog('GPT Pinboard: All pins retrieved for message dialog:', allPins.length, 'pins');
         
         const allTags = new Set();
+        
+        // Add popular tags first
+        POPULAR_TAGS.forEach(tag => allTags.add(tag));
+        
+        // Then add existing tags from pins
         allPins.forEach(pin => {
           if (pin.tags && Array.isArray(pin.tags)) {
             debugLog('GPT Pinboard: Pin tags found for message dialog:', pin.tags);
@@ -860,11 +948,11 @@ function createPinDialog(messageText, pinData, isDarkMode, resolve, reject = res
         });
         
         const sortedTags = Array.from(allTags).sort();
-        debugLog('GPT Pinboard: Final sorted tags for message dialog:', sortedTags);
+        debugLog('GPT Pinboard: Final sorted tags for message dialog (with popular tags):', sortedTags);
         return sortedTags;
       } catch (err) {
         debugError('GPT Pinboard: Error getting existing tags for message dialog:', err);
-        return [];
+        return POPULAR_TAGS; // Return popular tags as fallback
       }
     }
 
@@ -896,6 +984,39 @@ function createPinDialog(messageText, pinData, isDarkMode, resolve, reject = res
     let selectedSuggestionIndex = -1;
     let availableSuggestions = [];
 
+    // Fuzzy match scoring function
+    function fuzzyMatch(str, pattern) {
+      const patternLower = pattern.toLowerCase();
+      const strLower = str.toLowerCase();
+      
+      // Exact match gets highest score
+      if (strLower === patternLower) return 1000;
+      
+      // Starts with pattern gets high score
+      if (strLower.startsWith(patternLower)) return 500;
+      
+      // Contains pattern as substring gets medium score
+      if (strLower.includes(patternLower)) return 250;
+      
+      // Fuzzy character matching
+      let patternIdx = 0;
+      let score = 0;
+      let consecutiveMatches = 0;
+      
+      for (let i = 0; i < strLower.length && patternIdx < patternLower.length; i++) {
+        if (strLower[i] === patternLower[patternIdx]) {
+          score += 1 + consecutiveMatches * 5; // Bonus for consecutive matches
+          consecutiveMatches++;
+          patternIdx++;
+        } else {
+          consecutiveMatches = 0;
+        }
+      }
+      
+      // All pattern characters must be found in order
+      return patternIdx === patternLower.length ? score : 0;
+    }
+
     // Show suggestions based on input
     async function showSuggestions(inputValue) {
       debugLog('GPT Pinboard: Message dialog showSuggestions called with:', inputValue);
@@ -909,9 +1030,14 @@ function createPinDialog(messageText, pinData, isDarkMode, resolve, reject = res
       debugLog('GPT Pinboard: Message dialog existing tags found:', existingTags);
       
       const query = inputValue.toLowerCase().trim();
-      availableSuggestions = existingTags
-        .filter(tag => tag.includes(query) && !currentTags.includes(tag))
-        .slice(0, 8); // Limit to 8 suggestions
+      
+      // Score and filter tags using fuzzy matching
+      const scoredTags = existingTags
+        .map(tag => ({ tag, score: fuzzyMatch(tag, query) }))
+        .filter(item => item.score > 0 && !currentTags.includes(item.tag))
+        .sort((a, b) => b.score - a.score); // Sort by score descending
+      
+      availableSuggestions = scoredTags.map(item => item.tag).slice(0, 8); // Limit to 8 suggestions
 
       debugLog('GPT Pinboard: Message dialog available suggestions:', availableSuggestions, 'for query:', query);
 
