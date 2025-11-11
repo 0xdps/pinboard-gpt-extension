@@ -4,7 +4,7 @@
 
 [![Chrome Web Store](https://img.shields.io/badge/Chrome-Web%20Store-blue)](https://chromewebstore.google.com/detail/pingpt-%E2%80%94-chatgpt-message/hdhoaialemjelcfjjmjkkhkffiggbnap)
 [![Firefox Add-ons](https://img.shields.io/badge/Firefox-Add--ons-orange)](https://addons.mozilla.org/en-US/firefox/addon/gpt-pinboard/)
-[![Version](https://img.shields.io/badge/version-2.1.1-green)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2.1.2-green)](CHANGELOG.md)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 [![Website](https://img.shields.io/badge/Website-Live-green)](https://gptpins.dps.codes)
 [![Supports](https://img.shields.io/badge/Supports-ChatGPT-10a37f)](https://chatgpt.com)
@@ -28,8 +28,9 @@
 - **Pin individual messages** - Save specific ChatGPT responses that matter
 - **Pin entire chats** - Bookmark complete conversations for later reference
 - **📋 Chat Outline navigation** - See your entire conversation structure and jump to any message instantly
-- **🏷️ Custom names and tags** - Add up to 3 tags for easy organization
-- **🔍 Instant search** - Filter by text, name, or tags across all pins
+- **🏷️ Smart tagging system** - 200+ preset tags across 17 categories (development, testing, design, AI/ML, etc.) or create custom tags
+- **🔍 Fuzzy search** - Type abbreviations like "tst" to find "test-case", "unit-test", "e2e-test" instantly
+- **🎯 Tag organization** - Add up to 3 tags per pin for focused, searchable organization
 - **📦 Filter tabs** - Switch between all pins, chat pins, or message pins
 - **⚡ Jump back** - Instantly return to the original conversation
 - **💾 Smart delete protection** - Export-first confirmation prevents accidental data loss
