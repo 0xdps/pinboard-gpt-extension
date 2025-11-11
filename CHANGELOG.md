@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Under Review]
 
+## [2.1.1] - 2025-11-11
+
+### Removed
+- **🔒 Unused Permission**: Removed `activeTab` permission from Chrome and Firefox manifests
+  - Chrome Web Store compliance fix (Violation ID: Purple Potassium)
+  - Extension only uses `storage`, `tabs`, and host permissions
+  - Reduced permission footprint improves user trust and store compliance
+
+### Changed
+- **📄 Privacy Documentation**: Updated PRIVACY.md to reflect current permissions
+
 ## [2.1.0] - 2025-11-09
 
 ### Added

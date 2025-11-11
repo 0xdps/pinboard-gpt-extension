@@ -7,9 +7,6 @@
 
 These justifications explain why each permission is necessary for GPT Pinboard to function.
 
-### activeTab
-**Justification**: Allows GPT Pinboard to access the currently active ChatGPT tab so it can open, navigate, and highlight the original conversation when the user clicks a pin. We only act on the tab the user interacts with; no data is accessed without user action.
-
 ### contextMenus
 **Justification**: Enables a right-click context menu to quickly pin selected text from ChatGPT conversations. This is a user-initiated action to save selected content as a pin.
 
