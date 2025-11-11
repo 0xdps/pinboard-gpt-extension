@@ -2155,20 +2155,62 @@ async function highlightPin(pin) {
     textPreview: (element.innerText || element.textContent || '').slice(0, 100)
   });
   
-  // Scroll to element with retries
+  // Scroll to element with instant positioning (same as Chat Outline)
   try {
-    // Use more precise scrolling - scroll to start of element
-    element.scrollIntoView({ 
-      behavior: 'smooth', 
-      block: 'start',  // Always scroll to start for consistent positioning
-      inline: 'nearest' 
+    // Find the scroll container (ChatGPT uses a div, not window)
+    let scrollContainer = element.parentElement;
+    while (scrollContainer && scrollContainer !== document.body) {
+      const style = window.getComputedStyle(scrollContainer);
+      if ((style.overflow === 'auto' || style.overflow === 'scroll' || 
+           style.overflowY === 'auto' || style.overflowY === 'scroll') &&
+          scrollContainer.scrollHeight > scrollContainer.clientHeight) {
+        break;
+      }
+      scrollContainer = scrollContainer.parentElement;
+    }
+    
+    if (!scrollContainer || scrollContainer === document.body) {
+      scrollContainer = null;
+    }
+    
+    // Get current positions
+    const messageRect = element.getBoundingClientRect();
+    const containerRect = scrollContainer ? scrollContainer.getBoundingClientRect() : { top: 0 };
+    const currentScroll = scrollContainer ? scrollContainer.scrollTop : window.scrollY;
+    const topGap = 80;
+    
+    // Calculate target scroll position
+    const targetScroll = currentScroll + messageRect.top - containerRect.top - topGap;
+    const finalScroll = Math.max(0, targetScroll);
+    
+    debugLog('GPT Pinboard: Pin navigation scroll calculation:', {
+      hasScrollContainer: !!scrollContainer,
+      currentScroll,
+      messageTop: messageRect.top,
+      containerTop: containerRect.top,
+      targetScroll: finalScroll
     });
+    
+    // Use INSTANT scroll to prevent ChatGPT interference
+    if (scrollContainer) {
+      scrollContainer.scrollTo({
+        top: finalScroll,
+        behavior: 'auto' // INSTANT - no smooth animation
+      });
+    } else {
+      window.scrollTo({
+        top: finalScroll,
+        behavior: 'auto' // INSTANT - no smooth animation
+      });
+    }
   } catch (err) {
     debugLog('GPT Pinboard: Scroll error:', err);
+    // Fallback
+    element.scrollIntoView({ behavior: 'auto', block: 'start', inline: 'nearest' });
   }
   
-  // Wait for scroll to complete
-  await new Promise(resolve => setTimeout(resolve, 800)); // Increased wait time
+  // Wait briefly for DOM to settle
+  await new Promise(resolve => setTimeout(resolve, 100));
   
   // Final check: verify element position after scroll
   const postScrollRect = element.getBoundingClientRect();
@@ -2787,55 +2829,55 @@ function createMessageNavigationDropdown(messages) {
             return;
           }
           
-          // Scroll to message with gap at top
+          // Find the scroll container (ChatGPT uses a div, not window)
+          let scrollContainer = message.parentElement;
+          while (scrollContainer && scrollContainer !== document.body) {
+            const style = window.getComputedStyle(scrollContainer);
+            if ((style.overflow === 'auto' || style.overflow === 'scroll' || 
+                 style.overflowY === 'auto' || style.overflowY === 'scroll') &&
+                scrollContainer.scrollHeight > scrollContainer.clientHeight) {
+              break;
+            }
+            scrollContainer = scrollContainer.parentElement;
+          }
+          
+          if (!scrollContainer || scrollContainer === document.body) {
+            scrollContainer = null;
+          }
+          
+          // Get current positions
           const messageRect = message.getBoundingClientRect();
-          const topGap = 80; // 80px gap from top of viewport
+          const containerRect = scrollContainer ? scrollContainer.getBoundingClientRect() : { top: 0 };
+          const currentScroll = scrollContainer ? scrollContainer.scrollTop : window.scrollY;
+          const topGap = 80;
           
-          // Calculate where we need to scroll to position the message
-          const targetScrollY = window.scrollY + messageRect.top - topGap;
+          // Calculate target scroll position
+          const targetScroll = currentScroll + messageRect.top - containerRect.top - topGap;
+          const finalScroll = Math.max(0, targetScroll);
           
-          // Only prevent negative scroll if it would go above the document
-          const documentHeight = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
-          const maxScroll = documentHeight - window.innerHeight;
-          const finalScrollY = Math.max(0, Math.min(targetScrollY, maxScroll));
-          
-          debugLog('GPT Pinboard: Chat outline scrolling to message with gap:', {
-            messageElement: message.tagName,
-            messageClass: message.className,
-            currentScrollY: window.scrollY,
+          debugLog('GPT Pinboard: Chat outline scroll calculation:', {
+            hasScrollContainer: !!scrollContainer,
+            currentScroll,
             messageTop: messageRect.top,
-            messageRect: messageRect,
-            topGap: topGap,
-            targetScrollY: targetScrollY,
-            finalScrollY: finalScrollY
+            containerTop: containerRect.top,
+            targetScroll: finalScroll
           });
           
-          // Check if the calculation looks reasonable
-          if (isNaN(finalScrollY)) {
-            debugLog('GPT Pinboard: Invalid scroll calculation (NaN), using fallback');
-            message.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          } else if (messageRect.top < -5000 || messageRect.top > window.innerHeight + 5000) {
-            // Message is way off screen, the calculation might be wrong - use fallback
-            debugLog('GPT Pinboard: Message too far off screen, using fallback scrollIntoView');
-            message.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          // Use INSTANT scroll to prevent ChatGPT interference
+          if (scrollContainer) {
+            scrollContainer.scrollTo({
+              top: finalScroll,
+              behavior: 'auto' // INSTANT - no smooth animation
+            });
           } else {
-            // For messages above the viewport, we need to scroll up
-            const absoluteScrollY = messageRect.top < 0 ? 
-              window.scrollY + messageRect.top - topGap : 
-              window.scrollY + messageRect.top - topGap;
-            
-            const safeScrollY = Math.max(0, absoluteScrollY);
-            
-            debugLog('GPT Pinboard: Using calculated scroll position:', safeScrollY);
-            window.scrollTo({ 
-              top: safeScrollY, 
-              behavior: 'smooth' 
+            window.scrollTo({
+              top: finalScroll,
+              behavior: 'auto' // INSTANT - no smooth animation
             });
           }
         } catch (error) {
-          debugLog('GPT Pinboard: Chat outline scroll error, using fallback:', error);
-          // Fallback to original method
-          message.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          debugLog('GPT Pinboard: Chat outline scroll error:', error);
+          message.scrollIntoView({ behavior: 'auto', block: 'start' });
         }
         
         // Highlight the message briefly with subtle styling
