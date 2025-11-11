@@ -9,13 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.1.1] - 2025-11-11
 
+### Changed
+- **🎨 Floating Button UI**: Redesigned Pin Chat and Chat Outline buttons
+  - Circular design (48x48px) for cleaner, more modern appearance
+  - Icon-only buttons with custom tooltips on hover
+  - Tooltips feature pointer arrows and perfect vertical alignment
+  - Improved visual consistency with ChatGPT interface
+
 ### Removed
 - **🔒 Unused Permission**: Removed `activeTab` permission from Chrome and Firefox manifests
   - Chrome Web Store compliance fix (Violation ID: Purple Potassium)
   - Extension only uses `storage`, `tabs`, and host permissions
   - Reduced permission footprint improves user trust and store compliance
 
-### Changed
+### Fixed
 - **📄 Privacy Documentation**: Updated PRIVACY.md to reflect current permissions
 
 ## [2.1.0] - 2025-11-09

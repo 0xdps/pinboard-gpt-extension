@@ -3611,13 +3611,49 @@ function addChatPinButton() {
     icon.style.cssText = 'display: flex; align-items: center; justify-content: center; flex-shrink: 0;';
     
     const text = document.createElement('span');
-    text.className = 'chat-pin-text';
-    text.style.cssText = 'font-size: 14px; margin-left: 8px;';
+    text.className = 'chat-pin-text pingpt-tooltip';
+    text.style.cssText = `
+      position: absolute;
+      right: 58px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(30, 41, 59, 0.95);
+      color: white;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      white-space: nowrap;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s, visibility 0.2s;
+      pointer-events: none;
+      font-weight: 500;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    `;
+    
+    // Create tooltip arrow
+    const tooltipArrow = document.createElement('span');
+    tooltipArrow.className = 'pingpt-tooltip-arrow';
+    tooltipArrow.style.cssText = `
+      position: absolute;
+      right: -6px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 0;
+      height: 0;
+      border-left: 6px solid rgba(30, 41, 59, 0.95);
+      border-top: 6px solid transparent;
+      border-bottom: 6px solid transparent;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s, visibility 0.2s;
+    `;
     
     chatPinBtn.appendChild(icon);
     chatPinBtn.appendChild(text);
+    chatPinBtn.appendChild(tooltipArrow);
     
-    chatPinBtn.title = 'Pin this entire conversation for quick access';
+    chatPinBtn.title = '';
     chatPinBtn.style.cssText = `
       position: fixed;
       bottom: 40px;
@@ -3626,28 +3662,36 @@ function addChatPinButton() {
       background: #2d3748;
       color: white;
       border: none;
-      border-radius: 8px;
-      padding: 10px 16px;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      padding: 0;
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
       box-shadow: 0 4px 12px rgba(0,0,0,0.2);
       transition: all 0.2s;
       display: flex;
-      flex-direction: row;
       align-items: center;
       justify-content: center;
-      min-width: 160px;
     `;
     
     chatPinBtn.addEventListener('mouseenter', () => {
       chatPinBtn.style.transform = 'scale(1.05)';
       chatPinBtn.style.boxShadow = '0 6px 16px rgba(0,0,0,0.3)';
+      text.style.opacity = '1';
+      text.style.visibility = 'visible';
+      tooltipArrow.style.opacity = '1';
+      tooltipArrow.style.visibility = 'visible';
     });
     
     chatPinBtn.addEventListener('mouseleave', () => {
       chatPinBtn.style.transform = 'scale(1)';
       chatPinBtn.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
+      text.style.opacity = '0';
+      text.style.visibility = 'hidden';
+      tooltipArrow.style.opacity = '0';
+      tooltipArrow.style.visibility = 'hidden';
     });
     
     chatPinBtn.addEventListener('click', async () => {
@@ -3706,10 +3750,48 @@ function addManualPinButton() {
     
     const buttonText = document.createElement('span');
     buttonText.textContent = 'Chat Outline';
-    buttonText.style.cssText = 'font-size: 14px; margin-left: 8px; display: inline-block;';
-    manualBtn.appendChild(buttonText);
+    buttonText.className = 'pingpt-tooltip';
+    buttonText.style.cssText = `
+      position: absolute;
+      right: 58px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(30, 41, 59, 0.95);
+      color: white;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      white-space: nowrap;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s, visibility 0.2s;
+      pointer-events: none;
+      font-weight: 500;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    `;
     
-    manualBtn.title = 'View and navigate to messages in this conversation';
+    // Create tooltip arrow
+    const tooltipArrow = document.createElement('span');
+    tooltipArrow.className = 'pingpt-tooltip-arrow';
+    tooltipArrow.style.cssText = `
+      position: absolute;
+      right: -6px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 0;
+      height: 0;
+      border-left: 6px solid rgba(30, 41, 59, 0.95);
+      border-top: 6px solid transparent;
+      border-bottom: 6px solid transparent;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s, visibility 0.2s;
+    `;
+    
+    manualBtn.appendChild(buttonText);
+    manualBtn.appendChild(tooltipArrow);
+    
+    manualBtn.title = '';
     manualBtn.style.cssText = `
       position: fixed;
       bottom: 100px;
@@ -3718,28 +3800,36 @@ function addManualPinButton() {
       background: #10a37f;
       color: white;
       border: none;
-      border-radius: 8px;
-      padding: 10px 16px;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      padding: 0;
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
       box-shadow: 0 4px 12px rgba(0,0,0,0.2);
       transition: all 0.2s;
       display: flex;
-      flex-direction: row;
       align-items: center;
       justify-content: center;
-      min-width: 160px;
     `;
     
     manualBtn.addEventListener('mouseenter', () => {
       manualBtn.style.transform = 'scale(1.05)';
       manualBtn.style.boxShadow = '0 6px 16px rgba(0,0,0,0.3)';
+      buttonText.style.opacity = '1';
+      buttonText.style.visibility = 'visible';
+      tooltipArrow.style.opacity = '1';
+      tooltipArrow.style.visibility = 'visible';
     });
     
     manualBtn.addEventListener('mouseleave', () => {
       manualBtn.style.transform = 'scale(1)';
       manualBtn.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
+      buttonText.style.opacity = '0';
+      buttonText.style.visibility = 'hidden';
+      tooltipArrow.style.opacity = '0';
+      tooltipArrow.style.visibility = 'hidden';
     });
     
     // Function to check and toggle button visibility
