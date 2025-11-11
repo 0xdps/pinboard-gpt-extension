@@ -62,12 +62,27 @@ async function handleOpenAndHighlight(pin, sendResponse, forceNewTab = false) {
     debugLog('GPT Pinboard: Handling open-and-highlight for pin:', pin.id, pin.pageUrl);
     debugLog('GPT Pinboard: Using browser-specific tabsAPI for tab query');
     
-    // Check user's tab behavior preference using centralized storage
-    const alwaysNewTab = await getSetting('alwaysNewTab');
-    const shouldAlwaysNewTab = alwaysNewTab !== false; // Default to true
-    // Respect forceNewTab from caller (popup or external) to override preference
-    const effectiveAlwaysNewTab = shouldAlwaysNewTab || forceNewTab === true;
-    debugLog('GPT Pinboard: Tab behavior - shouldAlwaysNewTab:', shouldAlwaysNewTab, 'forceNewTab:', forceNewTab, 'effectiveAlwaysNewTab:', effectiveAlwaysNewTab);
+    // New semantics: `reuseSameWindow` (boolean)
+    // - true  => reuse an existing ChatGPT tab (do not force new tab)
+    // - false => always open a new tab
+    let reuseSameWindowRaw = await getSetting('reuseSameWindow');
+    debugLog('GPT Pinboard: Raw reuseSameWindow setting:', reuseSameWindowRaw, typeof reuseSameWindowRaw);
+
+    // Default to reuse same window when unset
+    let reuseSameWindow = reuseSameWindowRaw === undefined ? true : !!reuseSameWindowRaw;
+    // Persist default when not set
+    if (reuseSameWindowRaw === undefined) {
+      try {
+        await setSetting('reuseSameWindow', reuseSameWindow);
+        debugLog('GPT Pinboard: Defaulted reuseSameWindow to true');
+      } catch (e) {
+        debugLog('GPT Pinboard: Failed to persist default reuseSameWindow:', e);
+      }
+    }
+
+    // If caller sets forceNewTab, it overrides reuse behavior
+    const effectiveReuseSameWindow = forceNewTab === true ? false : reuseSameWindow;
+    debugLog('GPT Pinboard: Tab behavior - reuseSameWindow:', reuseSameWindow, 'forceNewTab:', forceNewTab, 'effectiveReuseSameWindow:', effectiveReuseSameWindow);
     
     const pinUrl = new URL(pin.pageUrl);
     let matchingTabs = [];
@@ -113,7 +128,7 @@ async function handleOpenAndHighlight(pin, sendResponse, forceNewTab = false) {
     debugLog('GPT Pinboard: Found matching tabs:', matchingTabs.length, matchingTabs.map(t => ({id: t.id, url: t.url})));
     
     // If we found a matching tab AND effective setting allows reuse, reuse it
-    if (matchingTabs.length > 0 && !effectiveAlwaysNewTab) {
+    if (matchingTabs.length > 0 && effectiveReuseSameWindow) {
       // Tab already exists, navigate to the pin URL and highlight
       const existingTab = matchingTabs[0];
       debugLog('GPT Pinboard: Reusing existing ChatGPT tab:', existingTab.id, 'navigating to:', pin.pageUrl);
@@ -161,9 +176,9 @@ async function handleOpenAndHighlight(pin, sendResponse, forceNewTab = false) {
       return; // Exit early since we're reusing existing tab
     }
     
-    // Either no matching tab found, or effectiveAlwaysNewTab requested
+    // Either no matching tab found, or effectiveReuseSameWindow=false (force new tab)
     if (matchingTabs.length > 0) {
-      debugLog('GPT Pinboard: ChatGPT tab exists but effectiveAlwaysNewTab=true, creating new tab with URL:', pin.pageUrl);
+      debugLog('GPT Pinboard: ChatGPT tab exists but effectiveReuseSameWindow=false, creating new tab with URL:', pin.pageUrl);
     } else {
       debugLog('GPT Pinboard: No matching tab found, creating new tab with URL:', pin.pageUrl);
     }

@@ -85,26 +85,24 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function initializeTabBehavior() {
     try {
       debugLog('GPT Pinboard: Loading tab behavior setting...');
-      
-      const alwaysNewTab = await getSetting('alwaysNewTab');
-      debugLog('GPT Pinboard: Loaded alwaysNewTab setting:', alwaysNewTab);
-      
-      // Default to always new tab (true) if not set
-      const useNewTab = alwaysNewTab !== false;
-      tabBehaviorToggle.checked = useNewTab;
-      updateTabBehaviorText(useNewTab);
-      debugLog('GPT Pinboard: Set tab behavior toggle to:', useNewTab);
-      
-      // Save default setting if not set
-      if (alwaysNewTab === undefined) {
-        debugLog('GPT Pinboard: Setting default alwaysNewTab to true');
-        await setSetting('alwaysNewTab', true);
+      // New semantics: `reuseSameWindow` (true = reuse existing tab)
+      let reuseSameWindowRaw = await getSetting('reuseSameWindow');
+      debugLog('GPT Pinboard: Loaded reuseSameWindow setting:', reuseSameWindowRaw);
+
+      let reuseSameWindow = reuseSameWindowRaw === undefined ? true : !!reuseSameWindowRaw;
+      if (reuseSameWindowRaw === undefined) {
+        await setSetting('reuseSameWindow', reuseSameWindow);
+        debugLog('GPT Pinboard: Defaulted reuseSameWindow to true');
       }
+
+      tabBehaviorToggle.checked = reuseSameWindow;
+      updateTabBehaviorText(reuseSameWindow);
+      debugLog('GPT Pinboard: Set tab behavior toggle to (reuseSameWindow):', reuseSameWindow);
     } catch (err) {
       debugError('GPT Pinboard: Error loading tab behavior:', err);
       // Default to new tab on error
       tabBehaviorToggle.checked = true;
-      updateTabBehaviorText(true);
+      updateTabBehaviorText(false); // assume false -> open new tab when error
     }
   }
 
@@ -135,13 +133,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  function updateTabBehaviorText(useNewTab) {
-    if (useNewTab) {
-      tabBehaviorText.textContent = '🗂️ Always open in new tab';
-      tabBehaviorText.style.color = '#19c37d';
-    } else {
+  function updateTabBehaviorText(reuseSameWindow) {
+    if (reuseSameWindow) {
       tabBehaviorText.textContent = '♻️ Reuse existing tab';
       tabBehaviorText.style.color = '#10a37f';
+    } else {
+      tabBehaviorText.textContent = '🗂️ Always open in new tab';
+      tabBehaviorText.style.color = '#19c37d';
     }
   }
 
@@ -180,17 +178,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Tab behavior toggle handler
   tabBehaviorToggle.onchange = async () => {
-    const useNewTab = tabBehaviorToggle.checked;
-    debugLog('GPT Pinboard: Tab behavior changed to:', useNewTab);
-    updateTabBehaviorText(useNewTab);
-    
+    const reuseSameWindow = tabBehaviorToggle.checked;
+    debugLog('GPT Pinboard: Tab behavior changed (reuseSameWindow):', reuseSameWindow);
+    updateTabBehaviorText(reuseSameWindow);
+
     try {
-      await setSetting('alwaysNewTab', useNewTab);
-      debugLog('GPT Pinboard: Successfully saved alwaysNewTab setting:', useNewTab);
-      
+      await setSetting('reuseSameWindow', reuseSameWindow);
+      debugLog('GPT Pinboard: Successfully saved reuseSameWindow setting:', reuseSameWindow);
+
       // Verify it was saved
-      const alwaysNewTab = await getSetting('alwaysNewTab');
-      debugLog('GPT Pinboard: Verified saved setting:', alwaysNewTab);
+      const loaded = await getSetting('reuseSameWindow');
+      debugLog('GPT Pinboard: Verified saved reuseSameWindow setting:', loaded);
     } catch (err) {
       debugError('GPT Pinboard: Error saving tab behavior:', err);
     }
