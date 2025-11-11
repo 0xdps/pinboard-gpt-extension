@@ -70,131 +70,101 @@ async function handleOpenAndHighlight(pin, sendResponse) {
     const pinUrl = new URL(pin.pageUrl);
     let matchingTabs = [];
     
-    // If user wants always new tab, skip existing tab check
-    if (!shouldAlwaysNewTab) {
-      // Check if there's already a tab with this URL or similar ChatGPT URL
-      const tabs = await tabsAPI.query({});
+    // Always check for existing tabs first
+    const tabs = await tabsAPI.query({});
+    
+    debugLog('GPT Pinboard: Pin URL details:', {
+      hostname: pinUrl.hostname,
+      pathname: pinUrl.pathname,
+      href: pinUrl.href
+    });
       
-      debugLog('GPT Pinboard: Pin URL details:', {
-        hostname: pinUrl.hostname,
-        pathname: pinUrl.pathname,
-        href: pinUrl.href
-      });
-      
-      // Find tabs that match the ChatGPT conversation
+      // Find tabs that match ChatGPT (ANY ChatGPT tab, not just same conversation)
       matchingTabs = tabs.filter(tab => {
         if (!tab.url) return false;
         try {
           const tabUrl = new URL(tab.url);
-          debugLog('GPT Pinboard: Checking tab URL:', {
-            hostname: tabUrl.hostname,
-            pathname: tabUrl.pathname,
-            href: tabUrl.href
-          });
           
-          // Match ChatGPT domains and conversation paths
+          // Match ANY ChatGPT tab - regardless of conversation
           if ((tabUrl.hostname === 'chatgpt.com' || tabUrl.hostname === 'chat.openai.com') &&
               (pinUrl.hostname === 'chatgpt.com' || pinUrl.hostname === 'chat.openai.com')) {
-            // For ChatGPT, match the conversation ID in the path
-            const pinPath = pinUrl.pathname;
-            const tabPath = tabUrl.pathname;
-            
-            // Try multiple conversation ID patterns:
-            // /c/conversation-id (old format)
-            // /chat/conversation-id (possible new format)  
-            // /conversation/conversation-id (another possible format)
-            const conversationPatterns = [
-              /\/c\/([^\/\?]+)/,
-              /\/chat\/([^\/\?]+)/,
-              /\/conversation\/([^\/\?]+)/
-            ];
-            
-            let pinConversationId = null;
-            let tabConversationId = null;
-            
-            // Try to extract conversation ID from pin URL
-            for (const pattern of conversationPatterns) {
-              const match = pinPath.match(pattern);
-              if (match) {
-                pinConversationId = match[1];
-                break;
-              }
-            }
-            
-            // Try to extract conversation ID from tab URL
-            for (const pattern of conversationPatterns) {
-              const match = tabPath.match(pattern);
-              if (match) {
-                tabConversationId = match[1];
-                break;
-              }
-            }
-            
-            debugLog('GPT Pinboard: Conversation ID match attempt:', {
-              pinPath,
-              tabPath,
-              pinConversationId,
-              tabConversationId
+            debugLog('GPT Pinboard: ✓ MATCH FOUND - ChatGPT tab', {
+              tabId: tab.id,
+              tabUrl: tab.url,
+              pinUrl: pin.pageUrl
             });
-            
-            if (pinConversationId && tabConversationId) {
-              const matches = pinConversationId === tabConversationId;
-              debugLog('GPT Pinboard: Conversation IDs match:', matches);
-              return matches;
-            }
-            
-            // If we're on ChatGPT domains but couldn't extract conversation IDs,
-            // and one of the URLs is the main ChatGPT page, consider them as potentially same conversation
-            if ((pinPath === '/' || pinPath === '') && (tabPath.includes('/c/') || tabPath.includes('/chat/'))) {
-              debugLog('GPT Pinboard: Pin is main page, tab has conversation - treating as same');
-              return true;
-            }
-            if ((tabPath === '/' || tabPath === '') && (pinPath.includes('/c/') || pinPath.includes('/chat/'))) {
-              debugLog('GPT Pinboard: Tab is main page, pin has conversation - treating as same');
-              return true;
-            }
+            return true;
           }
-          // Fallback to exact URL match
+          
+          // Fallback to exact URL match for non-ChatGPT URLs
           const exactMatch = tab.url === pin.pageUrl;
-          debugLog('GPT Pinboard: Exact URL match:', exactMatch);
+          if (exactMatch) {
+            debugLog('GPT Pinboard: ✓ MATCH FOUND - Exact URL match');
+          }
           return exactMatch;
         } catch (e) {
           debugLog('GPT Pinboard: Error parsing tab URL:', e);
           return tab.url === pin.pageUrl;
         }
       });
+    
+    debugLog('GPT Pinboard: Found matching tabs:', matchingTabs.length, matchingTabs.map(t => ({id: t.id, url: t.url})));
+    
+    // If we found a matching tab AND user doesn't want always new tab, reuse it
+    if (matchingTabs.length > 0 && !shouldAlwaysNewTab) {
+      // Tab already exists, navigate to the pin URL and highlight
+      const existingTab = matchingTabs[0];
+      debugLog('GPT Pinboard: Reusing existing ChatGPT tab:', existingTab.id, 'navigating to:', pin.pageUrl);
       
-      debugLog('GPT Pinboard: Found matching tabs:', matchingTabs.length);
+      // Update the tab with the pin's URL and make it active
+      await tabsAPI.update(existingTab.id, { 
+        url: pin.pageUrl,
+        active: true 
+      });
       
-      if (matchingTabs.length > 0) {
-        // Tab already exists, switch to it and highlight
-        const existingTab = matchingTabs[0];
-        debugLog('GPT Pinboard: Switching to existing tab:', existingTab.id);
-        await tabsAPI.update(existingTab.id, { active: true });
-        
-        // Wait a moment for tab to become active, then send highlight message
-        setTimeout(() => {
-          debugLog('GPT Pinboard: Sending highlight message to existing tab');
-          tabsAPI.sendMessage(existingTab.id, {
-            action: 'highlight-pin',
-            pin: pin
-          }, (response) => {
-            const lastError = runtimeAPI.lastError;
-            if (lastError) {
-              debugLog('GPT Pinboard: Error highlighting pin:', lastError.message);
-              sendResponse({ success: true, highlighted: false, error: lastError.message });
-            } else {
-              debugLog('GPT Pinboard: Highlight response from existing tab:', response);
-              sendResponse({ success: true, highlighted: response?.found || false });
-            }
-          });
-        }, 1000);
-        return; // Exit early since we found and switched to existing tab
-      }
+      // Set up timeout for the whole operation
+      let responseTimeout = setTimeout(() => {
+        debugLog('GPT Pinboard: Tab load timeout');
+        tabsAPI.onUpdated.removeListener(onTabUpdate);
+        sendResponse({ success: true, highlighted: false, error: 'Tab load timeout' });
+      }, 15000);
+      
+      // Wait for tab to load with the new URL, then send highlight message
+      const onTabUpdate = (tabId, changeInfo, tab) => {
+        if (tabId === existingTab.id && changeInfo.status === 'complete') {
+          debugLog('GPT Pinboard: Tab loaded with new URL, sending highlight message');
+          tabsAPI.onUpdated.removeListener(onTabUpdate);
+          clearTimeout(responseTimeout);
+          
+          // Additional wait for content script to be ready
+          setTimeout(() => {
+            tabsAPI.sendMessage(existingTab.id, {
+              action: 'highlight-pin',
+              pin: pin
+            }, (response) => {
+              const lastError = runtimeAPI.lastError;
+              if (lastError) {
+                debugLog('GPT Pinboard: Error highlighting pin:', lastError.message);
+                sendResponse({ success: true, highlighted: false, error: lastError.message });
+              } else {
+                debugLog('GPT Pinboard: Highlight response from reused tab:', response);
+                sendResponse({ success: true, highlighted: response?.found || false });
+              }
+            });
+          }, 1500);
+        }
+      };
+      
+      tabsAPI.onUpdated.addListener(onTabUpdate);
+      return; // Exit early since we're reusing existing tab
     }
     
-    // Create new tab with the URL (either no matching tabs found or user wants always new tab)
-    debugLog('GPT Pinboard: Creating new tab with URL:', pin.pageUrl);
+    // Either no matching tab found, or user wants always new tab
+    if (matchingTabs.length > 0) {
+      debugLog('GPT Pinboard: ChatGPT tab exists but alwaysNewTab=true, creating new tab with URL:', pin.pageUrl);
+    } else {
+      debugLog('GPT Pinboard: No matching tab found, creating new tab with URL:', pin.pageUrl);
+    }
       
     let newTab;
     newTab = await tabsAPI.create({ url: pin.pageUrl });

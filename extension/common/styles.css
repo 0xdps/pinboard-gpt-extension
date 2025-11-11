@@ -520,11 +520,6 @@ body.dark-mode .modal-content::-webkit-scrollbar-thumb:hover {
   transition: all var(--transition-fast);
 }
 
-/* Hide tab behavior setting (not working yet) - must come after general rule */
-.tab-setting {
-  display: none !important;
-}
-
 .theme-setting:last-child,
 .tab-setting:last-child,
 .sync-setting:last-child,
