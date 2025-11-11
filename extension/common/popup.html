@@ -44,8 +44,31 @@
     </div>
     <div class="pin-actions">
       <button class="iconBtn openBtn" data-tooltip="Open pin">→</button>
+      <button class="iconBtn editBtn" data-tooltip="Edit pin">✎</button>
       <button class="iconBtn deleteBtn" data-tooltip="Delete pin">✕</button>
       <button class="iconBtn infoBtn" data-tooltip="Info">ⓘ</button>
+    </div>
+  </div>
+
+  <!-- Edit Pin Modal -->
+  <div id="editModal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Edit Pin</h3>
+        <button id="closeEditModal" class="close-btn" data-tooltip="Close">×</button>
+      </div>
+      <div class="modal-body">
+        <label for="editTitle">Title</label>
+        <input id="editTitle" type="text" />
+        <label for="editDesc">Description</label>
+        <textarea id="editDesc" rows="4"></textarea>
+        <label for="editTags">Tags (comma separated)</label>
+        <input id="editTags" type="text" />
+      </div>
+      <div class="modal-actions">
+        <button id="saveEditBtn" class="btn-primary">Save</button>
+        <button id="cancelEditBtn" class="btn-secondary">Cancel</button>
+      </div>
     </div>
   </div>
 

@@ -350,6 +350,34 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
+  // Open pin always in a new tab (popup action)
+  async function openPinInNewTab(pinId) {
+    const stored = (await getPins()).find(x => x.id === pinId);
+    if (!stored?.pageUrl) {
+      showNotification('No original page URL saved for this pin.', 'error');
+      return;
+    }
+    // Delegate to background script for centralized tab handling
+    chrome.runtime.sendMessage({ action: 'open-and-highlight', pin: stored, forceNewTab: true }, (resp) => {
+      if (chrome.runtime.lastError) {
+        debugLog('GPT Pinboard: Error sending open-and-highlight from popup:', chrome.runtime.lastError.message);
+        showNotification('Failed to open pin', 'error');
+        return;
+      }
+      if (resp?.success) {
+        if (resp.highlighted) {
+          window.close();
+        } else {
+          showNotification('Opened in new tab but message not found', 'warning');
+          setTimeout(() => window.close(), 1500);
+        }
+      } else {
+        debugLog('GPT Pinboard: Background failed to open-and-highlight:', resp?.error);
+        showNotification('Failed to open pin', 'error');
+      }
+    });
+  }
+
   // Custom confirmation modal
   function showConfirmation(title, message) {
     return new Promise((resolve) => {
@@ -611,6 +639,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const messageEl = pinElement.querySelector('.pin-message');
     const tagsEl = pinElement.querySelector('.pin-tags');
     const openBtn = pinElement.querySelector('.openBtn');
+    const editBtn = pinElement.querySelector('.editBtn');
     const deleteBtn = pinElement.querySelector('.deleteBtn');
     const infoBtn = pinElement.querySelector('.infoBtn');
     
@@ -677,11 +706,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Set button data and enhanced tooltips
     openBtn.setAttribute('data-id', pin.id);
-    openBtn.setAttribute('data-tooltip', 'Open pin (Enter)');
+    openBtn.setAttribute('data-tooltip', 'Open pin in new tab');
     openBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      openPin(pin.id);
+      openPinInNewTab(pin.id);
     });
+
+    // Edit button - open edit modal
+    if (editBtn) {
+      editBtn.setAttribute('data-id', pin.id);
+      editBtn.setAttribute('data-tooltip', 'Edit pin');
+      editBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openEditModal(pin.id);
+      });
+    }
     
     deleteBtn.setAttribute('data-id', pin.id);
     deleteBtn.setAttribute('data-tooltip', 'Delete pin (Del)');
@@ -701,7 +740,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     pinElement.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-        openPin(pin.id);
+          openPin(pin.id);
       } else if (e.key === 'Delete' || e.key === 'Backspace') {
         e.preventDefault();
         deletePin(pin.id);
@@ -709,6 +748,74 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
     
     return pinElement;
+  }
+
+  // --- Edit modal handling ---
+  function initEditModal() {
+    const editModal = document.getElementById('editModal');
+    const closeBtn = document.getElementById('closeEditModal');
+    const cancelBtn = document.getElementById('cancelEditBtn');
+    const saveBtn = document.getElementById('saveEditBtn');
+    const titleInput = document.getElementById('editTitle');
+    const descInput = document.getElementById('editDesc');
+    const tagsInput = document.getElementById('editTags');
+
+    let currentEditingId = null;
+
+    function close() {
+      editModal.style.display = 'none';
+      currentEditingId = null;
+    }
+
+    closeBtn.addEventListener('click', close);
+    cancelBtn.addEventListener('click', close);
+
+    saveBtn.addEventListener('click', async () => {
+      if (!currentEditingId) return;
+      const pins = await getPins();
+      const pin = pins.find(p => p.id === currentEditingId);
+      if (!pin) {
+        showNotification('Pin not found', 'error');
+        close();
+        return;
+      }
+
+      pin.name = titleInput.value.trim();
+      pin.description = descInput.value.trim();
+      const rawTags = tagsInput.value.split(',').map(t => t.trim()).filter(Boolean);
+      // Normalize: lowercase and remove duplicates
+      const normalized = Array.from(new Set(rawTags.map(t => t.toLowerCase())));
+      pin.tags = normalized;
+
+      try {
+        await idbAdd(pin);
+        await render();
+        showNotification('Pin updated', 'success');
+      } catch (err) {
+        debugLog('GPT Pinboard: Failed to save edited pin:', err);
+        showNotification('Failed to update pin', 'error');
+      }
+      close();
+    });
+
+    return {
+      open: async (pinId) => {
+        const pins = await getPins();
+        const pin = pins.find(p => p.id === pinId);
+        if (!pin) return;
+        currentEditingId = pinId;
+        titleInput.value = pin.name || '';
+        descInput.value = pin.description || (pin.messageText && pin.messageText.slice(0, 300)) || '';
+        tagsInput.value = (pin.tags || []).join(', ');
+        editModal.style.display = 'flex';
+      }
+    };
+  }
+
+  const editModalController = initEditModal();
+
+  function openEditModal(pinId) {
+    editModalController.open(pinId);
   }
 
   async function render() {

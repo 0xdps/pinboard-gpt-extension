@@ -34,7 +34,7 @@ runtimeAPI.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'open-and-highlight' && request.pin) {
     debugLog('GPT Pinboard: About to handle open-and-highlight');
     try {
-      handleOpenAndHighlight(request.pin, sendResponse);
+      handleOpenAndHighlight(request.pin, sendResponse, request.forceNewTab === true);
       return true; // Will respond asynchronously
     } catch (error) {
       debugLog('GPT Pinboard: Error in handleOpenAndHighlight:', error);
@@ -57,7 +57,7 @@ runtimeAPI.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 // Handle open-and-highlight requests
-async function handleOpenAndHighlight(pin, sendResponse) {
+async function handleOpenAndHighlight(pin, sendResponse, forceNewTab = false) {
   try {
     debugLog('GPT Pinboard: Handling open-and-highlight for pin:', pin.id, pin.pageUrl);
     debugLog('GPT Pinboard: Using browser-specific tabsAPI for tab query');
@@ -65,7 +65,9 @@ async function handleOpenAndHighlight(pin, sendResponse) {
     // Check user's tab behavior preference using centralized storage
     const alwaysNewTab = await getSetting('alwaysNewTab');
     const shouldAlwaysNewTab = alwaysNewTab !== false; // Default to true
-    debugLog('GPT Pinboard: Tab behavior setting - Always new tab:', shouldAlwaysNewTab);
+    // Respect forceNewTab from caller (popup or external) to override preference
+    const effectiveAlwaysNewTab = shouldAlwaysNewTab || forceNewTab === true;
+    debugLog('GPT Pinboard: Tab behavior - shouldAlwaysNewTab:', shouldAlwaysNewTab, 'forceNewTab:', forceNewTab, 'effectiveAlwaysNewTab:', effectiveAlwaysNewTab);
     
     const pinUrl = new URL(pin.pageUrl);
     let matchingTabs = [];
@@ -110,8 +112,8 @@ async function handleOpenAndHighlight(pin, sendResponse) {
     
     debugLog('GPT Pinboard: Found matching tabs:', matchingTabs.length, matchingTabs.map(t => ({id: t.id, url: t.url})));
     
-    // If we found a matching tab AND user doesn't want always new tab, reuse it
-    if (matchingTabs.length > 0 && !shouldAlwaysNewTab) {
+    // If we found a matching tab AND effective setting allows reuse, reuse it
+    if (matchingTabs.length > 0 && !effectiveAlwaysNewTab) {
       // Tab already exists, navigate to the pin URL and highlight
       const existingTab = matchingTabs[0];
       debugLog('GPT Pinboard: Reusing existing ChatGPT tab:', existingTab.id, 'navigating to:', pin.pageUrl);
@@ -159,9 +161,9 @@ async function handleOpenAndHighlight(pin, sendResponse) {
       return; // Exit early since we're reusing existing tab
     }
     
-    // Either no matching tab found, or user wants always new tab
+    // Either no matching tab found, or effectiveAlwaysNewTab requested
     if (matchingTabs.length > 0) {
-      debugLog('GPT Pinboard: ChatGPT tab exists but alwaysNewTab=true, creating new tab with URL:', pin.pageUrl);
+      debugLog('GPT Pinboard: ChatGPT tab exists but effectiveAlwaysNewTab=true, creating new tab with URL:', pin.pageUrl);
     } else {
       debugLog('GPT Pinboard: No matching tab found, creating new tab with URL:', pin.pageUrl);
     }
