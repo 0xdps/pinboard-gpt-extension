@@ -10,7 +10,7 @@
   <xsl:template match="/">
     <html xmlns="http://www.w3.org/1999/xhtml">
       <head>
-        <title>GPT Pinboard - XML Sitemap</title>
+        <title>Pinboard GPT - XML Sitemap</title>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <style type="text/css">
           body {
@@ -208,14 +208,14 @@
       </head>
       <body>
         <div class="header">
-          <h1>📌 GPT Pinboard - XML Sitemap</h1>
+          <h1>📌 Pinboard GPT - XML Sitemap</h1>
           <p>Pin the Messages That Matter - Website Structure</p>
         </div>
         
         <div class="container">
           <div class="info-box">
             <h2>About This Sitemap</h2>
-            <p>This XML sitemap contains <xsl:value-of select="count(sitemap:urlset/sitemap:url)"/> URLs for the GPT Pinboard website and related documentation.</p>
+            <p>This XML sitemap contains <xsl:value-of select="count(sitemap:urlset/sitemap:url)"/> URLs for the Pinboard GPT website and related documentation.</p>
             <p>It helps search engines discover and index our content more efficiently, improving our visibility in search results.</p>
           </div>
           
@@ -287,7 +287,7 @@
         
         <div class="footer">
           <p>
-            Generated for <a href="https://gptpins.dps.codes">GPT Pinboard</a> | 
+            Generated for <a href="https://gptpins.dps.codes">Pinboard GPT</a> | 
             <a href="https://github.com/0xdps/gpt-pinboard-extension">GitHub Repository</a> | 
             Made with ❤️ by <a href="https://github.com/0xdps">Devendra Pratap Singh</a>
           </p>

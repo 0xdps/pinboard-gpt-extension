@@ -3,7 +3,7 @@
 // Simple test script to validate feedback system setup
 const https = require('https');
 
-console.log('🧪 Testing GPT Pinboard Feedback System\n');
+console.log('🧪 Testing Pinboard GPT Feedback System\n');
 
 // Test 1: Check if environment variables are configured
 console.log('1. Checking environment configuration...');

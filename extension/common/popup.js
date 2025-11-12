@@ -84,22 +84,22 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Initialize tab behavior setting
   async function initializeTabBehavior() {
     try {
-      debugLog('GPT Pinboard: Loading tab behavior setting...');
+      debugLog('Pinboard GPT: Loading tab behavior setting...');
       // New semantics: `reuseSameWindow` (true = reuse existing tab)
       let reuseSameWindowRaw = await getSetting('reuseSameWindow');
-      debugLog('GPT Pinboard: Loaded reuseSameWindow setting:', reuseSameWindowRaw);
+      debugLog('Pinboard GPT: Loaded reuseSameWindow setting:', reuseSameWindowRaw);
 
       let reuseSameWindow = reuseSameWindowRaw === undefined ? true : !!reuseSameWindowRaw;
       if (reuseSameWindowRaw === undefined) {
         await setSetting('reuseSameWindow', reuseSameWindow);
-        debugLog('GPT Pinboard: Defaulted reuseSameWindow to true');
+        debugLog('Pinboard GPT: Defaulted reuseSameWindow to true');
       }
 
       tabBehaviorToggle.checked = reuseSameWindow;
       updateTabBehaviorText(reuseSameWindow);
-      debugLog('GPT Pinboard: Set tab behavior toggle to (reuseSameWindow):', reuseSameWindow);
+      debugLog('Pinboard GPT: Set tab behavior toggle to (reuseSameWindow):', reuseSameWindow);
     } catch (err) {
-      debugError('GPT Pinboard: Error loading tab behavior:', err);
+      debugError('Pinboard GPT: Error loading tab behavior:', err);
       // Default to new tab on error
       tabBehaviorToggle.checked = true;
       updateTabBehaviorText(false); // assume false -> open new tab when error
@@ -109,24 +109,24 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Initialize debug mode setting
   async function initializeDebugMode() {
     try {
-      debugLog('GPT Pinboard: Loading debug mode setting...');
+      debugLog('Pinboard GPT: Loading debug mode setting...');
       
       const debugMode = await getSetting('debugMode');
-      debugLog('GPT Pinboard: Loaded debug mode setting:', debugMode);
+      debugLog('Pinboard GPT: Loaded debug mode setting:', debugMode);
       
       // Default to false if not set
       const isDebugEnabled = debugMode === true;
       debugToggle.checked = isDebugEnabled;
       updateDebugText(isDebugEnabled);
-      debugLog('GPT Pinboard: Set debug toggle to:', isDebugEnabled);
+      debugLog('Pinboard GPT: Set debug toggle to:', isDebugEnabled);
       
       // Save default setting if not set
       if (debugMode === undefined) {
-        debugLog('GPT Pinboard: Setting default debug mode to false');
+        debugLog('Pinboard GPT: Setting default debug mode to false');
         await setSetting('debugMode', false);
       }
     } catch (err) {
-      debugError('GPT Pinboard: Error loading debug mode:', err);
+      debugError('Pinboard GPT: Error loading debug mode:', err);
       // Default to false on error
       debugToggle.checked = false;
       updateDebugText(false);
@@ -179,36 +179,36 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Tab behavior toggle handler
   tabBehaviorToggle.onchange = async () => {
     const reuseSameWindow = tabBehaviorToggle.checked;
-    debugLog('GPT Pinboard: Tab behavior changed (reuseSameWindow):', reuseSameWindow);
+    debugLog('Pinboard GPT: Tab behavior changed (reuseSameWindow):', reuseSameWindow);
     updateTabBehaviorText(reuseSameWindow);
 
     try {
       await setSetting('reuseSameWindow', reuseSameWindow);
-      debugLog('GPT Pinboard: Successfully saved reuseSameWindow setting:', reuseSameWindow);
+      debugLog('Pinboard GPT: Successfully saved reuseSameWindow setting:', reuseSameWindow);
 
       // Verify it was saved
       const loaded = await getSetting('reuseSameWindow');
-      debugLog('GPT Pinboard: Verified saved reuseSameWindow setting:', loaded);
+      debugLog('Pinboard GPT: Verified saved reuseSameWindow setting:', loaded);
     } catch (err) {
-      debugError('GPT Pinboard: Error saving tab behavior:', err);
+      debugError('Pinboard GPT: Error saving tab behavior:', err);
     }
   };
 
   // Debug mode toggle handler
   debugToggle.onchange = async () => {
     const isDebugEnabled = debugToggle.checked;
-    debugLog('GPT Pinboard: Debug mode changed to:', isDebugEnabled);
+    debugLog('Pinboard GPT: Debug mode changed to:', isDebugEnabled);
     updateDebugText(isDebugEnabled);
     
     try {
       await setSetting('debugMode', isDebugEnabled);
-      debugLog('GPT Pinboard: Successfully saved debug mode setting:', isDebugEnabled);
+      debugLog('Pinboard GPT: Successfully saved debug mode setting:', isDebugEnabled);
       
       // Verify it was saved
       const debugMode = await getSetting('debugMode');
-      debugLog('GPT Pinboard: Verified saved debug setting:', debugMode);
+      debugLog('Pinboard GPT: Verified saved debug setting:', debugMode);
     } catch (err) {
-      debugError('GPT Pinboard: Error saving debug mode:', err);
+      debugError('Pinboard GPT: Error saving debug mode:', err);
     }
   };
 
@@ -320,11 +320,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function openPin(pinId) {
     const stored = (await getPins()).find(x => x.id === pinId);
     if (stored?.pageUrl) {
-      debugLog('GPT Pinboard: Opening pin:', stored.id, stored.pageUrl);
+      debugLog('Pinboard GPT: Opening pin:', stored.id, stored.pageUrl);
       chrome.runtime.sendMessage({ action: 'open-and-highlight', pin: stored }, (resp) => {
-        debugLog('GPT Pinboard: Response from background script:', resp, 'Error:', chrome.runtime.lastError);
+        debugLog('Pinboard GPT: Response from background script:', resp, 'Error:', chrome.runtime.lastError);
         if (chrome.runtime.lastError) {
-          debugLog('GPT Pinboard: Background script error:', chrome.runtime.lastError.message);
+          debugLog('Pinboard GPT: Background script error:', chrome.runtime.lastError.message);
           showNotification('Error communicating with background script', 'error');
           return;
         } else if (resp?.success) {
@@ -338,7 +338,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           }
         } else {
           // Error response from background script
-          debugLog('GPT Pinboard: Highlighting failed:', resp?.error);
+          debugLog('Pinboard GPT: Highlighting failed:', resp?.error);
           showNotification('Pin opened but highlighting failed', 'warning');
           setTimeout(() => window.close(), 1500);
         }
@@ -358,7 +358,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Delegate to background script for centralized tab handling
     chrome.runtime.sendMessage({ action: 'open-and-highlight', pin: stored, forceNewTab: true }, (resp) => {
       if (chrome.runtime.lastError) {
-        debugLog('GPT Pinboard: Error sending open-and-highlight from popup:', chrome.runtime.lastError.message);
+        debugLog('Pinboard GPT: Error sending open-and-highlight from popup:', chrome.runtime.lastError.message);
         showNotification('Failed to open pin', 'error');
         return;
       }
@@ -370,7 +370,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           setTimeout(() => window.close(), 1500);
         }
       } else {
-        debugLog('GPT Pinboard: Background failed to open-and-highlight:', resp?.error);
+        debugLog('Pinboard GPT: Background failed to open-and-highlight:', resp?.error);
         showNotification('Failed to open pin', 'error');
       }
     });
@@ -790,7 +790,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         await render();
         showNotification('Pin updated', 'success');
       } catch (err) {
-        debugLog('GPT Pinboard: Failed to save edited pin:', err);
+        debugLog('Pinboard GPT: Failed to save edited pin:', err);
         showNotification('Failed to update pin', 'error');
       }
       close();
@@ -907,7 +907,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       img.src = 'icons/icon-32.png';
       img.width = 32;
       img.height = 32;
-      img.alt = 'GPT Pinboard';
+      img.alt = 'Pinboard GPT';
       
       iconDiv.appendChild(img);
       
@@ -1094,7 +1094,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       
       // Only support structured export format (v1.0+)
       if (!data.pins || !Array.isArray(data.pins)) {
-        throw new Error('Invalid file format. Please use a file exported from GPT Pinboard v1.0 or later.');
+        throw new Error('Invalid file format. Please use a file exported from Pinboard GPT v1.0 or later.');
       }
       
       const pins = data.pins;

@@ -1,4 +1,4 @@
-// GPT Pinboard Website JavaScript
+// Pinboard GPT Website JavaScript
 
 // DOM Content Loaded
 document.addEventListener('DOMContentLoaded', function() {
@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initScrollSpy();
     initBrowserDetection();
     
-    console.log('GPT Pinboard website loaded successfully!');
+    console.log('Pinboard GPT website loaded successfully!');
 });
 
 // Mobile Menu Toggle

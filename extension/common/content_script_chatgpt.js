@@ -33,7 +33,7 @@ function debugError(...args) {
 }
 
 /**
- * GPT Pinboard Content Script
+ * Pinboard GPT Content Script
  * Optimized for performance and reliability
  */
 
@@ -47,15 +47,15 @@ const performanceMetrics = {
 // Error boundary for better debugging
 window.addEventListener('error', (event) => {
   if (event.filename?.includes('content_script_chatgpt')) {
-    debugError('GPT Pinboard: Uncaught error:', event.error);
+    debugError('Pinboard GPT: Uncaught error:', event.error);
     performanceMetrics.errorsEncountered++;
   }
 });
 
 // Check database availability with better error handling
 try {
-  debugLog('GPT Pinboard: Content script loaded successfully');
-  debugLog('GPT Pinboard: Database functions available:', {
+  debugLog('Pinboard GPT: Content script loaded successfully');
+  debugLog('Pinboard GPT: Database functions available:', {
     idbAdd: typeof idbAdd,
     idbGet: typeof idbGet,
     idbGetAll: typeof idbGetAll,
@@ -67,11 +67,11 @@ try {
   const missingFunctions = requiredFunctions.filter(fn => typeof window[fn] !== 'function');
   
   if (missingFunctions.length > 0) {
-    debugError('GPT Pinboard: Missing required database functions:', missingFunctions);
+    debugError('Pinboard GPT: Missing required database functions:', missingFunctions);
   }
   
 } catch (error) {
-  debugError('GPT Pinboard: Error checking database functions:', error);
+  debugError('Pinboard GPT: Error checking database functions:', error);
 }
 
 /**
@@ -95,14 +95,14 @@ function createPinButtonForMessage(messageContainer) {
     const runtime = chrome.runtime;
     
     if (!runtime?.getURL) {
-      console.warn('GPT Pinboard: Extension context not available');
+      console.warn('Pinboard GPT: Extension context not available');
       return null;
     }
     
     // Create button with optimized approach
     const pinButton = document.createElement('button');
     pinButton.className = 'pingpt-pin-button';
-    pinButton.title = 'Pin this message (GPT Pinboard)';
+    pinButton.title = 'Pin this message (Pinboard GPT)';
     pinButton.setAttribute('aria-label', 'Pin this message');
     
     // Create icon with error handling
@@ -183,7 +183,7 @@ function createPinButtonForMessage(messageContainer) {
         
         await openPinDialog(messageContainer);
       } catch (error) {
-        debugError('GPT Pinboard: Error opening pin dialog:', error);
+        debugError('Pinboard GPT: Error opening pin dialog:', error);
       }
     });
     
@@ -204,14 +204,14 @@ function createPinButtonForMessage(messageContainer) {
       messageContainer.appendChild(pinButton);
       
     } catch (error) {
-      console.warn('GPT Pinboard: Error setting up button container:', error);
+      console.warn('Pinboard GPT: Error setting up button container:', error);
       return null;
     }
     
     return pinButton;
     
   } catch (error) {
-    console.warn('GPT Pinboard: Error creating pin button:', error);
+    console.warn('Pinboard GPT: Error creating pin button:', error);
     return null;
   }
 }
@@ -374,7 +374,7 @@ function openPinDialogWithData(pinData) {
     try {
       // Check extension context before accessing storage
       if (!isExtensionContextValid()) {
-        debugLog('GPT Pinboard: Extension context invalidated, using default theme');
+        debugLog('Pinboard GPT: Extension context invalidated, using default theme');
       } else {
         const result = await chrome.storage.local.get(['theme']);
         isDarkMode = result.theme === 'dark';
@@ -384,7 +384,7 @@ function openPinDialogWithData(pinData) {
       
       // Check if this is due to extension context invalidation
       if (err.message && err.message.includes('Extension context invalidated')) {
-        debugLog('GPT Pinboard: Extension context invalidated while accessing storage');
+        debugLog('Pinboard GPT: Extension context invalidated while accessing storage');
         window.location.reload();
         return;
       }
@@ -437,7 +437,7 @@ function openPinDialog(element) {
 // Create the pin dialog UI (shared function)
 function createPinDialog(messageText, pinData, isDarkMode, resolve, reject = resolve) {
   try {
-    debugLog('GPT Pinboard: Creating pin dialog with data:', pinData);
+    debugLog('Pinboard GPT: Creating pin dialog with data:', pinData);
     
     // Get theme colors
     const colors = isDarkMode ? {
@@ -541,7 +541,7 @@ function createPinDialog(messageText, pinData, isDarkMode, resolve, reject = res
         header.appendChild(iconImg);
       }
     } catch (error) {
-      debugLog('GPT Pinboard: Could not load icon for dialog');
+      debugLog('Pinboard GPT: Could not load icon for dialog');
     }
     
     header.appendChild(document.createTextNode('Pin Message'));
@@ -932,7 +932,7 @@ function createPinDialog(messageText, pinData, isDarkMode, resolve, reject = res
     async function getAllExistingTags() {
       try {
         const allPins = await idbGetAll();
-        debugLog('GPT Pinboard: All pins retrieved for message dialog:', allPins.length, 'pins');
+        debugLog('Pinboard GPT: All pins retrieved for message dialog:', allPins.length, 'pins');
         
         const allTags = new Set();
         
@@ -942,16 +942,16 @@ function createPinDialog(messageText, pinData, isDarkMode, resolve, reject = res
         // Then add existing tags from pins
         allPins.forEach(pin => {
           if (pin.tags && Array.isArray(pin.tags)) {
-            debugLog('GPT Pinboard: Pin tags found for message dialog:', pin.tags);
+            debugLog('Pinboard GPT: Pin tags found for message dialog:', pin.tags);
             pin.tags.forEach(tag => allTags.add(tag.toLowerCase()));
           }
         });
         
         const sortedTags = Array.from(allTags).sort();
-        debugLog('GPT Pinboard: Final sorted tags for message dialog (with popular tags):', sortedTags);
+        debugLog('Pinboard GPT: Final sorted tags for message dialog (with popular tags):', sortedTags);
         return sortedTags;
       } catch (err) {
-        debugError('GPT Pinboard: Error getting existing tags for message dialog:', err);
+        debugError('Pinboard GPT: Error getting existing tags for message dialog:', err);
         return POPULAR_TAGS; // Return popular tags as fallback
       }
     }
@@ -975,7 +975,7 @@ function createPinDialog(messageText, pinData, isDarkMode, resolve, reject = res
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     `;
     
-    debugLog('GPT Pinboard: Message dialog suggestion dropdown created with colors:', colors);
+    debugLog('Pinboard GPT: Message dialog suggestion dropdown created with colors:', colors);
 
     // Make tags container relative for absolute positioning of dropdown
     tagsContainer.style.position = 'relative';
@@ -1019,7 +1019,7 @@ function createPinDialog(messageText, pinData, isDarkMode, resolve, reject = res
 
     // Show suggestions based on input
     async function showSuggestions(inputValue) {
-      debugLog('GPT Pinboard: Message dialog showSuggestions called with:', inputValue);
+      debugLog('Pinboard GPT: Message dialog showSuggestions called with:', inputValue);
       
       if (!inputValue.trim()) {
         suggestionDropdown.style.display = 'none';
@@ -1027,7 +1027,7 @@ function createPinDialog(messageText, pinData, isDarkMode, resolve, reject = res
       }
 
       const existingTags = await getAllExistingTags();
-      debugLog('GPT Pinboard: Message dialog existing tags found:', existingTags);
+      debugLog('Pinboard GPT: Message dialog existing tags found:', existingTags);
       
       const query = inputValue.toLowerCase().trim();
       
@@ -1039,11 +1039,11 @@ function createPinDialog(messageText, pinData, isDarkMode, resolve, reject = res
       
       availableSuggestions = scoredTags.map(item => item.tag).slice(0, 8); // Limit to 8 suggestions
 
-      debugLog('GPT Pinboard: Message dialog available suggestions:', availableSuggestions, 'for query:', query);
+      debugLog('Pinboard GPT: Message dialog available suggestions:', availableSuggestions, 'for query:', query);
 
       if (availableSuggestions.length === 0) {
         suggestionDropdown.style.display = 'none';
-        debugLog('GPT Pinboard: Message dialog no suggestions found, hiding dropdown');
+        debugLog('Pinboard GPT: Message dialog no suggestions found, hiding dropdown');
         return;
       }
 
@@ -1077,9 +1077,9 @@ function createPinDialog(messageText, pinData, isDarkMode, resolve, reject = res
       selectedSuggestionIndex = -1;
       updateSuggestionHighlight();
       
-      debugLog('GPT Pinboard: Message dialog dropdown shown with', availableSuggestions.length, 'suggestions');
-      debugLog('GPT Pinboard: Message dialog dropdown element:', suggestionDropdown);
-      debugLog('GPT Pinboard: Message dialog dropdown parent:', suggestionDropdown.parentNode);
+      debugLog('Pinboard GPT: Message dialog dropdown shown with', availableSuggestions.length, 'suggestions');
+      debugLog('Pinboard GPT: Message dialog dropdown element:', suggestionDropdown);
+      debugLog('Pinboard GPT: Message dialog dropdown parent:', suggestionDropdown.parentNode);
     }
 
     // Update suggestion highlight
@@ -1153,7 +1153,7 @@ function createPinDialog(messageText, pinData, isDarkMode, resolve, reject = res
 
     // Show suggestions on input
     tagInput.addEventListener('input', (e) => {
-      debugLog('GPT Pinboard: Message dialog input event fired, value:', e.target.value);
+      debugLog('Pinboard GPT: Message dialog input event fired, value:', e.target.value);
       showSuggestions(e.target.value);
     });
 
@@ -1204,24 +1204,24 @@ function createPinDialog(messageText, pinData, isDarkMode, resolve, reject = res
       };
       
       try {
-        debugLog('GPT Pinboard: Attempting to save pin:', pin);
+        debugLog('Pinboard GPT: Attempting to save pin:', pin);
         
         if (typeof idbAdd !== 'function') {
-          debugError('GPT Pinboard: idbAdd function not available, typeof:', typeof idbAdd);
+          debugError('Pinboard GPT: idbAdd function not available, typeof:', typeof idbAdd);
           throw new Error('Database function not available. Please refresh the page.');
         }
         
         // Validate pin data
         if (!pin.id || !pin.messageText) {
-          debugError('GPT Pinboard: Invalid pin data:', pin);
+          debugError('Pinboard GPT: Invalid pin data:', pin);
           throw new Error('Invalid pin data - missing required fields');
         }
         
         // Check storage size to prevent quota exceeded
         const pinSize = JSON.stringify(pin).length;
-        debugLog('GPT Pinboard: Pin storage size:', pinSize, 'bytes');
+        debugLog('Pinboard GPT: Pin storage size:', pinSize, 'bytes');
         if (pinSize > 7000) { // Chrome quota is ~8KB per item, leave buffer
-          console.warn('GPT Pinboard: Pin data is large:', pinSize, 'bytes');
+          console.warn('Pinboard GPT: Pin data is large:', pinSize, 'bytes');
           // Trim data if too large
           pin.messageText = pin.messageText.slice(0, 150); // Keep more of the main message
           pin.selectionText = pin.selectionText.slice(0, 50);
@@ -1230,17 +1230,17 @@ function createPinDialog(messageText, pinData, isDarkMode, resolve, reject = res
             pin.anchors.suffix = pin.anchors.suffix.slice(0, 30);
             pin.anchors.full = pin.anchors.full.slice(0, 50);
           }
-          debugLog('GPT Pinboard: Trimmed pin size:', JSON.stringify(pin).length, 'bytes');
+          debugLog('Pinboard GPT: Trimmed pin size:', JSON.stringify(pin).length, 'bytes');
         }
         
         await idbAdd(pin);
-        debugLog('GPT Pinboard: Pin saved successfully');
+        debugLog('Pinboard GPT: Pin saved successfully');
         overlay.remove();
         showNotification('✅ Message pinned successfully!');
         resolve();
       } catch (err) {
-        debugError('GPT Pinboard: Error saving pin:', err);
-        debugError('GPT Pinboard: Pin data that failed:', pin);
+        debugError('Pinboard GPT: Error saving pin:', err);
+        debugError('Pinboard GPT: Pin data that failed:', pin);
         
         // Provide user-friendly error messages
         let errorMessage = err.message;
@@ -1273,7 +1273,7 @@ function createPinDialog(messageText, pinData, isDarkMode, resolve, reject = res
       }
     });
   } catch (error) {
-    debugError('GPT Pinboard: Error creating pin dialog:', error);
+    debugError('Pinboard GPT: Error creating pin dialog:', error);
     showNotification('❌ Failed to create pin dialog: ' + error.message);
     if (reject) reject(error);
     else resolve();
@@ -1301,7 +1301,7 @@ function createUnifiedPinDialog(options, resolve, reject = resolve) {
   } = options;
 
   try {
-    debugLog('GPT Pinboard: Creating unified pin dialog with options:', options);
+    debugLog('Pinboard GPT: Creating unified pin dialog with options:', options);
     
     // Get theme colors
     const colors = isDarkMode ? {
@@ -1403,7 +1403,7 @@ function createUnifiedPinDialog(options, resolve, reject = resolve) {
         header.appendChild(iconImg);
       }
     } catch (error) {
-      debugLog('GPT Pinboard: Could not load icon for unified dialog');
+      debugLog('Pinboard GPT: Could not load icon for unified dialog');
     }
     
     header.appendChild(document.createTextNode(dialogTitle));
@@ -1653,7 +1653,7 @@ function createUnifiedPinDialog(options, resolve, reject = resolve) {
     });
     
   } catch (error) {
-    debugError('GPT Pinboard: Error creating unified pin dialog:', error);
+    debugError('Pinboard GPT: Error creating unified pin dialog:', error);
     showNotification('❌ Failed to create pin dialog: ' + error.message);
     if (reject) reject(error);
     else resolve();
@@ -1793,13 +1793,13 @@ function showNotification(message) {
 // Find element by XPath
 function findByXPath(xpath) {
   try {
-    debugLog('GPT Pinboard: Evaluating XPath:', xpath);
+    debugLog('Pinboard GPT: Evaluating XPath:', xpath);
     const result = document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
     const element = result.singleNodeValue;
-    debugLog('GPT Pinboard: XPath result:', element);
+    debugLog('Pinboard GPT: XPath result:', element);
     return element;
   } catch (err) {
-    debugLog('GPT Pinboard: XPath evaluation failed:', err);
+    debugLog('Pinboard GPT: XPath evaluation failed:', err);
     return null;
   }
 }
@@ -1808,7 +1808,7 @@ function findByXPath(xpath) {
 function findByTextAnchors(anchors) {
   if (!anchors) return null;
   
-  debugLog('GPT Pinboard: Starting text anchor search with:', {
+  debugLog('Pinboard GPT: Starting text anchor search with:', {
     fullLength: anchors.full?.length || 0,
     prefixLength: anchors.prefix?.length || 0,
     suffixLength: anchors.suffix?.length || 0
@@ -1819,7 +1819,7 @@ function findByTextAnchors(anchors) {
   // ONLY search actual message containers - be very specific
   const allElements = mainContent.querySelectorAll('[data-message-author-role]');
   
-  debugLog('GPT Pinboard: Found', allElements.length, 'message elements to search');
+  debugLog('Pinboard GPT: Found', allElements.length, 'message elements to search');
   
   // Normalize text for better matching
   const normalizeText = (text) => text.trim().replace(/\s+/g, ' ');
@@ -1834,8 +1834,8 @@ function findByTextAnchors(anchors) {
     if (anchors.full) {
       const normalizedFull = normalizeText(anchors.full);
       if (text.includes(normalizedFull)) {
-        debugLog('GPT Pinboard: MATCH found via full anchor at element', i);
-        debugLog('GPT Pinboard: Element text preview:', text.slice(0, 150));
+        debugLog('Pinboard GPT: MATCH found via full anchor at element', i);
+        debugLog('Pinboard GPT: Element text preview:', text.slice(0, 150));
         return el;
       }
     }
@@ -1844,8 +1844,8 @@ function findByTextAnchors(anchors) {
     if (anchors.prefix) {
       const normalizedPrefix = normalizeText(anchors.prefix);
       if (text.includes(normalizedPrefix)) {
-        debugLog('GPT Pinboard: MATCH found via prefix anchor at element', i);
-        debugLog('GPT Pinboard: Element text preview:', text.slice(0, 150));
+        debugLog('Pinboard GPT: MATCH found via prefix anchor at element', i);
+        debugLog('Pinboard GPT: Element text preview:', text.slice(0, 150));
         return el;
       }
     }
@@ -1854,8 +1854,8 @@ function findByTextAnchors(anchors) {
     if (anchors.suffix) {
       const normalizedSuffix = normalizeText(anchors.suffix);
       if (text.includes(normalizedSuffix)) {
-        debugLog('GPT Pinboard: MATCH found via suffix anchor at element', i);
-        debugLog('GPT Pinboard: Element text preview:', text.slice(0, 150));
+        debugLog('Pinboard GPT: MATCH found via suffix anchor at element', i);
+        debugLog('Pinboard GPT: Element text preview:', text.slice(0, 150));
         return el;
       }
     }
@@ -1869,7 +1869,7 @@ async function highlightPin(pin) {
   
   // For chat pins, just confirm we're on the right page - don't scroll or highlight
   if (pin.type === 'chat') {
-    debugLog('GPT Pinboard: Chat pin opened - no scrolling or highlighting needed');
+    debugLog('Pinboard GPT: Chat pin opened - no scrolling or highlighting needed');
     showNotification('✅ Chat opened successfully!');
     return { found: true, type: 'chat' };
   }
@@ -1892,12 +1892,12 @@ async function highlightPin(pin) {
   
   // Try XPath first (most direct and reliable when available)
   if (pin.xpath) {
-    debugLog('GPT Pinboard: Trying XPath:', pin.xpath);
+    debugLog('Pinboard GPT: Trying XPath:', pin.xpath);
     element = findByXPath(pin.xpath);
     if (element) {
-      debugLog('GPT Pinboard: Found element using XPath:', element.tagName);
-      debugLog('GPT Pinboard: Element text preview:', (element.innerText || '').slice(0, 100));
-      debugLog('GPT Pinboard: Element bounds:', element.getBoundingClientRect());
+      debugLog('Pinboard GPT: Found element using XPath:', element.tagName);
+      debugLog('Pinboard GPT: Element text preview:', (element.innerText || '').slice(0, 100));
+      debugLog('Pinboard GPT: Element bounds:', element.getBoundingClientRect());
       
       // Verify this element actually contains the pinned text
       const elementText = (element.innerText || element.textContent || '').trim();
@@ -1912,9 +1912,9 @@ async function highlightPin(pin) {
       }
       
       if (!elementText.includes(searchText)) {
-        debugLog('GPT Pinboard: XPath element does not contain expected text, rejecting');
-        debugLog('GPT Pinboard: Expected:', searchText);
-        debugLog('GPT Pinboard: Found:', elementText.slice(0, 100));
+        debugLog('Pinboard GPT: XPath element does not contain expected text, rejecting');
+        debugLog('Pinboard GPT: Expected:', searchText);
+        debugLog('Pinboard GPT: Found:', elementText.slice(0, 100));
         element = null;
       }
     }
@@ -1922,39 +1922,39 @@ async function highlightPin(pin) {
   
   // Fallback to text anchors if XPath fails
   if (!element && pin.anchors) {
-    debugLog('GPT Pinboard: XPath failed, trying text anchors');
-    debugLog('GPT Pinboard: Available anchors:', {
+    debugLog('Pinboard GPT: XPath failed, trying text anchors');
+    debugLog('Pinboard GPT: Available anchors:', {
       full: pin.anchors.full ? pin.anchors.full.slice(0, 100) + '...' : 'None',
       prefix: pin.anchors.prefix ? pin.anchors.prefix.slice(0, 50) + '...' : 'None', 
       suffix: pin.anchors.suffix ? pin.anchors.suffix.slice(0, 50) + '...' : 'None'
     });
-    debugLog('GPT Pinboard: Looking for selection text:', pin.selectionText?.slice(0, 100) || 'None');
+    debugLog('Pinboard GPT: Looking for selection text:', pin.selectionText?.slice(0, 100) || 'None');
     
     element = findByTextAnchors(pin.anchors);
     if (element) {
-      debugLog('GPT Pinboard: Found element using text anchors:', element.tagName);
-      debugLog('GPT Pinboard: Anchor element bounds:', element.getBoundingClientRect());
+      debugLog('Pinboard GPT: Found element using text anchors:', element.tagName);
+      debugLog('Pinboard GPT: Anchor element bounds:', element.getBoundingClientRect());
       
       const elementText = (element.innerText || element.textContent || '').trim();
-      debugLog('GPT Pinboard: Found element full text preview:', elementText.slice(0, 200) + '...');
+      debugLog('Pinboard GPT: Found element full text preview:', elementText.slice(0, 200) + '...');
       
       // Try to find a more specific child element if this seems too broad
       const searchText = pin.selectionText || pin.messageText.slice(0, 50);
       
       if (elementText.length > searchText.length * 3) {
-        debugLog('GPT Pinboard: Text anchor element seems too broad, searching for specific child');
-        debugLog('GPT Pinboard: Searching for text:', searchText);
+        debugLog('Pinboard GPT: Text anchor element seems too broad, searching for specific child');
+        debugLog('Pinboard GPT: Searching for text:', searchText);
         const specificChild = findSpecificElementByText(searchText, element);
         if (specificChild && specificChild !== element) {
-          debugLog('GPT Pinboard: Found more specific child element:', specificChild.tagName);
-          debugLog('GPT Pinboard: Child element text preview:', (specificChild.innerText || '').slice(0, 100));
+          debugLog('Pinboard GPT: Found more specific child element:', specificChild.tagName);
+          debugLog('Pinboard GPT: Child element text preview:', (specificChild.innerText || '').slice(0, 100));
           element = specificChild;
         } else {
-          debugLog('GPT Pinboard: No more specific child found, using original element');
+          debugLog('Pinboard GPT: No more specific child found, using original element');
         }
       }
     } else {
-      debugLog('GPT Pinboard: No element found via text anchors');
+      debugLog('Pinboard GPT: No element found via text anchors');
     }
   }
   
@@ -1967,11 +1967,11 @@ async function highlightPin(pin) {
     if (isFullMessage) {
       // For full message pins, use first significant words for better matching
       searchText = pin.messageText.split(/\s+/).slice(0, 8).join(' ').trim();
-      debugLog('GPT Pinboard: Searching for full message using first 8 words:', searchText);
+      debugLog('Pinboard GPT: Searching for full message using first 8 words:', searchText);
     } else {
       // For selection-only pins, search by the selected text
       searchText = pin.selectionText || pin.messageText.slice(0, 100).trim();
-      debugLog('GPT Pinboard: Searching for selection:', searchText);
+      debugLog('Pinboard GPT: Searching for selection:', searchText);
     }
     
     const mainContent = document.querySelector('main') || document.body;
@@ -2021,8 +2021,8 @@ async function highlightPin(pin) {
     
     if (bestMatch) {
       element = bestMatch;
-      debugLog('GPT Pinboard: Found element via text search:', element.tagName);
-      debugLog('GPT Pinboard: Text search element bounds:', element.getBoundingClientRect());
+      debugLog('Pinboard GPT: Found element via text search:', element.tagName);
+      debugLog('Pinboard GPT: Text search element bounds:', element.getBoundingClientRect());
     }
   }
   
@@ -2041,31 +2041,31 @@ async function highlightPin(pin) {
   if (isFullMessage) {
     // For full message pins, be more lenient - check if significant portion matches
     expectedText = pin.messageText.slice(0, 100); // Use more of the message text
-    debugLog('GPT Pinboard: Validating full message pin');
+    debugLog('Pinboard GPT: Validating full message pin');
   } else {
     // For selection pins, use the selected text or a portion of message text
     expectedText = pin.selectionText || pin.messageText.slice(0, 50);
-    debugLog('GPT Pinboard: Validating selection pin');
+    debugLog('Pinboard GPT: Validating selection pin');
   }
   
-  debugLog('GPT Pinboard: Final element validation');
-  debugLog('GPT Pinboard: Pin type:', pin.selectionType);
-  debugLog('GPT Pinboard: Is full message:', isFullMessage);
-  debugLog('GPT Pinboard: Expected text:', expectedText.slice(0, 50) + '...');
-  debugLog('GPT Pinboard: Found element text preview:', finalElementText.slice(0, 100));
+  debugLog('Pinboard GPT: Final element validation');
+  debugLog('Pinboard GPT: Pin type:', pin.selectionType);
+  debugLog('Pinboard GPT: Is full message:', isFullMessage);
+  debugLog('Pinboard GPT: Expected text:', expectedText.slice(0, 50) + '...');
+  debugLog('Pinboard GPT: Found element text preview:', finalElementText.slice(0, 100));
   
   const textMatches = finalElementText.includes(expectedText);
-  debugLog('GPT Pinboard: Element contains expected text:', textMatches);
-  debugLog('GPT Pinboard: DETAILED COMPARISON:');
-  debugLog('GPT Pinboard: Expected text (length ' + expectedText.length + '):', JSON.stringify(expectedText));
-  debugLog('GPT Pinboard: Found text (length ' + finalElementText.length + '):', JSON.stringify(finalElementText.slice(0, 200)));
-  debugLog('GPT Pinboard: Includes check result:', finalElementText.includes(expectedText));
+  debugLog('Pinboard GPT: Element contains expected text:', textMatches);
+  debugLog('Pinboard GPT: DETAILED COMPARISON:');
+  debugLog('Pinboard GPT: Expected text (length ' + expectedText.length + '):', JSON.stringify(expectedText));
+  debugLog('Pinboard GPT: Found text (length ' + finalElementText.length + '):', JSON.stringify(finalElementText.slice(0, 200)));
+  debugLog('Pinboard GPT: Includes check result:', finalElementText.includes(expectedText));
   
   // If includes returns true, find WHERE in the text the match occurs
   if (finalElementText.includes(expectedText)) {
     const matchIndex = finalElementText.indexOf(expectedText);
-    debugLog('GPT Pinboard: Match found at index:', matchIndex);
-    debugLog('GPT Pinboard: Context around match:', JSON.stringify(finalElementText.substring(Math.max(0, matchIndex - 50), matchIndex + expectedText.length + 50)));
+    debugLog('Pinboard GPT: Match found at index:', matchIndex);
+    debugLog('Pinboard GPT: Context around match:', JSON.stringify(finalElementText.substring(Math.max(0, matchIndex - 50), matchIndex + expectedText.length + 50)));
   }
   
   if (!textMatches) {
@@ -2073,15 +2073,15 @@ async function highlightPin(pin) {
       // For full message pins, try a more lenient check
       const messageWords = pin.messageText.split(/\s+/).slice(0, 10).join(' ');
       const lenientMatch = finalElementText.includes(messageWords);
-      debugLog('GPT Pinboard: Trying lenient match with first 10 words:', lenientMatch);
+      debugLog('Pinboard GPT: Trying lenient match with first 10 words:', lenientMatch);
       
       if (!lenientMatch) {
-        debugLog('GPT Pinboard: Full message validation failed - even lenient match failed');
+        debugLog('Pinboard GPT: Full message validation failed - even lenient match failed');
         showNotification('⚠️ Found element but text does not match');
         return { found: false };
       }
     } else {
-      debugLog('GPT Pinboard: Selection validation failed - text not found in element');
+      debugLog('Pinboard GPT: Selection validation failed - text not found in element');
       showNotification('⚠️ Found element but text does not match');
       return { found: false };
     }
@@ -2113,7 +2113,7 @@ async function highlightPin(pin) {
   const elementRect = element.getBoundingClientRect();
   
   // Log comprehensive pin and element details
-  debugLog('GPT Pinboard: Pin details for scrolling:', {
+  debugLog('Pinboard GPT: Pin details for scrolling:', {
     pinId: pin.id,
     pinType: pin.type,
     pinXpath: pin.xpath || 'No XPath available',
@@ -2144,8 +2144,8 @@ async function highlightPin(pin) {
   }
   
   const currentElementXPath = getElementXPath(element);
-  debugLog('GPT Pinboard: Current element XPath:', currentElementXPath);
-  debugLog('GPT Pinboard: About to scroll to element at position:', {
+  debugLog('Pinboard GPT: Current element XPath:', currentElementXPath);
+  debugLog('Pinboard GPT: About to scroll to element at position:', {
     top: elementRect.top,
     left: elementRect.left,
     width: elementRect.width,
@@ -2183,7 +2183,7 @@ async function highlightPin(pin) {
     const targetScroll = currentScroll + messageRect.top - containerRect.top - topGap;
     const finalScroll = Math.max(0, targetScroll);
     
-    debugLog('GPT Pinboard: Pin navigation scroll calculation:', {
+    debugLog('Pinboard GPT: Pin navigation scroll calculation:', {
       hasScrollContainer: !!scrollContainer,
       currentScroll,
       messageTop: messageRect.top,
@@ -2204,7 +2204,7 @@ async function highlightPin(pin) {
       });
     }
   } catch (err) {
-    debugLog('GPT Pinboard: Scroll error:', err);
+    debugLog('Pinboard GPT: Scroll error:', err);
     // Fallback
     element.scrollIntoView({ behavior: 'auto', block: 'start', inline: 'nearest' });
   }
@@ -2214,7 +2214,7 @@ async function highlightPin(pin) {
   
   // Final check: verify element position after scroll
   const postScrollRect = element.getBoundingClientRect();
-  debugLog('GPT Pinboard: Element position after scroll:', {
+  debugLog('Pinboard GPT: Element position after scroll:', {
     top: postScrollRect.top,
     left: postScrollRect.left,
     isVisible: postScrollRect.top >= 0 && postScrollRect.top <= window.innerHeight
@@ -2227,8 +2227,8 @@ async function highlightPin(pin) {
   const originalBorderRadius = element.style.borderRadius;
   const originalMaxWidth = element.style.maxWidth;
   
-  debugLog('GPT Pinboard: About to highlight element:', element.tagName);
-  debugLog('GPT Pinboard: Element text for highlighting:', (element.innerText || '').slice(0, 50));
+  debugLog('Pinboard GPT: About to highlight element:', element.tagName);
+  debugLog('Pinboard GPT: Element text for highlighting:', (element.innerText || '').slice(0, 50));
   
   // Use a very subtle highlight that's easy on the eyes - no border, no margin/padding
   element.style.transition = 'all 0.4s ease';
@@ -2292,17 +2292,17 @@ function findMessageContainerByText(searchText) {
   const mainContent = document.querySelector('main') || document.body;
   const allElements = mainContent.querySelectorAll('[data-message-author-role]');
   
-  debugLog('GPT Pinboard: Searching through', allElements.length, 'message containers for text:', searchText);
+  debugLog('Pinboard GPT: Searching through', allElements.length, 'message containers for text:', searchText);
   
   for (const el of allElements) {
     const text = (el.innerText || el.textContent || '').trim();
     if (text.includes(searchText) && text.length > 10) {
-      debugLog('GPT Pinboard: Found matching container with', text.length, 'characters');
+      debugLog('Pinboard GPT: Found matching container with', text.length, 'characters');
       return el;
     }
   }
   
-  debugLog('GPT Pinboard: No matching container found');
+  debugLog('Pinboard GPT: No matching container found');
   return null;
 }
 
@@ -2310,8 +2310,8 @@ function findMessageContainerByText(searchText) {
 function findSpecificElementByText(searchText, messageContainer) {
   if (!messageContainer) return null;
   
-  debugLog('GPT Pinboard: findSpecificElementByText called with:', searchText.slice(0, 50));
-  debugLog('GPT Pinboard: Container element:', messageContainer.tagName, messageContainer.className);
+  debugLog('Pinboard GPT: findSpecificElementByText called with:', searchText.slice(0, 50));
+  debugLog('Pinboard GPT: Container element:', messageContainer.tagName, messageContainer.className);
   
   // Find all text nodes containing the search text
   const walker = document.createTreeWalker(
@@ -2322,7 +2322,7 @@ function findSpecificElementByText(searchText, messageContainer) {
         const nodeText = node.textContent || '';
         const matches = nodeText.includes(searchText);
         if (matches) {
-          debugLog('GPT Pinboard: Found matching text node:', JSON.stringify(nodeText.slice(0, 100)));
+          debugLog('Pinboard GPT: Found matching text node:', JSON.stringify(nodeText.slice(0, 100)));
         }
         return matches ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
       }
@@ -2335,10 +2335,10 @@ function findSpecificElementByText(searchText, messageContainer) {
     textNodes.push(node);
   }
   
-  debugLog('GPT Pinboard: Found', textNodes.length, 'text nodes containing search text');
+  debugLog('Pinboard GPT: Found', textNodes.length, 'text nodes containing search text');
   
   if (textNodes.length === 0) {
-    debugLog('GPT Pinboard: No text nodes found, returning original container');
+    debugLog('Pinboard GPT: No text nodes found, returning original container');
     return messageContainer;
   }
   
@@ -2354,7 +2354,7 @@ function findSpecificElementByText(searchText, messageContainer) {
     const tagName = current.tagName;
     
     if (elementText.includes(searchText) && meaningfulTags.includes(tagName)) {
-      debugLog('GPT Pinboard: Found semantic element by text search:', tagName);
+      debugLog('Pinboard GPT: Found semantic element by text search:', tagName);
       return current;
     }
     current = current.parentElement;
@@ -2384,7 +2384,7 @@ function addPinOptionToChatGPTPopup() {
           
           // Check if this node contains "Ask ChatGPT" text
           if (node.textContent && node.textContent.includes('Ask ChatGPT')) {
-            debugLog('GPT Pinboard: Found popup with "Ask ChatGPT" text');
+            debugLog('Pinboard GPT: Found popup with "Ask ChatGPT" text');
             addPinButtonToPopup(node);
             popupFound = true;
           }
@@ -2395,7 +2395,7 @@ function addPinOptionToChatGPTPopup() {
             const askButtons = node.querySelectorAll('button, [role="button"]');
             for (const btn of askButtons) {
               if (btn.textContent && (btn.textContent.includes('Ask ChatGPT') || btn.textContent.includes('Ask'))) {
-                debugLog('GPT Pinboard: Found popup with Ask button');
+                debugLog('Pinboard GPT: Found popup with Ask button');
                 addPinButtonToPopup(node);
                 popupFound = true;
                 break;
@@ -2416,7 +2416,7 @@ function addPinOptionToChatGPTPopup() {
             // Double-check it's related to text selection
             const selection = window.getSelection();
             if (selection.rangeCount > 0 && selection.toString().trim()) {
-              debugLog('GPT Pinboard: Found potential selection popup container');
+              debugLog('Pinboard GPT: Found potential selection popup container');
               addPinButtonToPopup(node);
             }
           }
@@ -2437,16 +2437,16 @@ function addPinButtonToPopup(popupContainer) {
     return;
   }
   
-  debugLog('GPT Pinboard: Found ChatGPT selection popup, adding pin button');
+  debugLog('Pinboard GPT: Found ChatGPT selection popup, adding pin button');
   
   // Find existing ChatGPT button to clone
   const existingButton = popupContainer.querySelector('button');
   if (!existingButton) {
-    debugLog('GPT Pinboard: No existing button found to clone');
+    debugLog('Pinboard GPT: No existing button found to clone');
     return;
   }
   
-  debugLog('GPT Pinboard: Found existing button to clone:', existingButton);
+  debugLog('Pinboard GPT: Found existing button to clone:', existingButton);
   
   // Clone the entire button with all its structure and classes
   const pinButton = existingButton.cloneNode(true);
@@ -2461,24 +2461,24 @@ function addPinButtonToPopup(popupContainer) {
   // Find the nested structure: button > div > span
   const innerDiv = cleanButton.querySelector('div');
   if (!innerDiv) {
-    debugLog('GPT Pinboard: Could not find inner div in cloned button');
+    debugLog('Pinboard GPT: Could not find inner div in cloned button');
     return;
   }
-  debugLog('GPT Pinboard: Found inner div:', innerDiv);
+  debugLog('Pinboard GPT: Found inner div:', innerDiv);
   
   // Find the span that contains the icon and text
   const contentSpan = innerDiv.querySelector('span');
   if (!contentSpan) {
-    debugLog('GPT Pinboard: Could not find content span in cloned button');
+    debugLog('Pinboard GPT: Could not find content span in cloned button');
     return;
   }
-  debugLog('GPT Pinboard: Found content span, current content:', contentSpan.textContent);
+  debugLog('Pinboard GPT: Found content span, current content:', contentSpan.textContent);
   
   // Clear the content span (this is where the icon and text are)
   while (contentSpan.firstChild) {
     contentSpan.removeChild(contentSpan.firstChild);
   }
-  debugLog('GPT Pinboard: Cleared content span');
+  debugLog('Pinboard GPT: Cleared content span');
   
   // Create our custom icon
   let iconElement;
@@ -2489,7 +2489,7 @@ function addPinButtonToPopup(popupContainer) {
       iconElement.width = 20;
       iconElement.height = 20;
       iconElement.style.cssText = 'display: block; flex-shrink: 0;';
-      iconElement.alt = 'GPT Pinboard';
+      iconElement.alt = 'Pinboard GPT';
       
       iconElement.onerror = () => {
         iconElement.style.display = 'none';
@@ -2514,15 +2514,15 @@ function addPinButtonToPopup(popupContainer) {
   // Create text span that matches ChatGPT's structure
   const textSpan = document.createElement('span');
   textSpan.className = 'whitespace-nowrap! select-none max-md:sr-only';
-  textSpan.textContent = 'Add to GPT Pinboard';
+  textSpan.textContent = 'Add to Pinboard GPT';
   
   // Add our content to the content span (maintaining the same structure)
   if (iconElement) {
     contentSpan.appendChild(iconElement);
-    debugLog('GPT Pinboard: Added icon element');
+    debugLog('Pinboard GPT: Added icon element');
   }
   contentSpan.appendChild(textSpan);
-  debugLog('GPT Pinboard: Added text span, final content:', contentSpan.innerHTML);
+  debugLog('Pinboard GPT: Added text span, final content:', contentSpan.innerHTML);
   
   // Apply subtle border customization
   // cleanButton.style.border = '1px solid #ffffff26';
@@ -2549,7 +2549,7 @@ function addPinButtonToPopup(popupContainer) {
       return;
     }
     
-    debugLog('GPT Pinboard: Pin button clicked from popup, text:', selectedText);
+    debugLog('Pinboard GPT: Pin button clicked from popup, text:', selectedText);
     
     // Hide the popup
     const popup = finalButton.closest('[role="menu"], [role="tooltip"], .popup-container') || popupContainer;
@@ -2615,7 +2615,7 @@ function addPinButtonToPopup(popupContainer) {
         pinnedAt: Date.now(),
         xpath: (() => {
           const xpath = getXPath(targetElement);
-          debugLog('GPT Pinboard: Generated XPath:', xpath);
+          debugLog('Pinboard GPT: Generated XPath:', xpath);
           return xpath;
         })(),
         anchors: getTextAnchors(targetElement),
@@ -2623,11 +2623,11 @@ function addPinButtonToPopup(popupContainer) {
         selectionType: pinType
       };
       
-      debugLog('GPT Pinboard: Creating pin from popup:', pin);
+      debugLog('Pinboard GPT: Creating pin from popup:', pin);
       await openPinDialogWithData(pin);
       
     } catch (error) {
-      debugError('GPT Pinboard: Error creating pin from popup:', error);
+      debugError('Pinboard GPT: Error creating pin from popup:', error);
       
       // Provide user-friendly error messages
       let errorMessage = error.message;
@@ -2658,7 +2658,7 @@ try {
       
       // Check extension context validity first
       if (!isExtensionContextValid()) {
-        debugLog('GPT Pinboard: Extension context invalidated, reloading page...');
+        debugLog('Pinboard GPT: Extension context invalidated, reloading page...');
         window.location.reload();
         return false;
       }
@@ -2670,12 +2670,12 @@ try {
       }
       
       if (msg.action === 'highlight-pin' && msg.pin) {
-        debugLog('GPT Pinboard: Content script received highlight-pin message for pin:', msg.pin.id);
+        debugLog('Pinboard GPT: Content script received highlight-pin message for pin:', msg.pin.id);
         highlightPin(msg.pin).then(result => {
-          debugLog('GPT Pinboard: Highlight result:', result);
+          debugLog('Pinboard GPT: Highlight result:', result);
           sendResponse(result);
         }).catch(err => {
-          debugLog('GPT Pinboard: Highlight error:', err);
+          debugLog('Pinboard GPT: Highlight error:', err);
           sendResponse({ found: false, error: err.message });
         });
         return true; // Will respond asynchronously
@@ -2685,7 +2685,7 @@ try {
   });
   }
 } catch (error) {
-  debugLog('GPT Pinboard: Failed to set up message listener:', error.message);
+  debugLog('Pinboard GPT: Failed to set up message listener:', error.message);
 }
 
 // Get recent messages for the floating pin button
@@ -2825,7 +2825,7 @@ function createMessageNavigationDropdown(messages) {
         try {
           // Check if message element is still in DOM
           if (!document.body.contains(message)) {
-            debugLog('GPT Pinboard: Message element no longer in DOM');
+            debugLog('Pinboard GPT: Message element no longer in DOM');
             return;
           }
           
@@ -2855,7 +2855,7 @@ function createMessageNavigationDropdown(messages) {
           const targetScroll = currentScroll + messageRect.top - containerRect.top - topGap;
           const finalScroll = Math.max(0, targetScroll);
           
-          debugLog('GPT Pinboard: Chat outline scroll calculation:', {
+          debugLog('Pinboard GPT: Chat outline scroll calculation:', {
             hasScrollContainer: !!scrollContainer,
             currentScroll,
             messageTop: messageRect.top,
@@ -2876,7 +2876,7 @@ function createMessageNavigationDropdown(messages) {
             });
           }
         } catch (error) {
-          debugLog('GPT Pinboard: Chat outline scroll error:', error);
+          debugLog('Pinboard GPT: Chat outline scroll error:', error);
           message.scrollIntoView({ behavior: 'auto', block: 'start' });
         }
         
@@ -3107,7 +3107,7 @@ function getChatTitle() {
     const textContent = activeLink.textContent || activeLink.innerText;
     if (textContent && textContent.trim()) {
       const title = textContent.trim();
-      debugLog('GPT Pinboard: Found chat title from sidebar:', title);
+      debugLog('Pinboard GPT: Found chat title from sidebar:', title);
       return title;
     }
   }
@@ -3123,12 +3123,12 @@ function getChatTitle() {
   for (const selector of titleSelectors) {
     const element = document.querySelector(selector);
     if (element && element.innerText && element.innerText.trim()) {
-      debugLog('GPT Pinboard: Found chat title from page:', element.innerText.trim());
+      debugLog('Pinboard GPT: Found chat title from page:', element.innerText.trim());
       return element.innerText.trim();
     }
   }
   
-  debugLog('GPT Pinboard: No chat title found, using default');
+  debugLog('Pinboard GPT: No chat title found, using default');
   return 'Untitled Chat';
 }
 
@@ -3250,7 +3250,7 @@ function openChatPinDialog(chatId, chatTitle) {
         header.appendChild(iconImg);
       }
     } catch (error) {
-      debugLog('GPT Pinboard: Could not load icon for dialog');
+      debugLog('Pinboard GPT: Could not load icon for dialog');
     }
     
     const headerText = document.createElement('span');
@@ -3377,21 +3377,21 @@ function openChatPinDialog(chatId, chatTitle) {
     async function getAllExistingTags() {
       try {
         const allPins = await idbGetAll();
-        debugLog('GPT Pinboard: All pins retrieved:', allPins.length, 'pins');
+        debugLog('Pinboard GPT: All pins retrieved:', allPins.length, 'pins');
         
         const allTags = new Set();
         allPins.forEach(pin => {
           if (pin.tags && Array.isArray(pin.tags)) {
-            debugLog('GPT Pinboard: Pin tags found:', pin.tags);
+            debugLog('Pinboard GPT: Pin tags found:', pin.tags);
             pin.tags.forEach(tag => allTags.add(tag.toLowerCase()));
           }
         });
         
         const sortedTags = Array.from(allTags).sort();
-        debugLog('GPT Pinboard: Final sorted tags:', sortedTags);
+        debugLog('Pinboard GPT: Final sorted tags:', sortedTags);
         return sortedTags;
       } catch (err) {
-        debugError('GPT Pinboard: Error getting existing tags:', err);
+        debugError('Pinboard GPT: Error getting existing tags:', err);
         return [];
       }
     }
@@ -3415,7 +3415,7 @@ function openChatPinDialog(chatId, chatTitle) {
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     `;
     
-    debugLog('GPT Pinboard: Suggestion dropdown created with colors:', colors);
+    debugLog('Pinboard GPT: Suggestion dropdown created with colors:', colors);
 
     // Make tags container relative for absolute positioning of dropdown
     tagsContainerEl.style.position = 'relative';
@@ -3426,7 +3426,7 @@ function openChatPinDialog(chatId, chatTitle) {
 
     // Show suggestions based on input
     async function showSuggestions(inputValue) {
-      debugLog('GPT Pinboard: showSuggestions called with:', inputValue);
+      debugLog('Pinboard GPT: showSuggestions called with:', inputValue);
       
       if (!inputValue.trim()) {
         suggestionDropdown.style.display = 'none';
@@ -3434,18 +3434,18 @@ function openChatPinDialog(chatId, chatTitle) {
       }
 
       const existingTags = await getAllExistingTags();
-      debugLog('GPT Pinboard: Existing tags found:', existingTags);
+      debugLog('Pinboard GPT: Existing tags found:', existingTags);
       
       const query = inputValue.toLowerCase().trim();
       availableSuggestions = existingTags
         .filter(tag => tag.includes(query) && !tags.includes(tag))
         .slice(0, 8); // Limit to 8 suggestions
 
-      debugLog('GPT Pinboard: Available suggestions:', availableSuggestions, 'for query:', query);
+      debugLog('Pinboard GPT: Available suggestions:', availableSuggestions, 'for query:', query);
 
       if (availableSuggestions.length === 0) {
         suggestionDropdown.style.display = 'none';
-        debugLog('GPT Pinboard: No suggestions found, hiding dropdown');
+        debugLog('Pinboard GPT: No suggestions found, hiding dropdown');
         return;
       }
 
@@ -3479,9 +3479,9 @@ function openChatPinDialog(chatId, chatTitle) {
       selectedSuggestionIndex = -1;
       updateSuggestionHighlight();
       
-      debugLog('GPT Pinboard: Dropdown shown with', availableSuggestions.length, 'suggestions');
-      debugLog('GPT Pinboard: Dropdown element:', suggestionDropdown);
-      debugLog('GPT Pinboard: Dropdown parent:', suggestionDropdown.parentNode);
+      debugLog('Pinboard GPT: Dropdown shown with', availableSuggestions.length, 'suggestions');
+      debugLog('Pinboard GPT: Dropdown element:', suggestionDropdown);
+      debugLog('Pinboard GPT: Dropdown parent:', suggestionDropdown.parentNode);
     }
 
     // Update suggestion highlight
@@ -3582,7 +3582,7 @@ function openChatPinDialog(chatId, chatTitle) {
 
     // Show suggestions on input
     tagInputEl.addEventListener('input', (e) => {
-      debugLog('GPT Pinboard: Input event fired, value:', e.target.value);
+      debugLog('Pinboard GPT: Input event fired, value:', e.target.value);
       showSuggestions(e.target.value);
     });
 

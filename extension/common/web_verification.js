@@ -12,11 +12,11 @@
         return;
     }
     
-    console.log('GPT Pinboard: Web verification script loaded');
+    console.log('Pinboard GPT: Web verification script loaded');
     
     // Get runtime reference (Chrome only)
     if (!chrome?.runtime) {
-        console.log('GPT Pinboard: Chrome extension runtime not available');
+        console.log('Pinboard GPT: Chrome extension runtime not available');
         return;
     }
     
@@ -51,7 +51,7 @@
                     browser: 'chrome'
                 };
                 
-                console.log('GPT Pinboard: Extension marker injected successfully');
+                console.log('Pinboard GPT: Extension marker injected successfully');
                 
                 // Dispatch a custom event to notify the page
                 const event = new CustomEvent('pingptExtensionDetected', {

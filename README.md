@@ -1,6 +1,6 @@
-# GPT Pinboard — Pin the Messages That Matter
+# Pinboard GPT — Pin the Messages That Matter
 
-> Ever had a perfect ChatGPT answer, buried deep in a long chat? You remember what it said, maybe even which chat it was in — but scrolling through hundreds of messages to find it again is a nightmare. GPT Pinboard fixes that.
+> Ever had a perfect ChatGPT answer, buried deep in a long chat? You remember what it said, maybe even which chat it was in — but scrolling through hundreds of messages to find it again is a nightmare. Pinboard GPT fixes that.
 
 [![Chrome Web Store](https://img.shields.io/badge/Chrome-Web%20Store-blue)](https://chromewebstore.google.com/detail/pingpt-%E2%80%94-chatgpt-message/hdhoaialemjelcfjjmjkkhkffiggbnap)
 [![Firefox Add-ons](https://img.shields.io/badge/Firefox-Add--ons-orange)](https://addons.mozilla.org/en-US/firefox/addon/gpt-pinboard/)
@@ -85,7 +85,7 @@ npm install
 ### Pin a Message (3 Ways)
 
 1. **Hover Method** - Move mouse over any message → Click "Pin" button
-2. **Right-Click** - Select text → Right-click → "Pin selection to GPT Pinboard"
+2. **Right-Click** - Select text → Right-click → "Pin selection to Pinboard GPT"
 3. **Quick Pin** - Click the "Pin Message" button (bottom-right of ChatGPT)
 
 ### Pin an Entire Chat
@@ -157,7 +157,7 @@ The website includes a comprehensive feedback system that collects user feedback
 open https://github.com/settings/personal-access-tokens/new
 
 # Configure fine-grained token:
-# - Name: GPT Pinboard Feedback
+# - Name: Pinboard GPT Feedback
 # - Repository: gpt-pinboard-extension (selected repositories only)
 # - Permissions: Issues (Read and write), Metadata (Read)
 ```
@@ -277,14 +277,14 @@ MIT License - see [LICENSE](LICENSE) file
 ### � Common Issues & Quick Fixes
 
 **Pins not showing in popup?**
-1. Go to `chrome://extensions/` → Find GPT Pinboard → Click refresh 🔄
+1. Go to `chrome://extensions/` → Find Pinboard GPT → Click refresh 🔄
 2. Reload ChatGPT page (F5)
 3. Try creating a new pin
 
 **Pin button not appearing?**
 1. Refresh ChatGPT page
 2. Check extension is enabled at `chrome://extensions/`
-3. Try right-click method: Select text → Right-click → "Pin selection to GPT Pinboard"
+3. Try right-click method: Select text → Right-click → "Pin selection to Pinboard GPT"
 
 **Can't click "Open" button?**
 1. Check popup blocker settings

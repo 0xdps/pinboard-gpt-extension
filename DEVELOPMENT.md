@@ -366,7 +366,7 @@ npm run feedback:env     # Check environment configuration
 
 ### Debug Logging System
 
-GPT Pinboard includes a comprehensive debug logging system added in v2.1.0:
+Pinboard GPT includes a comprehensive debug logging system added in v2.1.0:
 
 #### Enabling Debug Mode
 1. Open extension popup
