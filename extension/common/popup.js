@@ -264,13 +264,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function updateSyncStatus() {
     try {
       const stats = await getStorageStats();
-      syncText.textContent = `🔄 Syncing (${stats.pinCount} pins, ${stats.quotaUsed}% quota)`;
-      syncText.style.color = stats.quotaUsed < 90 ? 'var(--primary)' : 'var(--warning)';
-      
-      if (stats.quotaUsed >= 100) {
-        syncText.textContent = `⚠️ Storage full (${stats.pinCount} pins)`;
-        syncText.style.color = 'var(--danger)';
-      }
+      syncText.textContent = `🔄 Syncing (${stats.pinCount} pins)`;
+      syncText.style.color = 'var(--primary)';
       
       // Always show as enabled since we only use sync storage
       syncToggle.checked = true;
