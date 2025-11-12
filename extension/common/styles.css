@@ -479,12 +479,13 @@ body.dark-mode .modal-content::-webkit-scrollbar-thumb:hover {
 
 /* Edit button in pin card */
 .iconBtn.editBtn {
-  color: var(--text-secondary);
+  color: var(--accent);
+  background: rgba(16, 185, 129, 0.1);
 }
 
 .iconBtn.editBtn:hover {
-  background: rgba(37, 99, 235, 0.06);
-  color: var(--primary);
+  background: rgba(16, 185, 129, 0.2);
+  color: var(--accent-hover);
 }
 
 .modal-header h3 {
@@ -796,12 +797,10 @@ body.dark-mode .toggle-slider:hover {
 }
 
 .pin-actions {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: var(--space-1);
   flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
 }
 
 .pin-title {
@@ -837,7 +836,7 @@ body.dark-mode .toggle-slider:hover {
   display: inline-flex;
   align-items: center;
   padding: var(--space-1) var(--space-2);
-  background: var(--bg-tertiary);
+  background: var(--bg-secondary);
   color: var(--text-secondary);
   border-radius: var(--radius-sm);
   font-size: var(--font-size-xs);
@@ -845,6 +844,7 @@ body.dark-mode .toggle-slider:hover {
   text-decoration: none;
   cursor: pointer;
   transition: background-color var(--transition-fast);
+  border: 1px solid var(--border-color);
 }
 
 .tag-link:hover {
@@ -875,28 +875,32 @@ body.dark-mode .toggle-slider:hover {
 
 .iconBtn.openBtn {
   color: var(--primary);
-}
-
-.iconBtn.openBtn:hover {
   background: rgba(37, 99, 235, 0.1);
 }
 
+.iconBtn.openBtn:hover {
+  background: rgba(37, 99, 235, 0.2);
+  color: var(--primary-hover);
+}
+
 .iconBtn.deleteBtn {
-  color: var(--text-tertiary);
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.2);
 }
 
 .iconBtn.deleteBtn:hover {
-  background: rgba(239, 68, 68, 0.1);
-  color: var(--danger);
+  background: rgba(239, 68, 68, 0.3);
+  color: #f87171;
 }
 
 .iconBtn.infoBtn {
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
+  background: var(--bg-tertiary);
 }
 
 .iconBtn.infoBtn:hover {
-  background: var(--bg-tertiary);
-  color: var(--text-secondary);
+  background: var(--border-color);
+  color: var(--text-primary);
 }
 
 /* Tooltip Component */
