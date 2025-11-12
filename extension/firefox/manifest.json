@@ -28,7 +28,7 @@
   "content_scripts": [
     {
       "matches": ["https://chatgpt.com/*", "https://chat.openai.com/*"],
-      "js": ["idb.js", "content_script_chatgpt.js"],
+      "js": ["license.js", "idb.js", "content_script_chatgpt.js"],
       "run_at": "document_idle"
     },
     {

@@ -64,7 +64,7 @@ async function signInWithGoogle() {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ googleToken: token }),
+      body: JSON.stringify({ token: token }),
     });
 
     const data = await response.json();
@@ -91,77 +91,6 @@ async function signInWithGoogle() {
   } catch (error) {
     console.error('Google sign-in error:', error);
     return { success: false, message: 'Google sign-in failed. Please try again.' };
-  }
-}
-
-// User registration (email/password fallback)
-async function registerUser(email, password, name = '') {
-  try {
-    const response = await fetch(`${API_BASE_URL}/auth/register`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email, password, name }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      return { success: false, message: data.message || 'Registration failed' };
-    }
-
-    // Store token and user data
-    await setAuthToken(data.token);
-    await chrome.storage.local.set({ 
-      userData: {
-        email: data.user.email,
-        name: data.user.name,
-        userId: data.user.id
-      }
-    });
-
-    return { success: true, message: 'Registration successful!', user: data.user };
-  } catch (error) {
-    console.error('Registration error:', error);
-    return { success: false, message: 'Network error. Please try again.' };
-  }
-}
-
-// User login
-async function loginUser(email, password) {
-  try {
-    const response = await fetch(`${API_BASE_URL}/auth/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email, password }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      return { success: false, message: data.message || 'Login failed' };
-    }
-
-    // Store token and user data
-    await setAuthToken(data.token);
-    await chrome.storage.local.set({ 
-      userData: {
-        email: data.user.email,
-        name: data.user.name,
-        userId: data.user.id
-      }
-    });
-
-    // Sync license from server
-    await syncLicenseFromServer();
-
-    return { success: true, message: 'Login successful!', user: data.user };
-  } catch (error) {
-    console.error('Login error:', error);
-    return { success: false, message: 'Network error. Please try again.' };
   }
 }
 

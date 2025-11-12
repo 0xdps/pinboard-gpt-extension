@@ -1,11 +1,6 @@
 // Content script for ChatGPT pages - handles message pinning and highlighting
 
-// License management for content script
-const LICENSE_TYPES = {
-  FREE: 'free',
-  PRO: 'pro',
-  PREMIUM: 'premium'
-};
+// Import LICENSE_TYPES from license.js (loaded before this script)
 
 const LICENSE_LIMITS = {
   [LICENSE_TYPES.FREE]: {
