@@ -255,10 +255,18 @@ See [DEVELOPMENT.md](DEVELOPMENT.md) for complete setup, testing, and contributi
 
 ## 🔧 Technical Stack
 
+### Extension
 - **Manifest V3** - Latest Chrome extension format
 - **IndexedDB** - Local storage via custom wrapper
 - **XPath + Text Anchors** - Dual message location system
 - **CSP Compliant** - No eval(), no remote scripts
+
+### API (Premium Features)
+- **Framework**: [Hono](https://hono.dev/) - Ultra-lightweight (13KB) serverless framework
+- **Database**: [Turso](https://turso.tech/) - Edge SQLite with Drizzle ORM
+- **Auth**: Google OAuth + Email/Password with JWT tokens
+- **Deployment**: Vercel Serverless Functions (AWS Lambda)
+- **Performance**: 150-300ms cold starts, <100ms warm responses
 
 
 

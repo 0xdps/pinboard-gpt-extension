@@ -1,26 +1,28 @@
 {
   "name": "pinboard-gpt-api",
   "version": "1.0.0",
-  "description": "Backend API for Pinboard GPT extension",
+  "description": "Serverless API for Pinboard GPT extension",
   "main": "index.js",
   "type": "module",
   "scripts": {
     "start": "node index.js",
     "dev": "node --watch index.js",
     "db:push": "drizzle-kit push",
-    "db:studio": "drizzle-kit studio"
+    "db:generate": "drizzle-kit generate",
+    "db:studio": "drizzle-kit studio",
+    "db:shell": "turso db shell pinboard-gpt-db"
   },
   "dependencies": {
-    "@libsql/client": "^0.6.0",
+    "@libsql/client": "^0.15.15",
     "bcryptjs": "^2.4.3",
     "dotenv": "^16.4.5",
-    "drizzle-orm": "^0.30.0",
+    "drizzle-orm": "^0.44.7",
     "google-auth-library": "^9.6.3",
     "hono": "^4.0.0",
     "jsonwebtoken": "^9.0.2"
   },
   "devDependencies": {
     "@hono/node-server": "^1.8.2",
-    "drizzle-kit": "^0.20.18"
+    "drizzle-kit": "^0.31.6"
   }
 }

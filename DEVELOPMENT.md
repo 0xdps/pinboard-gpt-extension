@@ -48,8 +48,17 @@ gpt-pinboard-extension/
 │   ├── css/styles.css    # Responsive website styles
 │   ├── js/main.js        # Browser detection & feedback
 │   └── images/           # Website assets (generated)
-├── 📁 api/               # Vercel serverless functions
-│   └── feedback.js       # GitHub Issues integration
+├── 📁 api/               # Hono-based serverless API
+│   ├── routes/           # API route handlers
+│   │   ├── auth.js       # Google OAuth & email/password auth
+│   │   ├── user.js       # User profile & license management
+│   │   ├── pins.js       # Cloud pin sync (Premium)
+│   │   ├── feedback.js   # Feedback collection
+│   │   └── install.js    # Browser detection & redirects
+│   ├── middleware/       # Authentication middleware
+│   ├── db/               # Turso database & schema
+│   ├── index.js          # Hono app entry point
+│   └── package.json      # API dependencies
 ├── 📁 assets/            # Source images for icon generation
 ├── 📁 scripts/           # Build and utility scripts
 │   ├── generate-assets.js # Icon generation
@@ -350,10 +359,13 @@ npm run feedback:test
 ```
 
 ### API Endpoint
-- **Path**: `/api/feedback.js`
+- **Framework**: Hono - Ultra-lightweight (13KB) serverless framework
+- **Path**: `/api/routes/feedback.js`
 - **Method**: POST
-- **Response**: Creates formatted GitHub issue with user feedback
-- **Error Handling**: Graceful fallback to email/GitHub links
+- **Storage**: Turso database with spam protection
+- **Rate Limiting**: Database-backed (5-minute cooldown per IP)
+- **Security**: CAPTCHA verification, honeypot fields, content validation
+- **Error Handling**: Graceful error responses with proper HTTP status codes
 
 ### Management Commands
 ```bash

@@ -1,4 +1,6 @@
 {
+  "version": 2,
+  "name": "pinboard-gpt",
   "buildCommand": "npm run build:website",
   "outputDirectory": "website",
   "installCommand": "npm install",

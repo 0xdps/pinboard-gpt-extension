@@ -1,7 +1,7 @@
 {
   "name": "pingpt-extension",
   "version": "1.0.0",
-  "description": "Pin individual ChatGPT messages, not the entire chat. Add custom names and tags, search instantly, and jump back to the original conversation. Features dark mode support for comfortable viewing.",
+  "description": "Pin individual ChatGPT messages or entire chats. Add custom names and tags, search instantly, and jump back to the original conversation. Features dark mode support and ultra-fast serverless API powered by Hono.",
   "scripts": {
     "clean": "rm -rf build && rm -rf extension/common/icons/*.png && rm -rf website/images/*.png && rm -rf website/images/favicon.ico && rm -rf assets/icons/",
     "copy:extension-icons": "mkdir -p extension/common/icons && cp assets/icons/icon-*.png extension/common/icons/",
