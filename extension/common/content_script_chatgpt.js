@@ -1,5 +1,85 @@
 // Content script for ChatGPT pages - handles message pinning and highlighting
 
+// License management for content script
+const LICENSE_TYPES = {
+  FREE: 'free',
+  PRO: 'pro',
+  PREMIUM: 'premium'
+};
+
+const LICENSE_LIMITS = {
+  [LICENSE_TYPES.FREE]: {
+    maxPins: 10,
+    tags: true,
+    export: false,
+    sync: false,
+    multiAI: false,
+    cloudSync: false
+  },
+  [LICENSE_TYPES.PRO]: {
+    maxPins: Infinity,
+    tags: true,
+    export: true,
+    sync: true,
+    multiAI: true,
+    cloudSync: false
+  },
+  [LICENSE_TYPES.PREMIUM]: {
+    maxPins: Infinity,
+    tags: true,
+    export: true,
+    sync: true,
+    multiAI: true,
+    cloudSync: true,
+    crossBrowser: true
+  }
+};
+
+async function getLicense() {
+  try {
+    const result = await chrome.storage.local.get(['license']);
+    return result.license || { type: LICENSE_TYPES.FREE };
+  } catch (error) {
+    console.error('Error getting license:', error);
+    return { type: LICENSE_TYPES.FREE };
+  }
+}
+
+async function canAddPin() {
+  try {
+    const license = await getLicense();
+    const limits = LICENSE_LIMITS[license.type];
+    
+    if (limits.maxPins === Infinity) {
+      return true;
+    }
+    
+    // Count current pins
+    const pins = await idbGetAll();
+    return pins.length < limits.maxPins;
+  } catch (error) {
+    console.error('Error checking pin limit:', error);
+    return false;
+  }
+}
+
+async function getRemainingPins() {
+  try {
+    const license = await getLicense();
+    const limits = LICENSE_LIMITS[license.type];
+    
+    if (limits.maxPins === Infinity) {
+      return Infinity;
+    }
+    
+    const pins = await idbGetAll();
+    return Math.max(0, limits.maxPins - pins.length);
+  } catch (error) {
+    console.error('Error getting remaining pins:', error);
+    return 0;
+  }
+}
+
 // Debug logging system for content script
 let debugEnabled = false;
 
@@ -403,6 +483,24 @@ function openPinDialog(element) {
       showNotification('⚠️ No text found to pin');
       resolve();
       return;
+    }
+    
+    // Check license before allowing pin creation
+    const canAdd = await canAddPin();
+    if (!canAdd) {
+      const remaining = await getRemainingPins();
+      const license = await getLicense();
+      
+      if (license.type === LICENSE_TYPES.FREE) {
+        // Show upgrade message for free users
+        showUpgradeNotification();
+        resolve();
+        return;
+      } else {
+        showNotification('⚠️ Pin limit reached');
+        resolve();
+        return;
+      }
     }
     
     // Create pin data from element
@@ -1790,6 +1888,112 @@ function showNotification(message) {
   }, 2000);
 }
 
+// Show upgrade notification with call-to-action
+function showUpgradeNotification() {
+  const notif = document.createElement('div');
+  notif.style.cssText = `
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 100001;
+    background: white;
+    color: #202124;
+    padding: 24px;
+    border-radius: 12px;
+    font-size: 14px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    max-width: 400px;
+    text-align: center;
+    font-family: system-ui, -apple-system, sans-serif;
+  `;
+  
+  notif.innerHTML = `
+    <div style="font-size: 48px; margin-bottom: 16px;">📌</div>
+    <h3 style="margin: 0 0 12px 0; font-size: 20px; font-weight: 600;">Free Limit Reached</h3>
+    <p style="margin: 0 0 20px 0; color: #5f6368; line-height: 1.5;">
+      You've used all 10 free pins. Upgrade to Pro for unlimited pins, tags, and export features.
+    </p>
+    <div style="display: flex; gap: 12px; justify-content: center;">
+      <button id="upgrade-btn" style="
+        background: #10a37f;
+        color: white;
+        border: none;
+        padding: 10px 24px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+      ">Upgrade to Pro</button>
+      <button id="close-upgrade-btn" style="
+        background: #f8f9fa;
+        color: #5f6368;
+        border: 1px solid #dadce0;
+        padding: 10px 24px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+      ">Close</button>
+    </div>
+  `;
+  
+  // Create backdrop
+  const backdrop = document.createElement('div');
+  backdrop.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 100000;
+    backdrop-filter: blur(4px);
+  `;
+  
+  document.body.appendChild(backdrop);
+  document.body.appendChild(notif);
+  
+  // Add hover effects
+  const upgradeBtn = notif.querySelector('#upgrade-btn');
+  const closeBtn = notif.querySelector('#close-upgrade-btn');
+  
+  upgradeBtn.addEventListener('mouseenter', () => {
+    upgradeBtn.style.background = '#0d8a6a';
+  });
+  upgradeBtn.addEventListener('mouseleave', () => {
+    upgradeBtn.style.background = '#10a37f';
+  });
+  
+  closeBtn.addEventListener('mouseenter', () => {
+    closeBtn.style.background = '#e8eaed';
+  });
+  closeBtn.addEventListener('mouseleave', () => {
+    closeBtn.style.background = '#f8f9fa';
+  });
+  
+  // Handle upgrade button
+  upgradeBtn.addEventListener('click', () => {
+    window.open('https://pinboard-gpt.dps.codes/pricing.html?plan=pro', '_blank');
+    backdrop.remove();
+    notif.remove();
+  });
+  
+  // Handle close button
+  closeBtn.addEventListener('click', () => {
+    backdrop.remove();
+    notif.remove();
+  });
+  
+  // Handle backdrop click
+  backdrop.addEventListener('click', () => {
+    backdrop.remove();
+    notif.remove();
+  });
+}
+
 // Find element by XPath
 function findByXPath(xpath) {
   try {
@@ -3144,6 +3348,21 @@ async function pinChat(chatId, chatTitle) {
   if (!chatId) {
     showNotification('⚠️ Cannot pin this chat. Please navigate to a specific conversation.');
     return;
+  }
+  
+  // Check license before allowing pin creation
+  const canAdd = await canAddPin();
+  if (!canAdd) {
+    const license = await getLicense();
+    
+    if (license.type === LICENSE_TYPES.FREE) {
+      // Show upgrade message for free users
+      showUpgradeNotification();
+      return;
+    } else {
+      showNotification('⚠️ Pin limit reached');
+      return;
+    }
   }
   
   // Open dialog to get name and tags from user

@@ -291,13 +291,13 @@ The feedback system includes sophisticated cross-browser extension verification 
 // manifest.json (both browsers)
 "externally_connectable": {
   "matches": [
-    "https://gptpins.dps.codes/*",
+    "https://pinboard-gpt.dps.codes/*",
     "http://localhost:8080/*"
   ]
 },
 "content_scripts": [
   {
-    "matches": ["https://gptpins.dps.codes/*"],
+    "matches": ["https://pinboard-gpt.dps.codes/*"],
     "js": ["web_verification.js"],
     "run_at": "document_end"
   }

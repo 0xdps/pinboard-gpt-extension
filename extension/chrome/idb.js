@@ -1,11 +1,18 @@
 /**
  * Chrome Storage API wrapper
- * Uses chrome.storage.sync for automatic syncing across devices
+ * Uses chrome.storage.local for free users, chrome.storage.sync for Pro/Pro+ users
  * Chrome extension specific - no cross-browser compatibility
  */
 
 const STORAGE_KEY = 'pins';
 const SETTINGS_KEY = 'settings';
+
+// License types
+const LICENSE_TYPES = {
+  FREE: 'free',
+  PRO: 'pro',
+  PREMIUM: 'premium'
+};
 
 // Chrome sync quota limits (for reference)
 const SYNC_QUOTA_BYTES = 102400; // 100KB total
@@ -20,6 +27,27 @@ function isExtensionContextValid() {
   }
 }
 
+// Get current license
+async function getLicense() {
+  try {
+    const result = await chrome.storage.local.get(['license']);
+    return result.license || LICENSE_TYPES.FREE;
+  } catch (error) {
+    console.error('Error getting license:', error);
+    return LICENSE_TYPES.FREE;
+  }
+}
+
+// Determine which storage to use based on license
+async function getStorage() {
+  const license = await getLicense();
+  // Pro and Premium get chrome.storage.sync, Free uses chrome.storage.local
+  if (license === LICENSE_TYPES.PRO || license === LICENSE_TYPES.PREMIUM) {
+    return chrome.storage.sync;
+  }
+  return chrome.storage.local;
+}
+
 async function idbAdd(pin) {
   // Check if extension context is valid before attempting storage operations
   if (!isExtensionContextValid()) {
@@ -27,7 +55,8 @@ async function idbAdd(pin) {
   }
   
   try {
-    const result = await chrome.storage.sync.get([STORAGE_KEY]);
+    const storage = await getStorage();
+    const result = await storage.get([STORAGE_KEY]);
     const pins = result[STORAGE_KEY] || [];
     
     // Find and update existing pin or add new one
@@ -38,7 +67,7 @@ async function idbAdd(pin) {
       pins.push(pin);
     }
     
-    await chrome.storage.sync.set({ [STORAGE_KEY]: pins });
+    await storage.set({ [STORAGE_KEY]: pins });
     return pin;
   } catch (error) {
     // Re-throw with more context if it's an extension context error
@@ -55,7 +84,8 @@ async function idbGetAll() {
   }
   
   try {
-    const result = await chrome.storage.sync.get([STORAGE_KEY]);
+    const storage = await getStorage();
+    const result = await storage.get([STORAGE_KEY]);
     return result[STORAGE_KEY] || [];
   } catch (error) {
     if (error.message.includes('Extension context invalidated')) {
@@ -71,10 +101,11 @@ async function idbDelete(id) {
   }
   
   try {
-    const result = await chrome.storage.sync.get([STORAGE_KEY]);
+    const storage = await getStorage();
+    const result = await storage.get([STORAGE_KEY]);
     const pins = result[STORAGE_KEY] || [];
     const filtered = pins.filter(p => p.id !== id);
-    await chrome.storage.sync.set({ [STORAGE_KEY]: filtered });
+    await storage.set({ [STORAGE_KEY]: filtered });
   } catch (error) {
     if (error.message.includes('Extension context invalidated')) {
       throw new Error('Extension context is invalid. Please reload the page and try again.');
@@ -89,7 +120,8 @@ async function idbClear() {
   }
   
   try {
-    await chrome.storage.sync.set({ [STORAGE_KEY]: [] });
+    const storage = await getStorage();
+    await storage.set({ [STORAGE_KEY]: [] });
   } catch (error) {
     if (error.message.includes('Extension context invalidated')) {
       throw new Error('Extension context is invalid. Please reload the page and try again.');

@@ -35,12 +35,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const exportBtn = document.getElementById('exportBtn');
   const importBtn = document.getElementById('importBtn');
   const importFile = document.getElementById('importFile');
-  const syncText = document.getElementById('syncText');
-  const syncToggle = document.getElementById('syncToggle');
   const themeText = document.getElementById('themeText');
   const themeToggle = document.getElementById('themeToggle');
-  const tabBehaviorText = document.getElementById('tabBehaviorText');
-  const tabBehaviorToggle = document.getElementById('tabBehaviorToggle');
   const debugText = document.getElementById('debugText');
   const debugToggle = document.getElementById('debugToggle');
   
@@ -51,12 +47,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   let currentFilter = 'all'; // 'all', 'chats', 'messages'
   
   // Settings Modal Elements
+  const upgradeBtn = document.getElementById('upgradeBtn');
   const settingsBtn = document.getElementById('settingsBtn');
   const coffeeBtn = document.getElementById('coffeeBtn');
   const settingsModal = document.getElementById('settingsModal');
   const closeSettings = document.getElementById('closeSettings');
   const versionNumber = document.getElementById('versionNumber');
   const deleteAllBtn = document.getElementById('deleteAllBtn');
+  
+  // Upgrade Modal Elements
+  const upgradeModal = document.getElementById('upgradeModal');
+  const closeUpgrade = document.getElementById('closeUpgrade');
+  const upgradeButtons = document.querySelectorAll('.upgrade-btn[data-plan]');
 
   // Initialize theme
   async function initializeTheme() {
@@ -78,31 +80,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       themeToggle.checked = true;
       document.body.classList.add('dark-mode');
       updateThemeText(true);
-    }
-  }
-
-  // Initialize tab behavior setting
-  async function initializeTabBehavior() {
-    try {
-      debugLog('Pinboard GPT: Loading tab behavior setting...');
-      // New semantics: `reuseSameWindow` (true = reuse existing tab)
-      let reuseSameWindowRaw = await getSetting('reuseSameWindow');
-      debugLog('Pinboard GPT: Loaded reuseSameWindow setting:', reuseSameWindowRaw);
-
-      let reuseSameWindow = reuseSameWindowRaw === undefined ? true : !!reuseSameWindowRaw;
-      if (reuseSameWindowRaw === undefined) {
-        await setSetting('reuseSameWindow', reuseSameWindow);
-        debugLog('Pinboard GPT: Defaulted reuseSameWindow to true');
-      }
-
-      tabBehaviorToggle.checked = reuseSameWindow;
-      updateTabBehaviorText(reuseSameWindow);
-      debugLog('Pinboard GPT: Set tab behavior toggle to (reuseSameWindow):', reuseSameWindow);
-    } catch (err) {
-      debugError('Pinboard GPT: Error loading tab behavior:', err);
-      // Default to new tab on error
-      tabBehaviorToggle.checked = true;
-      updateTabBehaviorText(false); // assume false -> open new tab when error
     }
   }
 
@@ -130,16 +107,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       // Default to false on error
       debugToggle.checked = false;
       updateDebugText(false);
-    }
-  }
-
-  function updateTabBehaviorText(reuseSameWindow) {
-    if (reuseSameWindow) {
-      tabBehaviorText.textContent = '♻️ Reuse existing tab';
-      tabBehaviorText.style.color = '#10a37f';
-    } else {
-      tabBehaviorText.textContent = '🗂️ Always open in new tab';
-      tabBehaviorText.style.color = '#19c37d';
     }
   }
 
@@ -176,24 +143,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   };
 
-  // Tab behavior toggle handler
-  tabBehaviorToggle.onchange = async () => {
-    const reuseSameWindow = tabBehaviorToggle.checked;
-    debugLog('Pinboard GPT: Tab behavior changed (reuseSameWindow):', reuseSameWindow);
-    updateTabBehaviorText(reuseSameWindow);
-
-    try {
-      await setSetting('reuseSameWindow', reuseSameWindow);
-      debugLog('Pinboard GPT: Successfully saved reuseSameWindow setting:', reuseSameWindow);
-
-      // Verify it was saved
-      const loaded = await getSetting('reuseSameWindow');
-      debugLog('Pinboard GPT: Verified saved reuseSameWindow setting:', loaded);
-    } catch (err) {
-      debugError('Pinboard GPT: Error saving tab behavior:', err);
-    }
-  };
-
   // Debug mode toggle handler
   debugToggle.onchange = async () => {
     const isDebugEnabled = debugToggle.checked;
@@ -220,23 +169,101 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // Initialize theme, tab behavior, and debug mode on load
+  // Initialize theme and debug mode on load
   await initializePopupDebug(); // Initialize debug first so other logs work
   await initializeTheme();
-  await initializeTabBehavior();
   await initializeDebugMode();
   loadVersion();
 
   // Settings Modal Handlers
-  settingsBtn.onclick = () => {
+  settingsBtn.onclick = async () => {
+    await updateLicenseDisplay();
     settingsModal.style.display = 'flex';
-    updateSyncStatus(); // Refresh sync status when opening settings
   };
 
   // Coffee Button Handler
   coffeeBtn.onclick = () => {
     chrome.tabs.create({ url: 'https://www.buymeacoffee.com/0xdps' });
   };
+
+  // License activation handler
+  const activateLicenseBtn = document.getElementById('activateLicenseBtn');
+  const licenseKeyInput = document.getElementById('licenseKeyInput');
+  const buyLicenseLink = document.getElementById('buyLicenseLink');
+
+  if (activateLicenseBtn) {
+    activateLicenseBtn.onclick = async () => {
+      const key = licenseKeyInput.value.trim().toUpperCase();
+      if (!key) {
+        showNotification('Please enter a license key', 'error');
+        return;
+      }
+
+      // Determine license type from key
+      let licenseType = LICENSE_TYPES.PRO;
+      if (key.includes('-PREMIUM-')) {
+        licenseType = LICENSE_TYPES.PREMIUM;
+      }
+
+      const result = await setLicense(licenseType, key);
+      
+      if (result.success) {
+        showNotification(result.message, 'success');
+        licenseKeyInput.value = '';
+        await updateLicenseDisplay();
+        await updateLicenseBadge();
+      } else {
+        showNotification(result.message, 'error');
+      }
+    };
+  }
+
+  if (buyLicenseLink) {
+    buyLicenseLink.onclick = (e) => {
+      e.preventDefault();
+      chrome.tabs.create({ url: 'https://pinboard-gpt.dps.codes/pricing.html?plan=pro' });
+    };
+  }
+
+  // Update license display in settings
+  async function updateLicenseDisplay() {
+    const currentPlanEl = document.getElementById('currentPlan');
+    const licenseDetailsEl = document.getElementById('licenseDetails');
+    
+    if (!currentPlanEl || !licenseDetailsEl) return;
+
+    const license = await getLicense();
+    const result = await chrome.storage.local.get(['licenseData']);
+    const licenseData = result.licenseData;
+
+    let planText = 'Free';
+    let detailsText = 'Up to 10 pins, local storage only';
+
+    if (license === LICENSE_TYPES.PRO) {
+      planText = 'Pro';
+      if (licenseData?.complementary) {
+        const expiryDate = new Date(licenseData.complementaryExpiry);
+        detailsText = `✨ Complementary access (expires ${expiryDate.toLocaleDateString()})`;
+      } else if (licenseData?.key) {
+        detailsText = `🔑 Activated with key: ${licenseData.key.substring(0, 20)}...`;
+      } else {
+        detailsText = 'Unlimited pins, sync, export, multi-AI';
+      }
+    } else if (license === LICENSE_TYPES.PREMIUM) {
+      planText = 'Premium';
+      if (licenseData?.complementary) {
+        const expiryDate = new Date(licenseData.complementaryExpiry);
+        detailsText = `✨ Complementary access (expires ${expiryDate.toLocaleDateString()})`;
+      } else if (licenseData?.key) {
+        detailsText = `🔑 Activated with key: ${licenseData.key.substring(0, 20)}...`;
+      } else {
+        detailsText = 'Unlimited pins, cloud sync, cross-browser';
+      }
+    }
+
+    currentPlanEl.textContent = planText;
+    licenseDetailsEl.textContent = detailsText;
+  }
 
   // Delete All Pins Handler
   deleteAllBtn.onclick = () => {
@@ -260,27 +287,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       settingsModal.style.display = 'none';
     }
   });
-
-  async function updateSyncStatus() {
-    try {
-      const stats = await getStorageStats();
-      syncText.textContent = `🔄 Syncing (${stats.pinCount} pins)`;
-      syncText.style.color = 'var(--primary)';
-      
-      // Always show as enabled since we only use sync storage
-      syncToggle.checked = true;
-      syncToggle.disabled = true; // No option to disable sync
-    } catch (err) {
-      syncText.textContent = '⚠️ Sync unavailable';
-      syncText.style.color = 'var(--danger)';
-      syncToggle.checked = false;
-      syncToggle.disabled = true;
-    }
-  }
-
-  // Remove sync toggle functionality since we always use sync
-  syncToggle.style.opacity = '0.5';
-  syncToggle.title = 'Sync is always enabled in this version';
 
   async function getPins() { 
     try {
@@ -1026,7 +1032,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Ctrl/Cmd + , to open settings
     if ((e.ctrlKey || e.metaKey) && e.key === ',') {
       settingsModal.style.display = 'flex';
-      updateSyncStatus();
       e.preventDefault();
     }
   });
@@ -1151,7 +1156,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.addEventListener('click', (e) => {
     if (e.target.id === 'helpLink') {
       e.preventDefault();
-      chrome.tabs.create({ url: 'https://gptpins.dps.codes/support.html' });
+      chrome.tabs.create({ url: 'https://pinboard-gpt.dps.codes/support.html' });
     }
   });
 
@@ -1168,7 +1173,117 @@ document.addEventListener('DOMContentLoaded', async () => {
   filterChats.addEventListener('click', () => setActiveFilter('chats'));
   filterMessages.addEventListener('click', () => setActiveFilter('messages'));
 
-  await updateSyncStatus();
+  // License Badge Display
+  async function updateLicenseBadge() {
+    const license = await getLicense();
+    const headerBranding = document.querySelector('.header-branding');
+    const syncStatus = document.getElementById('syncStatus');
+    
+    // Remove existing badge
+    const existingBadge = document.querySelector('.license-badge');
+    if (existingBadge) existingBadge.remove();
+    
+    // Add badge for Pro and above
+    if (license !== LICENSE_TYPES.FREE) {
+      const badge = document.createElement('span');
+      badge.className = `license-badge ${license}`;
+      badge.textContent = license === LICENSE_TYPES.PRO ? 'PRO' : 'PREMIUM';
+      headerBranding.appendChild(badge);
+    }
+    
+    // Update sync status
+    if (license === LICENSE_TYPES.PRO) {
+      syncStatus.textContent = '🔄 Syncing across Chrome devices';
+      syncStatus.style.color = 'var(--primary)';
+    } else if (license === LICENSE_TYPES.PREMIUM) {
+      syncStatus.textContent = '☁️ Syncing across all devices';
+      syncStatus.style.color = 'var(--primary)';
+    } else {
+      syncStatus.textContent = '📍 Local pins only';
+      syncStatus.style.color = 'var(--text-secondary)';
+    }
+  }
+
+  // Upgrade Modal Handlers
+  upgradeBtn.onclick = () => {
+    chrome.tabs.create({ url: 'https://pinboard-gpt.dps.codes/pricing.html' });
+  };
+
+  closeUpgrade.onclick = () => {
+    upgradeModal.style.display = 'none';
+  };
+
+  upgradeModal.onclick = (e) => {
+    if (e.target === upgradeModal) {
+      upgradeModal.style.display = 'none';
+    }
+  };
+
+  upgradeButtons.forEach(btn => {
+    btn.onclick = async () => {
+      const plan = btn.dataset.plan;
+      
+      if (plan === 'pro') {
+        // Open payment link for Pro
+        chrome.tabs.create({ url: 'https://pinboard-gpt.dps.codes/upgrade?plan=pro' });
+      } else if (plan === 'premium') {
+        // Open payment link for Premium
+        chrome.tabs.create({ url: 'https://pinboard-gpt.dps.codes/upgrade?plan=premium' });
+      }
+      
+      upgradeModal.style.display = 'none';
+    };
+  });
+
+  // Show upgrade modal function (now opens pricing page in tab)
+  async function showUpgradeModal() {
+    const license = await getLicense();
+    let url = 'https://pinboard-gpt.dps.codes/pricing.html';
+    
+    // Add plan parameter based on current license
+    if (license === LICENSE_TYPES.FREE) {
+      url += '?plan=pro';
+    } else if (license === LICENSE_TYPES.PRO) {
+      url += '?plan=premium';
+    }
+    
+    chrome.tabs.create({ url });
+  }
+
+  // Check license before certain actions
+  exportBtn.onclick = async () => {
+    const hasExport = await hasFeature('export');
+    if (!hasExport) {
+      chrome.tabs.create({ url: 'https://pinboard-gpt.dps.codes/pricing.html?plan=pro' });
+      return;
+    }
+    
+    const pins = await getPins();
+    if (!pins.length) {
+      showNotification('No pins to export.', 'info');
+      return;
+    }
+
+    const exportData = {
+      version: '1.0',
+      exportDate: new Date().toISOString(),
+      pinCount: pins.length,
+      pins: pins
+    };
+
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const dateStr = new Date().toISOString().split('T')[0];
+    a.download = `pinboard-gpt-backup-${dateStr}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    showNotification(`Exported ${pins.length} pins successfully.`, 'success');
+  };
+
+  await updateLicenseBadge();
   updateClearButton();
   await render();
 });

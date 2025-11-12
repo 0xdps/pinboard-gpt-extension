@@ -6,7 +6,7 @@
 // Store URLs
 const CHROME_STORE_URL = 'https://chromewebstore.google.com/detail/pingpt-%E2%80%94-chatgpt-message/hdhoaialemjelcfjjmjkkhkffiggbnap';
 const FIREFOX_STORE_URL = 'https://addons.mozilla.org/en-US/firefox/addon/gpt-pinboard/';
-const HOME_PAGE_URL = 'https://gptpins.dps.codes';
+const HOME_PAGE_URL = 'https://pinboard-gpt.dps.codes';
 
 export default function handler(req, res) {
   // Get User-Agent header

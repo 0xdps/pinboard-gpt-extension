@@ -30,7 +30,7 @@
       "run_at": "document_idle"
     },
     {
-      "matches": ["https://gptpins.dps.codes/*"],
+      "matches": ["https://pinboard-gpt.dps.codes/*"],
       "js": ["web_verification.js"],
       "run_at": "document_end"
     }
@@ -45,7 +45,7 @@
     }
   ],
   "externally_connectable": {
-    "matches": ["https://gptpins.dps.codes/*"]
+    "matches": ["https://pinboard-gpt.dps.codes/*"]
   },
   "icons": {
     "16": "icons/icon-16.png",
@@ -53,5 +53,5 @@
     "48": "icons/icon-48.png",
     "128": "icons/icon-128.png"
   },
-  "homepage_url": "https://gptpins.dps.codes"
+  "homepage_url": "https://pinboard-gpt.dps.codes"
 }

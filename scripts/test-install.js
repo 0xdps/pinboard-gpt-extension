@@ -71,7 +71,7 @@ async function runTests() {
   console.log('   1. Update Chrome Web Store URL in api/install.js');
   console.log('   2. Update Firefox Add-ons URL in api/install.js');
   console.log('   3. Deploy: npm run deploy');
-  console.log('   4. Test live: TEST_URL=https://gptpins.dps.codes npm run install:test');
+  console.log('   4. Test live: TEST_URL=https://pinboard-gpt.dps.codes npm run install:test');
 }
 
 runTests();

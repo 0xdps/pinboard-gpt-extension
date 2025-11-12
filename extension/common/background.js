@@ -7,7 +7,7 @@
 async function configureUninstallUrl() {
   try {
     const installData = await getSetting('gpt-pinboard-install');
-    const base = 'https://gptpins.dps.codes/goodbye.html';
+    const base = 'https://pinboard-gpt.dps.codes/goodbye.html';
 
     if (installData && installData.installToken && installData.signature && installData.publicJwk) {
       // Build URL with token, signature and public JWK (encoded)
@@ -25,7 +25,7 @@ async function configureUninstallUrl() {
     }
   } catch (e) {
     debugLog('Pinboard GPT: Failed to configure uninstall URL', e);
-    try { runtimeAPI.setUninstallURL('https://gptpins.dps.codes/goodbye.html'); } catch (err) { /* ignore */ }
+    try { runtimeAPI.setUninstallURL('https://pinboard-gpt.dps.codes/goodbye.html'); } catch (err) { /* ignore */ }
   }
 }
 
@@ -61,7 +61,7 @@ runtimeAPI.onInstalled.addListener((details) => {
 
         await setSetting('gpt-pinboard-install', installationData);
         await configureUninstallUrl();
-        tabsAPI.create({ url: 'https://gptpins.dps.codes/welcome.html' });
+        tabsAPI.create({ url: 'https://pinboard-gpt.dps.codes/welcome.html' });
       } catch (e) {
         debugLog('Pinboard GPT: Error during install-time signing flow', e);
         // Fallback: persist minimal install record and configure uninstall URL
@@ -73,7 +73,7 @@ runtimeAPI.onInstalled.addListener((details) => {
         };
         await setSetting('gpt-pinboard-install', installationData);
         await configureUninstallUrl();
-        tabsAPI.create({ url: 'https://gptpins.dps.codes/welcome.html' });
+        tabsAPI.create({ url: 'https://pinboard-gpt.dps.codes/welcome.html' });
       }
     })();
   }
@@ -303,7 +303,7 @@ async function handleOpenAndHighlight(pin, sendResponse, forceNewTab = false) {
 runtimeAPI.onMessageExternal.addListener((request, sender, sendResponse) => {
   if (request.action === 'verify-installation') {
     const allowedOrigins = [
-      'https://gptpins.dps.codes'
+      'https://pinboard-gpt.dps.codes'
     ];
 
     if (allowedOrigins.includes(sender.origin)) {

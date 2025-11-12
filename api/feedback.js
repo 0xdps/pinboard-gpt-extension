@@ -15,7 +15,7 @@ function getVerificationBadge(status) {
 export default async function handler(req, res) {
   // Set CORS headers (restrict to your domain in production)
   const allowedOrigins = [
-    'https://gptpins.dps.codes',
+    'https://pinboard-gpt.dps.codes',
     'https://gpt-pinboard-extension.vercel.app',
     'http://localhost:3000',
     'http://localhost:8080'
@@ -128,7 +128,7 @@ export default async function handler(req, res) {
 
     // Validate referrer (should come from goodbye page)
     const expectedReferrers = [
-      'https://gptpins.dps.codes/goodbye.html',
+      'https://pinboard-gpt.dps.codes/goodbye.html',
       'https://gpt-pinboard-extension.vercel.app/goodbye.html',
       'http://localhost:3000/goodbye.html',
       'http://localhost:8080/goodbye.html'
@@ -327,7 +327,7 @@ ${feedbackData.metadata.extensionData ? `
 - **Extension Version:** ${feedbackData.metadata.extensionData.version}` : ''}
 
 ---
-*📝 Auto-generated from [goodbye page](https://gptpins.dps.codes/goodbye.html) feedback form*`;
+*📝 Auto-generated from [goodbye page](https://pinboard-gpt.dps.codes/goodbye.html) feedback form*`;
 
     // Log feedback for debugging (always available)
     console.log('=== FEEDBACK SUBMISSION ===');
