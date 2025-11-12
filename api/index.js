@@ -21,6 +21,16 @@ const VERSION = packageJson.version;
 
 const app = new Hono();
 
+// Health check - simple endpoint that doesn't require DB
+app.get('/health', (c) => {
+  return c.json({
+    status: 'ok',
+    service: 'Pinboard GPT API',
+    version: VERSION,
+    timestamp: new Date().toISOString(),
+  });
+});
+
 // CORS middleware
 app.use('/*', cors({
   origin: [
