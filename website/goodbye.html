@@ -231,12 +231,12 @@
                             </p>
                             
                             <div style="background: #f0f8ff; border: 1px solid #b8daff; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem;">
-                                <h3 style="font-size: 1.2rem; margin-bottom: 1rem; color: #004085;">💾 Did You Export Your Pins?</h3>
+                                <h3 style="font-size: 1.2rem; margin-bottom: 1rem; color: #004085;">💾 Your Pins Are Lost</h3>
                                 <p style="margin-bottom: 1rem; color: #004085;">
-                                    If you had pins saved, they've been removed with the extension. For future reference, you can export your pins from the extension popup before uninstalling.
+                                    <strong>All your saved pins have been permanently deleted.</strong> Chrome removes all extension data when you uninstall.
                                 </p>
                                 <p style="font-size: 0.9rem; color: #6c757d; margin-bottom: 0;">
-                                    <strong>Next time:</strong> Click the extension icon → Options → Export Pins to save your data.
+                                    <strong>For next time:</strong> Always export your pins before uninstalling (Extension icon → Options → Export Pins).
                                 </p>
                             </div>
                             
@@ -297,17 +297,16 @@
                     </div>
 
                     <div style="background: #fff3cd; padding: 2rem; border-radius: 12px; margin-bottom: 2rem; border-left: 4px solid #ffc107;">
-                        <h3 style="font-size: 1.5rem; margin-bottom: 1rem; color: #1a1a1a;">💾 Did You Export Your Pins?</h3>
+                        <h3 style="font-size: 1.5rem; margin-bottom: 1rem; color: #1a1a1a;">💾 Your Pins Are Lost</h3>
                         <p style="margin-bottom: 1rem;">
-                            If you had pins saved, they've been removed with the extension. If you'd like to keep them:
+                            <strong>Unfortunately, all your saved pins have been permanently deleted</strong> when you uninstalled the extension. Chrome removes all extension data during uninstall.
                         </p>
-                        <ul style="margin-left: 2rem; margin-bottom: 1rem;">
-                            <li>Reinstall the extension temporarily</li>
-                            <li>Export your pins to a JSON file</li>
-                            <li>You can import them anytime in the future</li>
-                        </ul>
-                        <a href="./index.html#install" 
-                           style="color: #856404; text-decoration: underline; font-weight: 600;">Reinstall GPT Pinboard →</a>
+                        <p style="margin-bottom: 1rem; font-size: 0.95rem; color: #856404;">
+                            <strong>For future reference:</strong> Always export your pins before uninstalling. You can export them from the extension popup → Options → Export Pins.
+                        </p>
+                        <p style="margin-bottom: 0;">
+                            If you reinstall the extension, you'll start with an empty pinboard. If you had previously exported your data, you can import it back.
+                        </p>
                     </div>
 
                     <h2 style="font-size: 1.8rem; margin-top: 3rem; margin-bottom: 1.5rem; color: #1a1a1a; text-align: center;">Common Reasons for Uninstalling</h2>
@@ -518,9 +517,21 @@
             // Form submission
             const form = document.getElementById('feedbackForm');
             const statusDiv = document.getElementById('feedback-status');
+            let formSubmissionAllowed = false;
             
             form.addEventListener('submit', async function(e) {
                 e.preventDefault();
+                
+                // Guard against manual form enabling
+                if (!formSubmissionAllowed) {
+                    console.warn('⚠️ Form submission blocked - verification required');
+                    statusDiv.style.display = 'block';
+                    statusDiv.style.backgroundColor = '#f8d7da';
+                    statusDiv.style.color = '#721c24';
+                    statusDiv.style.border = '1px solid #f5c6cb';
+                    statusDiv.innerHTML = '❌ Form submission not allowed. Please ensure you accessed this page through proper extension uninstall.';
+                    return;
+                }
                 
                 // Show loading state
                 const submitBtn = form.querySelector('button[type="submit"]');
@@ -654,9 +665,82 @@
                 }
             });
             
+            // Helper: base64url -> Uint8Array
+            function base64UrlToUint8Array(base64Url) {
+                // replace url-safe chars
+                let b64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                // pad
+                while (b64.length % 4) b64 += '=';
+                const bin = atob(b64);
+                const len = bin.length;
+                const bytes = new Uint8Array(len);
+                for (let i = 0; i < len; i++) bytes[i] = bin.charCodeAt(i);
+                return bytes;
+            }
+
+            // Helper: base64url -> decoded UTF-8 string
+            function base64UrlToString(base64Url) {
+                let b64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                while (b64.length % 4) b64 += '=';
+                return decodeURIComponent(escape(atob(b64)));
+            }
+
+            // Helper: attempt to verify installToken using provided public JWK and signature
+            async function verifyInstallTokenWithJwk(installToken, sigBase64Url, pubJwkBase64Url) {
+                try {
+                    const pubJson = decodeURIComponent(escape(atob(pubJwkBase64Url.replace(/-/g, '+').replace(/_/g, '/'))));
+                    const jwk = JSON.parse(pubJson);
+
+                    // Import public key
+                    const publicKey = await window.crypto.subtle.importKey(
+                        'jwk',
+                        jwk,
+                        { name: 'ECDSA', namedCurve: 'P-256' },
+                        true,
+                        ['verify']
+                    );
+
+                    const signature = base64UrlToUint8Array(sigBase64Url);
+                    const encoder = new TextEncoder();
+                    const data = encoder.encode(installToken);
+
+                    const verified = await window.crypto.subtle.verify(
+                        { name: 'ECDSA', hash: 'SHA-256' },
+                        publicKey,
+                        signature.buffer,
+                        data
+                    );
+
+                    return !!verified;
+                } catch (e) {
+                    console.error('Signature verification error:', e);
+                    return false;
+                }
+            }
+
             // Function to perform extension verification and show appropriate content
             async function performExtensionVerification() {
                 try {
+                    // First: if URL contains signed install info, verify it locally (no server)
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const token = urlParams.get('installToken');
+                    const sig = urlParams.get('sig');
+                    const pub = urlParams.get('pub');
+
+                    if (token && sig && pub) {
+                        // Attempt local verification using embedded public JWK from URL
+                        const verified = await verifyInstallTokenWithJwk(token, sig, pub);
+                        if (verified) {
+                            document.getElementById('loadingState').style.display = 'none';
+                            document.getElementById('feedbackSection').style.display = 'block';
+                            formSubmissionAllowed = true;
+                            console.log('✅ Local signature verification succeeded - showing feedback form');
+                            return;
+                        } else {
+                            console.log('⚠️ Local signature verification failed, falling back to other checks');
+                        }
+                    }
+
                     const extensionContext = await checkExtensionContext();
                     
                     // Hide loading state
@@ -683,32 +767,28 @@
                     if (verificationStatus === 'verified') {
                         // Show feedback form only for fully verified users
                         document.getElementById('feedbackSection').style.display = 'block';
+                        formSubmissionAllowed = true;
                         console.log('✅ Showing feedback form - VERIFIED user');
                     } else if (verificationStatus === 'likely') {
                         // Show generic goodbye page for likely users (no feedback form)
                         document.getElementById('likelySection').style.display = 'block';
                         console.log('👋 Showing generic goodbye - LIKELY user');
                     } else if (verificationStatus === 'unknown') {
-                        // Redirect unknown users to home page
-                        console.log('❓ UNKNOWN user - redirecting to home page');
-                        setTimeout(() => {
-                            window.location.href = '/';
-                        }, 1500);
+                        // Show unknown section (no feedback form)
+                        document.getElementById('unknownSection').style.display = 'block';
+                        console.log('❓ UNKNOWN user - hiding feedback form');
                     } else {
-                        // Redirect users with no extension evidence to home page
-                        console.log('🚫 No extension detected - redirecting to home page');
-                        setTimeout(() => {
-                            window.location.href = '/';
-                        }, 1500);
+                        // Show likely section for users with no extension evidence
+                        document.getElementById('likelySection').style.display = 'block';
+                        console.log('🚫 No extension detected - hiding feedback form');
                     }
                     
                 } catch (error) {
                     console.error('Extension verification failed:', error);
-                    // On error, redirect to home page as safeguard
-                    console.log('🚫 Verification error - redirecting to home page');
-                    setTimeout(() => {
-                        window.location.href = '/';
-                    }, 2000);
+                    // On error, show likely section as safeguard
+                    document.getElementById('loadingState').style.display = 'none';
+                    document.getElementById('likelySection').style.display = 'block';
+                    console.log('🚫 Verification error - hiding feedback form');
                 }
             }
 

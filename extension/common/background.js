@@ -1,26 +1,98 @@
-// Set uninstall URL
-runtimeAPI.setUninstallURL('https://gptpins.dps.codes/goodbye.html');
+// Configure uninstall URL (will be set at startup and on install)
+// NOTE: This implements an offline, client-side signature verification flow.
+// It avoids sending the install token to an external server. HOWEVER this
+// method cannot provide a cryptographically strong guarantee (an attacker
+// could craft a signed-looking uninstall URL). For robust verification
+// prefer a server-side registration + verification step.
+async function configureUninstallUrl() {
+  try {
+    const installData = await getSetting('gpt-pinboard-install');
+    const base = 'https://gptpins.dps.codes/goodbye.html';
+
+    if (installData && installData.installToken && installData.signature && installData.publicJwk) {
+      // Build URL with token, signature and public JWK (encoded)
+      const params = new URLSearchParams();
+      params.set('installToken', installData.installToken);
+      params.set('sig', installData.signature);
+      // Public JWK as base64url JSON
+      params.set('pub', btoa(unescape(encodeURIComponent(JSON.stringify(installData.publicJwk)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''));
+      runtimeAPI.setUninstallURL(`${base}?${params.toString()}`);
+      debugLog('GPT Pinboard: Uninstall URL configured with local-signed token');
+    } else {
+      // Fall back to simple uninstall page without any token
+      runtimeAPI.setUninstallURL(base);
+      debugLog('GPT Pinboard: Uninstall URL configured without token');
+    }
+  } catch (e) {
+    debugLog('GPT Pinboard: Failed to configure uninstall URL', e);
+    try { runtimeAPI.setUninstallURL('https://gptpins.dps.codes/goodbye.html'); } catch (err) { /* ignore */ }
+  }
+}
 
 // Handle extension installation
 runtimeAPI.onInstalled.addListener((details) => {
   debugLog('GPT Pinboard: Extension installed/updated', details.reason);
   
   if (details.reason === 'install') {
-    const installationData = {
-      extensionId: runtimeAPI.id,
-      installDate: new Date().toISOString(),
-      installToken: generateInstallToken(),
-      version: runtimeAPI.getManifest().version
-    };
-    
-    setSetting('gpt-pinboard-install', installationData);
-    tabsAPI.create({ url: 'https://gptpins.dps.codes/welcome.html' });
+    (async () => {
+      try {
+        const installToken = generateInstallToken();
+
+        // Generate an ephemeral ECDSA keypair and sign the install token
+        const keyPair = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']);
+
+        // Sign the token (UTF-8 bytes)
+        const encoder = new TextEncoder();
+        const data = encoder.encode(installToken);
+        const signatureBuf = await crypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, keyPair.privateKey, data);
+
+        // Export public key to JWK and base64url-encode signature
+        const publicJwk = await crypto.subtle.exportKey('jwk', keyPair.publicKey);
+        const signatureBase64 = arrayBufferToBase64Url(signatureBuf);
+
+        const installationData = {
+          extensionId: runtimeAPI.id,
+          installDate: new Date().toISOString(),
+          installToken: installToken,
+          signature: signatureBase64,
+          publicJwk: publicJwk,
+          version: runtimeAPI.getManifest().version
+        };
+
+        await setSetting('gpt-pinboard-install', installationData);
+        await configureUninstallUrl();
+        tabsAPI.create({ url: 'https://gptpins.dps.codes/welcome.html' });
+      } catch (e) {
+        debugLog('GPT Pinboard: Error during install-time signing flow', e);
+        // Fallback: persist minimal install record and configure uninstall URL
+        const installationData = {
+          extensionId: runtimeAPI.id,
+          installDate: new Date().toISOString(),
+          installToken: generateInstallToken(),
+          version: runtimeAPI.getManifest().version
+        };
+        await setSetting('gpt-pinboard-install', installationData);
+        await configureUninstallUrl();
+        tabsAPI.create({ url: 'https://gptpins.dps.codes/welcome.html' });
+      }
+    })();
   }
 });
 
 // Generate unique installation token
 function generateInstallToken() {
   return 'gpt-pin-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+}
+
+// Helpers for base64url encoding
+function arrayBufferToBase64Url(buffer) {
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  for (let i = 0; i < bytes.byteLength; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  const b64 = btoa(binary);
+  return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
 // Handle internal messages (from popup, content scripts, etc.)
@@ -231,9 +303,7 @@ async function handleOpenAndHighlight(pin, sendResponse, forceNewTab = false) {
 runtimeAPI.onMessageExternal.addListener((request, sender, sendResponse) => {
   if (request.action === 'verify-installation') {
     const allowedOrigins = [
-      'https://gptpins.dps.codes',
-      'http://localhost:8080',
-      'https://localhost:8080'
+      'https://gptpins.dps.codes'
     ];
 
     if (allowedOrigins.includes(sender.origin)) {
@@ -243,6 +313,8 @@ runtimeAPI.onMessageExternal.addListener((request, sender, sendResponse) => {
             verified: true,
             extensionId: runtimeAPI.id,
             installToken: installData.installToken,
+            signature: installData.signature,
+            publicJwk: installData.publicJwk,
             installDate: installData.installDate,
             version: installData.version
           });
@@ -258,3 +330,6 @@ runtimeAPI.onMessageExternal.addListener((request, sender, sendResponse) => {
 });
 
 debugLog('GPT Pinboard: Background script loaded');
+
+// Ensure uninstall URL is configured on startup (if possible)
+try { configureUninstallUrl(); } catch (e) { /* ignore */ }
