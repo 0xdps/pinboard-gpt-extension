@@ -51,12 +51,12 @@ app.route('/install', installRoutes);
 
 // Error handling
 app.onError((err, c) => {
-  console.error(err);
+  console.error('API Error:', err);
   return c.json({ error: 'Something went wrong!' }, 500);
 });
 
-// Export for Vercel serverless - Use handle method for better compatibility
-export default app;
+// Export for Vercel Node.js runtime
+export default app.fetch;
 
 // Start server only in local development
 if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
