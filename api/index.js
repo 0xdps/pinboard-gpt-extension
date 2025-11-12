@@ -55,8 +55,8 @@ app.onError((err, c) => {
   return c.json({ error: 'Something went wrong!' }, 500);
 });
 
-// Export for Vercel serverless - Hono provides fetch handler
-export default app.fetch.bind(app);
+// Export for Vercel serverless - Use handle method for better compatibility
+export default app;
 
 // Start server only in local development
 if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
