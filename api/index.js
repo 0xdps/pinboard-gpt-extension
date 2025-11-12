@@ -17,7 +17,7 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const packageJson = JSON.parse(readFileSync(join(__dirname, 'package.json'), 'utf8'));
-const VERSION = packageJson.version;
+const VERSION = packageJson.version || '1.0.0';
 
 const app = new Hono();
 
