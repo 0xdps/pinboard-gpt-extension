@@ -20,7 +20,7 @@ if [ ! -f ".env" ]; then
   echo "✅ Created .env file"
   echo "⚠️  Please edit .env and fill in your credentials:"
   echo "   - TURSO_DATABASE_URL"
-  echo "   - TURSO_AUTH_TOKEN"
+  echo "   - TURSO_DB_TOKEN"
   echo "   - JWT_SECRET (generate with: openssl rand -base64 32)"
   echo "   - GOOGLE_CLIENT_ID"
   echo ""

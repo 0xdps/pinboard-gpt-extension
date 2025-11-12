@@ -63,7 +63,7 @@ cp .env.example .env
 Edit `.env` and fill in:
 ```
 TURSO_DATABASE_URL=libsql://your-db-name-your-username.turso.io
-TURSO_AUTH_TOKEN=your_turso_auth_token
+TURSO_DB_TOKEN=your_TURSO_DB_TOKEN
 JWT_SECRET=your_random_secret_key_here
 GOOGLE_CLIENT_ID=your_google_client_id.apps.googleusercontent.com
 PORT=3000
@@ -136,7 +136,7 @@ vercel --prod
 ### 3. Configure Environment Variables
 In Vercel dashboard, add all environment variables from `.env`:
 - `TURSO_DATABASE_URL`
-- `TURSO_AUTH_TOKEN`
+- `TURSO_DB_TOKEN`
 - `JWT_SECRET` (use a secure random string)
 - `GOOGLE_CLIENT_ID`
 - `NODE_ENV=production`

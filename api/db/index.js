@@ -6,10 +6,10 @@ import { users, licenses, pins, feedback } from './schema.js';
 let db = null;
 
 try {
-  if (process.env.TURSO_DATABASE_URL && process.env.TURSO_AUTH_TOKEN) {
+  if (process.env.TURSO_DATABASE_URL && process.env.TURSO_DB_TOKEN) {
     const client = createClient({
       url: process.env.TURSO_DATABASE_URL,
-      authToken: process.env.TURSO_AUTH_TOKEN,
+      authToken: process.env.TURSO_DB_TOKEN,
     });
     db = drizzle(client, { schema: { users, licenses, pins, feedback } });
   } else {
