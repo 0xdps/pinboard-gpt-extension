@@ -120,30 +120,20 @@ async function setLicense(licenseType, licenseKey = null) {
       return { success: false, message: 'Invalid license key format' };
     }
     
-    // Check if key has been used (to prevent sharing)
-    const keyHash = simpleHash(licenseKey);
-    const result = await chrome.storage.local.get(['usedLicenseKeys']);
-    const usedKeys = result.usedLicenseKeys || [];
-    
-    if (usedKeys.includes(keyHash)) {
-      return { success: false, message: 'This license key has already been activated' };
-    }
-    
-    // Mark key as used
-    usedKeys.push(keyHash);
-    await chrome.storage.local.set({ usedLicenseKeys: usedKeys });
+    // Allow unlimited activations - users can use the same key on all their devices
+    // (Chrome desktop, laptop, Firefox, Edge, etc.)
+    // Keys are still validated by checksum to prevent fake keys
     
     // Set the license
     const licenseData = {
       type: licenseType,
       key: licenseKey,
-      keyHash: keyHash,
       activatedAt: Date.now(),
       complementary: false
     };
     
     await chrome.storage.local.set({ license: licenseData.type, licenseData });
-    return { success: true, message: 'License activated successfully!' };
+    return { success: true, message: 'License activated successfully! You can use this key on all your devices.' };
   } catch (error) {
     console.error('Error setting license:', error);
     return { success: false, message: 'Error activating license' };

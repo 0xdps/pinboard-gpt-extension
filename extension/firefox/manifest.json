@@ -6,6 +6,8 @@
   "permissions": [
     "storage",
     "tabs",
+    "alarms",
+    "identity",
     "https://chatgpt.com/*",
     "https://chat.openai.com/*",
     "https://pinboard-gpt.dps.codes/*"

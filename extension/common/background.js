@@ -333,3 +333,9 @@ debugLog('Pinboard GPT: Background script loaded');
 
 // Ensure uninstall URL is configured on startup (if possible)
 try { configureUninstallUrl(); } catch (e) { /* ignore */ }
+
+// Initialize authentication and validate license on startup
+// Note: auth.js must be loaded for this to work
+if (typeof initializeAuth === 'function') {
+  try { initializeAuth(); } catch (e) { debugLog('Auth init error:', e); }
+}

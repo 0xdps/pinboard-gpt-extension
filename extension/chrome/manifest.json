@@ -5,7 +5,9 @@
   "version": "1.0.0",
   "permissions": [
     "storage",
-    "tabs"
+    "tabs",
+    "alarms",
+    "identity"
   ],
   "host_permissions": [
     "https://chatgpt.com/*",

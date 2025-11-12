@@ -177,6 +177,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Settings Modal Handlers
   settingsBtn.onclick = async () => {
+    await updateAuthDisplay();
     await updateLicenseDisplay();
     settingsModal.style.display = 'flex';
   };
@@ -185,6 +186,201 @@ document.addEventListener('DOMContentLoaded', async () => {
   coffeeBtn.onclick = () => {
     chrome.tabs.create({ url: 'https://www.buymeacoffee.com/0xdps' });
   };
+
+  // Auth Modal Elements
+  const authModal = document.getElementById('authModal');
+  const closeAuthModal = document.getElementById('closeAuthModal');
+  const authModalTitle = document.getElementById('authModalTitle');
+  const authEmail = document.getElementById('authEmail');
+  const authPassword = document.getElementById('authPassword');
+  const authName = document.getElementById('authName');
+  const authNameField = document.getElementById('authNameField');
+  const authSubmitBtn = document.getElementById('authSubmitBtn');
+  const authToggleLink = document.getElementById('authToggleLink');
+  const authToggleText = document.getElementById('authToggleText');
+  
+  const loginBtn = document.getElementById('loginBtn');
+  const signupBtn = document.getElementById('signupBtn');
+  const googleSignInBtn = document.getElementById('googleSignInBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const syncLicenseBtn = document.getElementById('syncLicenseBtn');
+  
+  let authMode = 'login'; // 'login' or 'signup'
+
+  // Google Sign-In handler
+  if (googleSignInBtn) {
+    googleSignInBtn.onclick = async () => {
+      googleSignInBtn.disabled = true;
+      googleSignInBtn.innerHTML = '<span>Signing in...</span>';
+      
+      const result = await signInWithGoogle();
+      
+      googleSignInBtn.disabled = false;
+      googleSignInBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M17.64 9.205c0-.639-.057-1.252-.164-1.841H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/><path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg><span>Sign in with Google</span>';
+      
+      if (result.success) {
+        showNotification('Welcome! ' + result.message, 'success');
+        await updateAuthDisplay();
+        await updateLicenseDisplay();
+        await updateLicenseBadge();
+        settingsModal.style.display = 'none';
+      } else {
+        showNotification(result.message, 'error');
+      }
+    };
+  }
+
+  // Show login modal
+  if (loginBtn) {
+    loginBtn.onclick = () => {
+      authMode = 'login';
+      authModalTitle.textContent = 'Sign In';
+      authSubmitBtn.textContent = 'Sign In';
+      authNameField.style.display = 'none';
+      authToggleText.textContent = "Don't have an account?";
+      authToggleLink.textContent = 'Sign Up';
+      authModal.style.display = 'flex';
+    };
+  }
+
+  // Show signup modal
+  if (signupBtn) {
+    signupBtn.onclick = () => {
+      authMode = 'signup';
+      authModalTitle.textContent = 'Sign Up';
+      authSubmitBtn.textContent = 'Sign Up';
+      authNameField.style.display = 'block';
+      authToggleText.textContent = 'Already have an account?';
+      authToggleLink.textContent = 'Sign In';
+      authModal.style.display = 'flex';
+    };
+  }
+
+  // Toggle between login and signup
+  if (authToggleLink) {
+    authToggleLink.onclick = (e) => {
+      e.preventDefault();
+      if (authMode === 'login') {
+        authMode = 'signup';
+        authModalTitle.textContent = 'Sign Up';
+        authSubmitBtn.textContent = 'Sign Up';
+        authNameField.style.display = 'block';
+        authToggleText.textContent = 'Already have an account?';
+        authToggleLink.textContent = 'Sign In';
+      } else {
+        authMode = 'login';
+        authModalTitle.textContent = 'Sign In';
+        authSubmitBtn.textContent = 'Sign In';
+        authNameField.style.display = 'none';
+        authToggleText.textContent = "Don't have an account?";
+        authToggleLink.textContent = 'Sign Up';
+      }
+    };
+  }
+
+  // Handle auth submission
+  if (authSubmitBtn) {
+    authSubmitBtn.onclick = async () => {
+      const email = authEmail.value.trim();
+      const password = authPassword.value.trim();
+      const name = authName.value.trim();
+
+      if (!email || !password) {
+        showNotification('Please enter email and password', 'error');
+        return;
+      }
+
+      authSubmitBtn.disabled = true;
+      authSubmitBtn.textContent = authMode === 'login' ? 'Signing in...' : 'Signing up...';
+
+      let result;
+      if (authMode === 'login') {
+        result = await loginUser(email, password);
+      } else {
+        result = await registerUser(email, password, name);
+      }
+
+      authSubmitBtn.disabled = false;
+      authSubmitBtn.textContent = authMode === 'login' ? 'Sign In' : 'Sign Up';
+
+      if (result.success) {
+        showNotification(result.message, 'success');
+        authModal.style.display = 'none';
+        authEmail.value = '';
+        authPassword.value = '';
+        authName.value = '';
+        await updateAuthDisplay();
+        await updateLicenseDisplay();
+        await updateLicenseBadge();
+      } else {
+        showNotification(result.message, 'error');
+      }
+    };
+  }
+
+  // Close auth modal
+  if (closeAuthModal) {
+    closeAuthModal.onclick = () => {
+      authModal.style.display = 'none';
+    };
+  }
+
+  // Logout handler
+  if (logoutBtn) {
+    logoutBtn.onclick = async () => {
+      const result = await logoutUser();
+      if (result.success) {
+        showNotification(result.message, 'success');
+        await updateAuthDisplay();
+        await updateLicenseDisplay();
+        await updateLicenseBadge();
+      }
+    };
+  }
+
+  // Sync license handler
+  if (syncLicenseBtn) {
+    syncLicenseBtn.onclick = async () => {
+      syncLicenseBtn.disabled = true;
+      syncLicenseBtn.textContent = 'Syncing...';
+      
+      const result = await syncLicenseFromServer();
+      
+      syncLicenseBtn.disabled = false;
+      syncLicenseBtn.innerHTML = '<span class="btn-icon">🔄</span><span>Sync License</span>';
+      
+      if (result.success) {
+        showNotification('License synced successfully!', 'success');
+        await updateLicenseDisplay();
+        await updateLicenseBadge();
+      } else {
+        showNotification(result.message || 'Sync failed', 'error');
+      }
+    };
+  }
+
+  // Update auth display (show/hide login vs account sections)
+  async function updateAuthDisplay() {
+    const authSection = document.getElementById('authSection');
+    const accountSection = document.getElementById('accountSection');
+    const userEmailEl = document.getElementById('userEmail');
+    
+    const loggedIn = await isLoggedIn();
+    
+    if (loggedIn) {
+      const result = await chrome.storage.local.get(['userData']);
+      const userData = result.userData;
+      
+      authSection.style.display = 'none';
+      accountSection.style.display = 'block';
+      if (userEmailEl && userData) {
+        userEmailEl.textContent = userData.email;
+      }
+    } else {
+      authSection.style.display = 'block';
+      accountSection.style.display = 'none';
+    }
+  }
 
   // License activation handler
   const activateLicenseBtn = document.getElementById('activateLicenseBtn');

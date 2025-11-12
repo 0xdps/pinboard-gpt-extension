@@ -590,8 +590,8 @@
                         statusDiv.style.border = '1px solid #c3e6cb';
                         
                         let successMessage = '✅ Thank you! Your feedback has been submitted successfully.';
-                        if (result.githubIssue && result.githubIssue.url) {
-                            successMessage += `<br><small>📝 <a href="${result.githubIssue.url}" target="_blank" style="color: #155724;">View your feedback on GitHub</a></small>`;
+                        if (result.id) {
+                            successMessage += `<br><small>Reference ID: ${result.id}</small>`;
                         }
                         statusDiv.innerHTML = successMessage;
                         

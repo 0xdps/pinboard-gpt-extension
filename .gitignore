@@ -772,6 +772,11 @@ website/images/icon.svg
 website/images/favicon-*.png
 website/images/favicon.ico
 
-CHROME_*.md
-FIREFOX_*.md
-STORE_*.md
+
+*.md
+!README.md
+!CHANGELOG.md
+!LICENSE
+!PRIVACY.md
+!DEVELOPMENT.md
+!CONTRIBUTING.md
