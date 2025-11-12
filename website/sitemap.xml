@@ -7,7 +7,7 @@
 
   <!-- Homepage -->
   <url>
-    <loc>https://gptpins.dps.codes/</loc>
+    <loc>https://pinboard-gpt.dps.codes/</loc>
     <lastmod>2025-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
@@ -15,7 +15,7 @@
 
   <!-- Features Section -->
   <url>
-    <loc>https://gptpins.dps.codes/#features</loc>
+    <loc>https://pinboard-gpt.dps.codes/#features</loc>
     <lastmod>2025-11-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -23,7 +23,7 @@
 
   <!-- How It Works Section -->
   <url>
-    <loc>https://gptpins.dps.codes/#how-it-works</loc>
+    <loc>https://pinboard-gpt.dps.codes/#how-it-works</loc>
     <lastmod>2025-11-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -31,7 +31,7 @@
 
   <!-- Installation Section -->
   <url>
-    <loc>https://gptpins.dps.codes/#install</loc>
+    <loc>https://pinboard-gpt.dps.codes/#install</loc>
     <lastmod>2025-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
@@ -39,7 +39,7 @@
 
   <!-- Privacy Policy Page -->
   <url>
-    <loc>https://gptpins.dps.codes/privacy.html</loc>
+    <loc>https://pinboard-gpt.dps.codes/privacy.html</loc>
     <lastmod>2025-11-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -47,7 +47,7 @@
 
   <!-- Support Page -->
   <url>
-    <loc>https://gptpins.dps.codes/support.html</loc>
+    <loc>https://pinboard-gpt.dps.codes/support.html</loc>
     <lastmod>2025-11-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -55,7 +55,7 @@
 
   <!-- Welcome Page -->
   <url>
-    <loc>https://gptpins.dps.codes/welcome.html</loc>
+    <loc>https://pinboard-gpt.dps.codes/welcome.html</loc>
     <lastmod>2025-11-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -63,7 +63,7 @@
 
   <!-- Goodbye/Uninstall Page -->
   <url>
-    <loc>https://gptpins.dps.codes/goodbye.html</loc>
+    <loc>https://pinboard-gpt.dps.codes/goodbye.html</loc>
     <lastmod>2025-11-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.4</priority>
@@ -71,7 +71,7 @@
 
   <!-- Blog Page -->
   <url>
-    <loc>https://gptpins.dps.codes/blog.html</loc>
+    <loc>https://pinboard-gpt.dps.codes/blog.html</loc>
     <lastmod>2025-11-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
@@ -79,35 +79,35 @@
 
   <!-- Blog Articles -->
   <url>
-    <loc>https://gptpins.dps.codes/blog/why-you-need-gpt-pinboard.html</loc>
+    <loc>https://pinboard-gpt.dps.codes/blog/why-you-need-gpt-pinboard.html</loc>
     <lastmod>2025-11-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://gptpins.dps.codes/blog/complete-guide-to-pinning.html</loc>
+    <loc>https://pinboard-gpt.dps.codes/blog/complete-guide-to-pinning.html</loc>
     <lastmod>2025-11-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://gptpins.dps.codes/blog/chat-outline-navigation.html</loc>
+    <loc>https://pinboard-gpt.dps.codes/blog/chat-outline-navigation.html</loc>
     <lastmod>2025-11-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://gptpins.dps.codes/blog/advanced-organization-tips.html</loc>
+    <loc>https://pinboard-gpt.dps.codes/blog/advanced-organization-tips.html</loc>
     <lastmod>2025-11-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
-    <loc>https://gptpins.dps.codes/blog/real-world-use-cases.html</loc>
+    <loc>https://pinboard-gpt.dps.codes/blog/real-world-use-cases.html</loc>
     <lastmod>2025-11-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>

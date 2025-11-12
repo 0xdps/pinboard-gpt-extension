@@ -287,7 +287,7 @@
         
         <div class="footer">
           <p>
-            Generated for <a href="https://gptpins.dps.codes">Pinboard GPT</a> | 
+            Generated for <a href="https://pinboard-gpt.dps.codes">Pinboard GPT</a> | 
             <a href="https://github.com/0xdps/gpt-pinboard-extension">GitHub Repository</a> | 
             Made with ❤️ by <a href="https://github.com/0xdps">Devendra Pratap Singh</a>
           </p>
