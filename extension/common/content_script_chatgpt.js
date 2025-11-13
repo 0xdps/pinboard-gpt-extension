@@ -1,34 +1,6 @@
 // Content script for ChatGPT pages - handles message pinning and highlighting
 
-// Import LICENSE_TYPES from license.js (loaded before this script)
-
-const LICENSE_LIMITS = {
-  [LICENSE_TYPES.FREE]: {
-    maxPins: 10,
-    tags: true,
-    export: false,
-    sync: false,
-    multiAI: false,
-    cloudSync: false
-  },
-  [LICENSE_TYPES.PRO]: {
-    maxPins: Infinity,
-    tags: true,
-    export: true,
-    sync: true,
-    multiAI: true,
-    cloudSync: false
-  },
-  [LICENSE_TYPES.PREMIUM]: {
-    maxPins: Infinity,
-    tags: true,
-    export: true,
-    sync: true,
-    multiAI: true,
-    cloudSync: true,
-    crossBrowser: true
-  }
-};
+// LICENSE_TYPES and LICENSE_LIMITS imported from license.js (loaded before this script)
 
 async function getLicense() {
   try {
@@ -309,13 +281,46 @@ function findMessageContainer(element) {
   return null;
 }
 
+// Robust helper to find all message elements across ChatGPT DOM variations
+function getAllMessageElements(root = document) {
+  const selectors = [
+    '[data-message-author-role]',
+    '[data-author]',
+    '[data-user-type]',
+    '.message',
+    '.chat-message',
+    '[role="article"]',
+    '.msg',
+    '.conversation-item'
+  ];
+
+  const seen = new Set();
+  const results = [];
+
+  for (const sel of selectors) {
+    try {
+      const nodes = root.querySelectorAll(sel);
+      nodes.forEach(n => {
+        if (n && n.nodeType === 1 && !seen.has(n)) {
+          seen.add(n);
+          results.push(n);
+        }
+      });
+    } catch (e) {
+      // ignore invalid selectors or errors
+    }
+  }
+
+  return results;
+}
+
 // Add pin buttons to all existing messages and observe for new ones
 function initializePinButtons() {
   
   // Find all message containers
   function findAllMessages() {
-    // Look for elements with data-message-author-role attribute
-    return document.querySelectorAll('[data-message-author-role]');
+    // Use robust helper that checks multiple selectors
+    return getAllMessageElements(document);
   }
   
   // Add buttons to existing messages
@@ -350,7 +355,7 @@ function initializePinButtons() {
           }
           // Check if the node contains messages
           else if (node.querySelectorAll) {
-            const newMessages = node.querySelectorAll('[data-message-author-role]');
+            const newMessages = getAllMessageElements(node);
             newMessages.forEach(msg => {
               const text = (msg.innerText || '').trim();
               if (text.length >= 10 && !msg.querySelector('.pingpt-pin-button')) {
@@ -2016,9 +2021,9 @@ function findByTextAnchors(anchors) {
   // Try to find in main content area first
   const mainContent = document.querySelector('main') || document.body;
   // ONLY search actual message containers - be very specific
-  const allElements = mainContent.querySelectorAll('[data-message-author-role]');
-  
-  debugLog('Pinboard GPT: Found', allElements.length, 'message elements to search');
+  const allElements = getAllMessageElements(mainContent);
+
+  debugLog('Pinboard GPT: Found', allElements.length, 'message elements to search (robust selector)');
   
   // Normalize text for better matching
   const normalizeText = (text) => text.trim().replace(/\s+/g, ' ');
@@ -2175,7 +2180,7 @@ async function highlightPin(pin) {
     
     const mainContent = document.querySelector('main') || document.body;
     // Look specifically for message containers, not large wrapper divs
-    const messageContainers = mainContent.querySelectorAll('[data-message-author-role]');
+    const messageContainers = getAllMessageElements(mainContent);
     
     // Find the most precise match - look within each message container for specific elements
     let bestMatch = null;
@@ -2489,7 +2494,7 @@ function getMessageContainerFromSelection() {
 // Find message container by searching for text content
 function findMessageContainerByText(searchText) {
   const mainContent = document.querySelector('main') || document.body;
-  const allElements = mainContent.querySelectorAll('[data-message-author-role]');
+  const allElements = getAllMessageElements(mainContent);
   
   debugLog('Pinboard GPT: Searching through', allElements.length, 'message containers for text:', searchText);
   
@@ -2890,7 +2895,7 @@ try {
 // Get recent messages for the floating pin button
 function getRecentMessages(limit = 5) {
   const mainContent = document.querySelector('main') || document.body;
-  const messages = mainContent.querySelectorAll('[data-message-author-role]');
+  const messages = getAllMessageElements(mainContent);
   
   return Array.from(messages)
     .filter(el => {
@@ -4232,7 +4237,7 @@ function addManualPinButton() {
     
     manualBtn.addEventListener('click', async () => {
       // Get ALL messages in the conversation (not just recent 5)
-      const allMessages = Array.from(document.querySelectorAll('[data-message-author-role]'));
+      const allMessages = getAllMessageElements(document);
       
       if (allMessages.length === 0) {
         showNotification('⚠️ No messages found. Try scrolling or asking ChatGPT a question first.');
