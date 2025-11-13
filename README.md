@@ -36,7 +36,7 @@
 - **💾 Smart delete protection** - Export-first confirmation prevents accidental data loss
 - **🐛 Debug logging system** - Comprehensive troubleshooting with persistent debug toggle
 - **🎨 Streamlined settings** - Consolidated interface with modern visual design
-- **💾 Local-first** - Your data stays on your device. No accounts. No sync drama.
+- **💾 Storage & Sync** - Free users keep data local (up to 10 pins). Pro enables Chrome Sync across devices. Premium offers optional cloud sync for cross-browser syncing and larger storage.
 - **🌙 Dark mode support** - Automatic theme detection with seamless integration
 
 ### 🚀 Coming Soon - Multi-Platform Support
