@@ -12,6 +12,13 @@ const googleClient = new OAuth2Client(
   'https://pinboard-gpt.dps.codes/auth/callback'
 );
 
+// Generate a license key
+function generateLicenseKey(type = 'free') {
+  const prefix = type.toUpperCase().substring(0, 3);
+  const random = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  return `${prefix}-${random.toUpperCase().substring(0, 8)}-${random.toUpperCase().substring(8, 16)}`;
+}
+
 // Get Google OAuth URL
 app.get('/google/url', async (c) => {
   try {
@@ -70,6 +77,7 @@ app.get('/google/callback', async (c) => {
       await db.insert(licenses).values({
         userId: user.id,
         licenseType: 'free',
+        licenseKey: generateLicenseKey('free'),
       });
     }
 
@@ -129,6 +137,7 @@ app.post('/google', async (c) => {
       await db.insert(licenses).values({
         userId: user.id,
         licenseType: 'free',
+        licenseKey: generateLicenseKey('free'),
       });
     }
 

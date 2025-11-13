@@ -12,7 +12,9 @@
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
     "db:studio": "drizzle-kit studio",
-    "db:shell": "turso db shell pinboard-gpt-db"
+    "db:shell": "turso db shell pinboard-gpt-db",
+    "users:list": "node ../scripts/list-users.js",
+    "users:upgrade": "node ../scripts/upgrade-user.js"
   },
   "dependencies": {
     "@libsql/client": "^0.15.15",
