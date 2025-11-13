@@ -118,28 +118,20 @@
             <p>🔐 Sign in to access Pro/Premium features and cloud sync</p>
           </div>
           
-          <!-- Google Sign-In (Primary) -->
+          <!-- Google Sign-In (Only authentication method) -->
           <button id="googleSignInBtn" class="data-btn" style="width: 100%; margin-top: 10px; background: #4285f4; color: white; display: flex; align-items: center; justify-content: center; gap: 8px;">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <path d="M17.64 9.205c0-.639-.057-1.252-.164-1.841H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
-              <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
-              <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
-              <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
-            </svg>
+            <span style="background: white; border-radius: 50%; padding: 2px; display: flex; align-items: center; justify-content: center; width: 20px; height: 20px;">
+              <svg width="16" height="16" viewBox="-3 0 262 262" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid">
+                <path d="M255.878 133.451c0-10.734-.871-18.567-2.756-26.69H130.55v48.448h71.947c-1.45 12.04-9.283 30.172-26.69 42.356l-.244 1.622 38.755 30.023 2.685.268c24.659-22.774 38.875-56.282 38.875-96.027" fill="#4285F4"/>
+                <path d="M130.55 261.1c35.248 0 64.839-11.605 86.453-31.622l-41.196-31.913c-11.024 7.688-25.82 13.055-45.257 13.055-34.523 0-63.824-22.773-74.269-54.25l-1.531.13-40.298 31.187-.527 1.465C35.393 231.798 79.49 261.1 130.55 261.1" fill="#34A853"/>
+                <path d="M56.281 156.37c-2.756-8.123-4.351-16.827-4.351-25.82 0-8.994 1.595-17.697 4.206-25.82l-.073-1.73L15.26 71.312l-1.335.635C5.077 89.644 0 109.517 0 130.55s5.077 40.905 13.925 58.602l42.356-32.782" fill="#FBBC05"/>
+                <path d="M130.55 50.479c24.514 0 41.05 10.589 50.479 19.438l36.844-35.974C195.245 12.91 165.798 0 130.55 0 79.49 0 35.393 29.301 13.925 71.947l42.211 32.783c10.59-31.477 39.891-54.251 74.414-54.251" fill="#EB4335"/>
+              </svg>
+            </span>
             <span>Sign in with Google</span>
           </button>
-          
-          <!-- Email/Password (Alternative) -->
-          <div style="text-align: center; margin: 15px 0; color: #999; font-size: 12px;">or</div>
-          <div class="auth-buttons" style="display: flex; gap: 10px;">
-            <button id="loginBtn" class="data-btn" style="flex: 1; font-size: 13px;">
-              <span class="btn-icon">📧</span>
-              <span>Email Login</span>
-            </button>
-            <button id="signupBtn" class="data-btn" style="flex: 1; font-size: 13px;">
-              <span class="btn-icon">✨</span>
-              <span>Sign Up</span>
-            </button>
+          <div style="margin-top: 12px; padding: 12px; background: #f8f9fa; border-radius: 8px;">
+            <small style="color: #666; font-size: 12px;">Your license will be automatically synced from your account after signing in.</small>
           </div>
         </div>
         
@@ -162,15 +154,7 @@
           </div>
         </div>
         
-        <!-- Manual key activation (offline mode) -->
-        <div class="license-activation" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
-          <p style="font-size: 12px; color: #666; margin-bottom: 10px;">Or activate with license key (offline mode):</p>
-          <input type="text" id="licenseKeyInput" placeholder="PINGPT-PRO-XXXXX-XXXXXX" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 10px; font-family: monospace;">
-          <button id="activateLicenseBtn" class="data-btn">
-            <span class="btn-icon">🔑</span>
-            <span>Activate Key</span>
-          </button>
-        </div>
+
         
         <div class="license-help" style="margin-top: 15px;">
           <small>Don't have a license? <a href="#" id="buyLicenseLink">Get Pro</a></small>
@@ -180,13 +164,13 @@
       <div class="settings-section">
         <h4>Data Management</h4>
         <div class="data-buttons">
-          <button id="exportBtn" class="data-btn">
-            <span class="btn-icon">📤</span>
-            <span>Export Pins</span>
-          </button>
           <button id="importBtn" class="data-btn">
             <span class="btn-icon">📥</span>
             <span>Import Pins</span>
+          </button>
+          <button id="exportBtn" class="data-btn">
+            <span class="btn-icon">📤</span>
+            <span>Export Pins</span>
           </button>
           <button id="deleteAllBtn" class="data-btn delete-all-btn">
             <span class="btn-icon">🗑️</span>
@@ -227,30 +211,7 @@
     </div>
   </div>
 
-  <!-- Login/Signup Modal -->
-  <div id="authModal" class="modal" style="display: none;">
-    <div class="modal-content" style="max-width: 400px;">
-      <div class="modal-header">
-        <h3 id="authModalTitle">Sign In</h3>
-        <button id="closeAuthModal" class="close-btn" data-tooltip="Close">×</button>
-      </div>
-      
-      <div class="auth-form">
-        <input type="email" id="authEmail" placeholder="Email" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 10px; font-size: 14px;">
-        <input type="password" id="authPassword" placeholder="Password" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 10px; font-size: 14px;">
-        <div id="authNameField" style="display: none;">
-          <input type="text" id="authName" placeholder="Name (optional)" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 10px; font-size: 14px;">
-        </div>
-        <button id="authSubmitBtn" class="btn-primary" style="width: 100%; padding: 12px; font-size: 16px; margin-top: 10px;">Sign In</button>
-        <div style="text-align: center; margin-top: 15px;">
-          <small>
-            <span id="authToggleText">Don't have an account?</span>
-            <a href="#" id="authToggleLink" style="color: var(--primary); font-weight: 600;">Sign Up</a>
-          </small>
-        </div>
-      </div>
-    </div>
-  </div>
+
 
   <!-- Upgrade Modal -->
   <div id="upgradeModal" class="modal" style="display: none;">

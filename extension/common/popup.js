@@ -1,7 +1,8 @@
-// Browser API compatibility (for Firefox)
-if (typeof browser !== 'undefined' && typeof chrome === 'undefined') {
-  window.chrome = browser;
-}
+// Browser API compatibility wrapper
+const storageAPI = typeof browser !== 'undefined' ? browser.storage : chrome.storage;
+const tabsAPI = typeof browser !== 'undefined' ? browser.tabs : chrome.tabs;
+const runtimeAPI = typeof browser !== 'undefined' ? browser.runtime : chrome.runtime;
+const identityAPI = typeof chrome !== 'undefined' && chrome.identity ? chrome.identity : null;
 
 // Debug logging system for popup
 let debugEnabled = false;
@@ -63,7 +64,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Initialize theme
   async function initializeTheme() {
     try {
-      const { theme } = await chrome.storage.local.get(['theme']);
+      const { theme } = await storageAPI.local.get(['theme']);
       // Default to dark mode if no theme is set
       const isDark = theme !== 'light';
       themeToggle.checked = isDark;
@@ -72,7 +73,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       
       // Save default theme if not set
       if (theme === undefined) {
-        await chrome.storage.local.set({ theme: 'dark' });
+        await storageAPI.local.set({ theme: 'dark' });
       }
     } catch (err) {
       debugError('Error loading theme:', err);
@@ -137,7 +138,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateThemeText(isDark);
     
     try {
-      await chrome.storage.local.set({ theme: isDark ? 'dark' : 'light' });
+      await storageAPI.local.set({ theme: isDark ? 'dark' : 'light' });
     } catch (err) {
       debugError('Error saving theme:', err);
     }
@@ -163,7 +164,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Load version from manifest
   function loadVersion() {
-    const manifest = chrome.runtime.getManifest();
+    const manifest = runtimeAPI.getManifest();
     if (versionNumber && manifest.version) {
       versionNumber.textContent = manifest.version;
     }
@@ -184,7 +185,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Coffee Button Handler
   coffeeBtn.onclick = () => {
-    chrome.tabs.create({ url: 'https://www.buymeacoffee.com/0xdps' });
+    tabsAPI.create({ url: 'https://www.buymeacoffee.com/0xdps' });
   };
 
   // Auth Modal Elements
@@ -230,100 +231,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
   }
 
-  // Show login modal
-  if (loginBtn) {
-    loginBtn.onclick = () => {
-      authMode = 'login';
-      authModalTitle.textContent = 'Sign In';
-      authSubmitBtn.textContent = 'Sign In';
-      authNameField.style.display = 'none';
-      authToggleText.textContent = "Don't have an account?";
-      authToggleLink.textContent = 'Sign Up';
-      authModal.style.display = 'flex';
-    };
-  }
-
-  // Show signup modal
-  if (signupBtn) {
-    signupBtn.onclick = () => {
-      authMode = 'signup';
-      authModalTitle.textContent = 'Sign Up';
-      authSubmitBtn.textContent = 'Sign Up';
-      authNameField.style.display = 'block';
-      authToggleText.textContent = 'Already have an account?';
-      authToggleLink.textContent = 'Sign In';
-      authModal.style.display = 'flex';
-    };
-  }
-
-  // Toggle between login and signup
-  if (authToggleLink) {
-    authToggleLink.onclick = (e) => {
-      e.preventDefault();
-      if (authMode === 'login') {
-        authMode = 'signup';
-        authModalTitle.textContent = 'Sign Up';
-        authSubmitBtn.textContent = 'Sign Up';
-        authNameField.style.display = 'block';
-        authToggleText.textContent = 'Already have an account?';
-        authToggleLink.textContent = 'Sign In';
-      } else {
-        authMode = 'login';
-        authModalTitle.textContent = 'Sign In';
-        authSubmitBtn.textContent = 'Sign In';
-        authNameField.style.display = 'none';
-        authToggleText.textContent = "Don't have an account?";
-        authToggleLink.textContent = 'Sign Up';
-      }
-    };
-  }
-
-  // Handle auth submission
-  if (authSubmitBtn) {
-    authSubmitBtn.onclick = async () => {
-      const email = authEmail.value.trim();
-      const password = authPassword.value.trim();
-      const name = authName.value.trim();
-
-      if (!email || !password) {
-        showNotification('Please enter email and password', 'error');
-        return;
-      }
-
-      authSubmitBtn.disabled = true;
-      authSubmitBtn.textContent = authMode === 'login' ? 'Signing in...' : 'Signing up...';
-
-      let result;
-      if (authMode === 'login') {
-        result = await loginUser(email, password);
-      } else {
-        result = await registerUser(email, password, name);
-      }
-
-      authSubmitBtn.disabled = false;
-      authSubmitBtn.textContent = authMode === 'login' ? 'Sign In' : 'Sign Up';
-
-      if (result.success) {
-        showNotification(result.message, 'success');
-        authModal.style.display = 'none';
-        authEmail.value = '';
-        authPassword.value = '';
-        authName.value = '';
-        await updateAuthDisplay();
-        await updateLicenseDisplay();
-        await updateLicenseBadge();
-      } else {
-        showNotification(result.message, 'error');
-      }
-    };
-  }
-
-  // Close auth modal
-  if (closeAuthModal) {
-    closeAuthModal.onclick = () => {
-      authModal.style.display = 'none';
-    };
-  }
+  // Email/password authentication removed - only Google Sign-In supported
+  // Login and signup modals no longer needed
 
   // Logout handler
   if (logoutBtn) {
@@ -368,7 +277,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const loggedIn = await isLoggedIn();
     
     if (loggedIn) {
-      const result = await chrome.storage.local.get(['userData']);
+      const result = await storageAPI.local.get(['userData']);
       const userData = result.userData;
       
       authSection.style.display = 'none';
@@ -382,42 +291,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // License activation handler
-  const activateLicenseBtn = document.getElementById('activateLicenseBtn');
-  const licenseKeyInput = document.getElementById('licenseKeyInput');
+  // License key activation removed - licenses managed server-side
   const buyLicenseLink = document.getElementById('buyLicenseLink');
-
-  if (activateLicenseBtn) {
-    activateLicenseBtn.onclick = async () => {
-      const key = licenseKeyInput.value.trim().toUpperCase();
-      if (!key) {
-        showNotification('Please enter a license key', 'error');
-        return;
-      }
-
-      // Determine license type from key
-      let licenseType = LICENSE_TYPES.PRO;
-      if (key.includes('-PREMIUM-')) {
-        licenseType = LICENSE_TYPES.PREMIUM;
-      }
-
-      const result = await setLicense(licenseType, key);
-      
-      if (result.success) {
-        showNotification(result.message, 'success');
-        licenseKeyInput.value = '';
-        await updateLicenseDisplay();
-        await updateLicenseBadge();
-      } else {
-        showNotification(result.message, 'error');
-      }
-    };
-  }
 
   if (buyLicenseLink) {
     buyLicenseLink.onclick = (e) => {
       e.preventDefault();
-      chrome.tabs.create({ url: 'https://pinboard-gpt.dps.codes/pricing.html?plan=pro' });
+      tabsAPI.create({ url: 'https://pinboard-gpt.dps.codes/pricing.html?plan=pro' });
     };
   }
 
@@ -429,7 +309,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!currentPlanEl || !licenseDetailsEl) return;
 
     const license = await getLicense();
-    const result = await chrome.storage.local.get(['licenseData']);
+    const result = await storageAPI.local.get(['licenseData']);
     const licenseData = result.licenseData;
 
     let planText = 'Free';
@@ -518,10 +398,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const stored = (await getPins()).find(x => x.id === pinId);
     if (stored?.pageUrl) {
       debugLog('Pinboard GPT: Opening pin:', stored.id, stored.pageUrl);
-      chrome.runtime.sendMessage({ action: 'open-and-highlight', pin: stored }, (resp) => {
-        debugLog('Pinboard GPT: Response from background script:', resp, 'Error:', chrome.runtime.lastError);
-        if (chrome.runtime.lastError) {
-          debugLog('Pinboard GPT: Background script error:', chrome.runtime.lastError.message);
+      runtimeAPI.sendMessage({ action: 'open-and-highlight', pin: stored }, (resp) => {
+        debugLog('Pinboard GPT: Response from background script:', resp, 'Error:', runtimeAPI.lastError);
+        if (runtimeAPI.lastError) {
+          debugLog('Pinboard GPT: Background script error:', runtimeAPI.lastError.message);
           showNotification('Error communicating with background script', 'error');
           return;
         } else if (resp?.success) {
@@ -553,9 +433,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
     // Delegate to background script for centralized tab handling
-    chrome.runtime.sendMessage({ action: 'open-and-highlight', pin: stored, forceNewTab: true }, (resp) => {
-      if (chrome.runtime.lastError) {
-        debugLog('Pinboard GPT: Error sending open-and-highlight from popup:', chrome.runtime.lastError.message);
+    runtimeAPI.sendMessage({ action: 'open-and-highlight', pin: stored, forceNewTab: true }, (resp) => {
+      if (runtimeAPI.lastError) {
+        debugLog('Pinboard GPT: Error sending open-and-highlight from popup:', runtimeAPI.lastError.message);
         showNotification('Failed to open pin', 'error');
         return;
       }
@@ -1352,7 +1232,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.addEventListener('click', (e) => {
     if (e.target.id === 'helpLink') {
       e.preventDefault();
-      chrome.tabs.create({ url: 'https://pinboard-gpt.dps.codes/support.html' });
+      tabsAPI.create({ url: 'https://pinboard-gpt.dps.codes/support.html' });
     }
   });
 
@@ -1402,7 +1282,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Upgrade Modal Handlers
   upgradeBtn.onclick = () => {
-    chrome.tabs.create({ url: 'https://pinboard-gpt.dps.codes/pricing.html' });
+    tabsAPI.create({ url: 'https://pinboard-gpt.dps.codes/pricing.html' });
   };
 
   closeUpgrade.onclick = () => {
@@ -1421,10 +1301,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       
       if (plan === 'pro') {
         // Open payment link for Pro
-        chrome.tabs.create({ url: 'https://pinboard-gpt.dps.codes/upgrade?plan=pro' });
+        tabsAPI.create({ url: 'https://pinboard-gpt.dps.codes/upgrade?plan=pro' });
       } else if (plan === 'premium') {
         // Open payment link for Premium
-        chrome.tabs.create({ url: 'https://pinboard-gpt.dps.codes/upgrade?plan=premium' });
+        tabsAPI.create({ url: 'https://pinboard-gpt.dps.codes/upgrade?plan=premium' });
       }
       
       upgradeModal.style.display = 'none';
@@ -1443,14 +1323,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       url += '?plan=premium';
     }
     
-    chrome.tabs.create({ url });
+    tabsAPI.create({ url });
   }
 
   // Check license before certain actions
   exportBtn.onclick = async () => {
     const hasExport = await hasFeature('export');
     if (!hasExport) {
-      chrome.tabs.create({ url: 'https://pinboard-gpt.dps.codes/pricing.html?plan=pro' });
+      tabsAPI.create({ url: 'https://pinboard-gpt.dps.codes/pricing.html?plan=pro' });
       return;
     }
     
