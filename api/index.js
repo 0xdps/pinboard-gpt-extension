@@ -1,11 +1,12 @@
 import { Hono } from 'hono';
-import { cors } from 'hono/cors';
-import { serve } from '@hono/node-server';
 import { handle } from 'hono/vercel';
+import { cors } from 'hono/cors';
 import dotenv from 'dotenv';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+
+// Import route modules
 import authRoutes from './routes/auth.js';
 import userRoutes from './routes/user.js';
 import pinsRoutes from './routes/pins.js';
@@ -20,38 +21,35 @@ const __dirname = dirname(__filename);
 const packageJson = JSON.parse(readFileSync(join(__dirname, 'package.json'), 'utf8'));
 const VERSION = packageJson.version;
 
+// Create Hono app with basePath
 const app = new Hono().basePath('/api');
-
-// Health check - simple endpoint that doesn't require DB
-app.get('/health', (c) => {
-  return c.json({
-    status: 'ok',
-    service: 'Pinboard GPT API',
-    version: VERSION,
-    timestamp: new Date().toISOString(),
-  });
-});
 
 // CORS middleware
 app.use('/*', cors({
-  origin: [
-    'chrome-extension://*',
-    'moz-extension://*',
-    'https://pinboard-gpt.dps.codes',
-    'http://localhost:3000',
-    'http://localhost:8080'
-  ],
-  credentials: true,
+	origin: [
+		'chrome-extension://*',
+		'moz-extension://*',
+		'https://pinboard-gpt.dps.codes',
+		'https://api.pinboard-gpt.dps.codes',
+		'http://localhost:3000',
+		'http://localhost:8080'
+	],
+	allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+	credentials: true,
 }));
 
-// Health check
-app.get('/', (c) => {
-  return c.json({
-    status: 'ok',
-    service: 'Pinboard GPT API',
-    version: VERSION,
-  });
-});
+const rootResponse = (c) => {
+	return c.json({
+		status: 'ok',
+		service: 'Pinboard GPT API',
+		version: VERSION,
+		timestamp: new Date().toISOString(),
+	});
+};
+
+app.get('', rootResponse);
+app.get('/', rootResponse);
+app.get('/health', rootResponse);
 
 // Mount routes
 app.route('/auth', authRoutes);
@@ -62,20 +60,16 @@ app.route('/install', installRoutes);
 
 // Error handling
 app.onError((err, c) => {
-  console.error('API Error:', err);
-  return c.json({ error: 'Something went wrong!' }, 500);
+	console.error('API Error:', err);
+	return c.json({ error: 'Something went wrong!', message: err.message }, 500);
 });
 
-// Export for Vercel using Hono's built-in adapter
-export default handle(app);
+// Export handler for Vercel
+const handler = handle(app);
 
-if (process.env.NODE_ENV !== 'production') {
-  const PORT = process.env.PORT || 3000;
-  serve({
-    fetch: app.fetch,
-    port: PORT,
-  });
-  console.log(`🚀 API server running on port ${PORT}`);
-  console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`📦 Version: ${VERSION}`);
-}
+export const GET = handler;
+export const POST = handler;
+export const PATCH = handler;
+export const PUT = handler;
+export const DELETE = handler;
+export const OPTIONS = handler;
