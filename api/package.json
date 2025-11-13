@@ -5,16 +5,10 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node index.js",
-    "dev": "node --watch index.js",
-    "server": "node server.js",
-    "server:dev": "node --watch server.js",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
     "db:studio": "drizzle-kit studio",
-    "db:shell": "turso db shell pinboard-gpt-db",
-    "users:list": "node ../scripts/list-users.js",
-    "users:upgrade": "node ../scripts/upgrade-user.js"
+    "db:shell": "turso db shell pinboard-gpt-db"
   },
   "dependencies": {
     "@libsql/client": "^0.15.15",
