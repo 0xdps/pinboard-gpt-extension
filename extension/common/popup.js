@@ -1267,16 +1267,30 @@ document.addEventListener('DOMContentLoaded', async () => {
       headerBranding.appendChild(badge);
     }
     
-    // Update sync status
-    if (license === LICENSE_TYPES.PRO) {
-      syncStatus.textContent = '🔄 Syncing across Chrome devices';
+    // Update sync status with dynamic upgrade text
+    if (license === LICENSE_TYPES.PREMIUM) {
+      syncStatus.textContent = 'Premium';
       syncStatus.style.color = 'var(--primary)';
-    } else if (license === LICENSE_TYPES.PREMIUM) {
-      syncStatus.textContent = '☁️ Syncing across all devices';
-      syncStatus.style.color = 'var(--primary)';
-    } else {
-      syncStatus.textContent = '📍 Local pins only';
+    } else if (license === LICENSE_TYPES.PRO) {
+      syncStatus.innerHTML = 'Pro - <span style="cursor: pointer; color: var(--primary);">Upgrade to Premium</span>';
       syncStatus.style.color = 'var(--text-secondary)';
+      
+      const upgradeLink = syncStatus.querySelector('span');
+      if (upgradeLink) {
+        upgradeLink.onclick = () => {
+          tabsAPI.create({ url: 'https://pinboard-gpt.dps.codes/pricing.html?plan=premium' });
+        };
+      }
+    } else {
+      syncStatus.innerHTML = 'Free - <span style="cursor: pointer; color: var(--primary);">Upgrade to Pro</span>';
+      syncStatus.style.color = 'var(--text-secondary)';
+      
+      const upgradeLink = syncStatus.querySelector('span');
+      if (upgradeLink) {
+        upgradeLink.onclick = () => {
+          tabsAPI.create({ url: 'https://pinboard-gpt.dps.codes/pricing.html' });
+        };
+      }
     }
   }
 
