@@ -223,7 +223,8 @@
                 };
 
                 // Check if extension is installed
-                const isExtensionInstalled = window.pinboardGptExtension === true;
+                const isExtensionInstalled = window.pingptExtensionData !== undefined || 
+                                            document.getElementById('pingpt-extension-marker') !== null;
 
                 if (isExtensionInstalled) {
                     // Send auth data to extension via postMessage

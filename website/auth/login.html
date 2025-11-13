@@ -224,19 +224,28 @@
         const signInBtn = document.getElementById('signInBtn');
         const statusMessage = document.getElementById('statusMessage');
 
-        // Check if extension is installed
-        const isExtensionInstalled = window.pinboardGptExtension === true;
+        // Check if extension is installed - wait a bit for the content script to inject
+        let isExtensionInstalled = false;
+        
+        function checkExtension() {
+            isExtensionInstalled = window.pingptExtensionData !== undefined || 
+                                  document.getElementById('pingpt-extension-marker') !== null;
+            
+            if (isExtensionInstalled) {
+                showStatus('Extension detected! Click below to sign in.', 'info');
+            } else {
+                showStatus('Extension not detected. You can still sign in, but you\'ll need to manually copy your token.', 'info');
+            }
+        }
 
         function showStatus(message, type = 'info') {
             statusMessage.textContent = message;
             statusMessage.className = `status-message ${type}`;
         }
 
-        if (isExtensionInstalled) {
-            showStatus('Extension detected! Click below to sign in.', 'info');
-        } else {
-            showStatus('Please install the Pinboard GPT extension first.', 'error');
-        }
+        // Check immediately and after a short delay
+        setTimeout(checkExtension, 100);
+        setTimeout(checkExtension, 500);
 
         signInBtn.addEventListener('click', async () => {
             try {
