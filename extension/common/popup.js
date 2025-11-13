@@ -280,15 +280,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // License key activation removed - licenses managed server-side
-  const buyLicenseLink = document.getElementById('buyLicenseLink');
-
-  if (buyLicenseLink) {
-    buyLicenseLink.onclick = (e) => {
-      e.preventDefault();
-      tabsAPI.create({ url: 'https://pinboard-gpt.dps.codes/pricing.html?plan=pro' });
-    };
-  }
-
   // Update license display in settings
   async function updateLicenseDisplay() {
     const currentPlanEl = document.getElementById('currentPlan');
@@ -304,12 +295,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     let detailsText = 'Up to 10 pins, local storage only';
 
     if (license === LICENSE_TYPES.PRO) {
-      planText = 'Pro';
+      planText = 'Pro • <a href="#" id="upgradeToPremiumLink" style="color: var(--primary); cursor: pointer;">Upgrade to Premium</a>';
       if (licenseData?.complementary) {
         const expiryDate = new Date(licenseData.complementaryExpiry);
         detailsText = `✨ Complementary access (expires ${expiryDate.toLocaleDateString()})`;
-      } else if (licenseData?.key) {
-        detailsText = `🔑 Activated with key: ${licenseData.key.substring(0, 20)}...`;
       } else {
         detailsText = 'Unlimited pins, sync, export, multi-AI';
       }
@@ -318,15 +307,22 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (licenseData?.complementary) {
         const expiryDate = new Date(licenseData.complementaryExpiry);
         detailsText = `✨ Complementary access (expires ${expiryDate.toLocaleDateString()})`;
-      } else if (licenseData?.key) {
-        detailsText = `🔑 Activated with key: ${licenseData.key.substring(0, 20)}...`;
       } else {
         detailsText = 'Unlimited pins, cloud sync, cross-browser';
       }
     }
 
-    currentPlanEl.textContent = planText;
+    currentPlanEl.innerHTML = planText;
     licenseDetailsEl.textContent = detailsText;
+    
+    // Add event listener for upgrade to premium link if it exists
+    const upgradeToPremiumLink = document.getElementById('upgradeToPremiumLink');
+    if (upgradeToPremiumLink) {
+      upgradeToPremiumLink.onclick = (e) => {
+        e.preventDefault();
+        tabsAPI.create({ url: 'https://pinboard-gpt.dps.codes/pricing.html?plan=premium' });
+      };
+    }
   }
 
   // Delete All Pins Handler
@@ -1242,6 +1238,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const license = await getLicense();
     const headerBranding = document.querySelector('.header-branding');
     const syncStatus = document.getElementById('syncStatus');
+    const upgradeBtn = document.getElementById('upgradeBtn');
     
     // Remove existing badge
     const existingBadge = document.querySelector('.license-badge');
@@ -1255,23 +1252,17 @@ document.addEventListener('DOMContentLoaded', async () => {
       headerBranding.appendChild(badge);
     }
     
-    // Update sync status with dynamic upgrade text
-    if (license === LICENSE_TYPES.PREMIUM) {
-      syncStatus.textContent = 'Premium';
+    // Update sync status and upgrade button visibility
+    if (license === LICENSE_TYPES.PREMIUM || license === LICENSE_TYPES.PRO) {
+      syncStatus.textContent = '';
       syncStatus.style.color = 'var(--primary)';
-    } else if (license === LICENSE_TYPES.PRO) {
-      syncStatus.innerHTML = 'Pro - <span style="cursor: pointer; color: var(--primary);">Upgrade to Premium</span>';
-      syncStatus.style.color = 'var(--text-secondary)';
-      
-      const upgradeLink = syncStatus.querySelector('span');
-      if (upgradeLink) {
-        upgradeLink.onclick = () => {
-          tabsAPI.create({ url: 'https://pinboard-gpt.dps.codes/pricing.html?plan=premium' });
-        };
-      }
+      // Hide upgrade button for PRO/PREMIUM users
+      if (upgradeBtn) upgradeBtn.style.display = 'none';
     } else {
-      syncStatus.innerHTML = 'Free - <span style="cursor: pointer; color: var(--primary);">Upgrade to Pro</span>';
+      syncStatus.innerHTML = '<span style="cursor: pointer; color: var(--primary);">Upgrade to Pro</span>';
       syncStatus.style.color = 'var(--text-secondary)';
+      // Show upgrade button for FREE users
+      if (upgradeBtn) upgradeBtn.style.display = 'block';
       
       const upgradeLink = syncStatus.querySelector('span');
       if (upgradeLink) {

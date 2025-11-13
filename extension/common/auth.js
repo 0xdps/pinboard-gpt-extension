@@ -108,10 +108,11 @@ async function syncLicenseFromServer() {
     }
 
     // Update local license based on server data
-    const licenseType = data.licenseType || LICENSE_TYPES.FREE;
+    // API returns 'type', not 'licenseType'
+    const licenseType = data.type || LICENSE_TYPES.FREE;
     const licenseData = {
       type: licenseType,
-      key: null, // No manual key needed when logged in
+      key: data.licenseKey || null,
       activatedAt: data.activatedAt || Date.now(),
       complementary: false,
       serverManaged: true,
