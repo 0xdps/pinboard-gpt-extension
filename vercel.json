@@ -1,4 +1,6 @@
 {
+	"framework": null,
+	"outputDirectory": "website",
 	"rewrites": [
 		{
 			"source": "/api/:path*",
