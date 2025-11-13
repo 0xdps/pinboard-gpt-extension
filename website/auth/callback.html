@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authenticating - Pinboard GPT</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32x32.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .auth-container {
+            background: white;
+            border-radius: 16px;
+            padding: 48px;
+            max-width: 440px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        .logo img {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 24px;
+        }
+
+        .loader {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 24px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 16px;
+        }
+
+        .status {
+            font-size: 16px;
+            color: #4a5568;
+            margin-bottom: 32px;
+            line-height: 1.6;
+        }
+
+        .status-message {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .status-message.success {
+            background: #c6f6d5;
+            color: #22543d;
+            display: block;
+        }
+
+        .status-message.error {
+            background: #fed7d7;
+            color: #742a2a;
+            display: block;
+        }
+
+        .action-btn {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s;
+            margin-top: 16px;
+        }
+
+        .action-btn:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+        }
+
+        .steps {
+            text-align: left;
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 24px;
+        }
+
+        .steps h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 12px;
+        }
+
+        .steps ol {
+            margin-left: 20px;
+            color: #4a5568;
+            font-size: 13px;
+            line-height: 1.8;
+        }
+
+        .steps li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="logo">
+            <img src="../images/favicon-64x64.png" alt="Pinboard GPT" onerror="this.src='../images/favicon-32x32.png'">
+        </div>
+
+        <div id="loader" class="loader"></div>
+        
+        <h1 id="heading">Completing Sign-In</h1>
+        <div id="status" class="status">Please wait while we authenticate your account...</div>
+        <div id="statusMessage" class="status-message"></div>
+
+        <div id="extensionInfo" class="steps" style="display: none;">
+            <h3>If the extension doesn't open automatically:</h3>
+            <ol>
+                <li>Click the Pinboard GPT extension icon in your browser toolbar</li>
+                <li>You should now see your account is signed in</li>
+                <li>You can close this tab</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://pinboard-gpt.dps.codes/api';
+        const loader = document.getElementById('loader');
+        const heading = document.getElementById('heading');
+        const status = document.getElementById('status');
+        const statusMessage = document.getElementById('statusMessage');
+        const extensionInfo = document.getElementById('extensionInfo');
+
+        function showStatus(message, type = 'info') {
+            statusMessage.textContent = message;
+            statusMessage.className = `status-message ${type}`;
+        }
+
+        function showSuccess(userData) {
+            loader.style.display = 'none';
+            heading.textContent = 'Sign-In Successful!';
+            status.textContent = `Welcome, ${userData.name}! Your account has been connected.`;
+            showStatus('Authentication complete. You can now use premium features.', 'success');
+            extensionInfo.style.display = 'block';
+        }
+
+        function showError(message) {
+            loader.style.display = 'none';
+            heading.textContent = 'Authentication Failed';
+            status.textContent = message;
+            showStatus('Please try signing in again.', 'error');
+            
+            const retryBtn = document.createElement('a');
+            retryBtn.href = './login.html';
+            retryBtn.className = 'action-btn';
+            retryBtn.textContent = 'Try Again';
+            document.querySelector('.auth-container').appendChild(retryBtn);
+        }
+
+        async function handleCallback() {
+            try {
+                // Get authorization code from URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const code = urlParams.get('code');
+                const error = urlParams.get('error');
+
+                if (error) {
+                    showError('Authentication was cancelled or failed.');
+                    return;
+                }
+
+                if (!code) {
+                    showError('No authorization code received.');
+                    return;
+                }
+
+                // Exchange code for tokens via backend
+                const response = await fetch(`${API_BASE_URL}/auth/google/callback?code=${encodeURIComponent(code)}`);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Authentication failed');
+                }
+
+                // Store authentication data
+                const authData = {
+                    token: data.token,
+                    userData: data.user,
+                    licenseData: data.license
+                };
+
+                // Check if extension is installed
+                const isExtensionInstalled = window.pinboardGptExtension === true;
+
+                if (isExtensionInstalled) {
+                    // Send auth data to extension via postMessage
+                    window.postMessage({
+                        type: 'pingpt-auth-token',
+                        token: data.token,
+                        userData: data.user,
+                        licenseData: data.license
+                    }, window.location.origin);
+
+                    // Wait for confirmation from extension
+                    window.addEventListener('message', (event) => {
+                        if (event.origin !== window.location.origin) return;
+                        if (event.data.type === 'pingpt-auth-saved') {
+                            showSuccess(data.user);
+                            
+                            // Auto-close tab after 3 seconds
+                            setTimeout(() => {
+                                window.close();
+                            }, 3000);
+                        }
+                    });
+
+                    // Fallback if no confirmation received
+                    setTimeout(() => {
+                        showSuccess(data.user);
+                    }, 2000);
+                } else {
+                    // Extension not installed - store in localStorage as fallback
+                    localStorage.setItem('pinboard_auth', JSON.stringify(authData));
+                    showError('Extension not detected. Please install the Pinboard GPT extension and try again.');
+                }
+
+            } catch (error) {
+                console.error('Callback error:', error);
+                showError('Failed to complete authentication. Please try again.');
+            }
+        }
+
+        // Start the callback handling
+        handleCallback();
+    </script>
+</body>
+</html>

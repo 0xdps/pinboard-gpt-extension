@@ -82,6 +82,35 @@
                 }, window.location.origin);
             }
         }
+        
+        // Listen for authentication token from website
+        if (event.data && event.data.type === 'pingpt-auth-token') {
+            const { token, userData, licenseData } = event.data;
+            
+            console.log('Pinboard GPT: Received auth token from website');
+            
+            // Store token and user data in extension storage
+            chrome.storage.local.set({
+                authToken: token,
+                userData: userData,
+                license: licenseData?.type || 'FREE',
+                licenseData: licenseData
+            }, () => {
+                console.log('Pinboard GPT: Auth token saved successfully');
+                
+                // Notify the webpage that token was saved
+                window.postMessage({
+                    type: 'pingpt-auth-saved',
+                    success: true
+                }, window.location.origin);
+                
+                // Show success notification (will be visible in extension)
+                chrome.runtime.sendMessage({
+                    action: 'auth-success',
+                    userData: userData
+                });
+            });
+        }
     });
     
 })();

@@ -40,62 +40,26 @@ async function isLoggedIn() {
   return token !== null;
 }
 
-// Google Sign-In using Chrome Identity API
-// NOTE: Requires OAuth2 configuration in manifest.json
-// See OAUTH_SETUP.md for setup instructions
+// Google Sign-In using web-based OAuth flow
+// This works for both Chrome and Firefox by redirecting to website
+// The website will send the access token back via postMessage
+// NOTE: Token is stored by web_verification.js content script
 async function signInWithGoogle() {
-  try {
-    // Get Google OAuth token using Chrome Identity API
-    // This will fail with "Invalid OAuth2 Client ID" if manifest.json
-    // doesn't have the oauth2 section configured properly
-    const token = await new Promise((resolve, reject) => {
-      chrome.identity.getAuthToken({ interactive: true }, (token) => {
-        if (chrome.runtime.lastError) {
-          reject(chrome.runtime.lastError);
-        } else {
-          resolve(token);
-        }
-      });
-    });
-
-    if (!token) {
-      return { success: false, message: 'Google sign-in cancelled' };
-    }
-
-    // Send Google token to backend for verification
-    const response = await fetch(`${API_BASE_URL}/auth/google`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ token: token }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      return { success: false, message: data.message || 'Authentication failed' };
-    }
-
-    // Store our app's token and user data
-    await setAuthToken(data.token);
-    await chrome.storage.local.set({ 
-      userData: {
-        email: data.user.email,
-        name: data.user.name,
-        userId: data.user.id,
-        picture: data.user.picture
-      }
-    });
-
-    // Sync license from server
-    await syncLicenseFromServer();
-
-    return { success: true, message: 'Signed in successfully!', user: data.user };
-  } catch (error) {
-    console.error('Google sign-in error:', error.message);
-    return { success: false, message: 'Google sign-in failed. Please try again.' };
+  // This function is no longer used directly
+  // The popup opens the website where user signs in
+  // The website sends the token back via postMessage to web_verification.js
+  // which stores it in chrome.storage.local
+  
+  // Check if we already have a token (signed in via website)
+  const token = await getAuthToken();
+  if (token) {
+    return { success: true, message: 'Already signed in' };
   }
+  
+  return { 
+    success: false, 
+    message: 'Please sign in via the website' 
+  };
 }
 
 // User logout

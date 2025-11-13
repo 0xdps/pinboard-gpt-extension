@@ -21,8 +21,6 @@
     "build:website": "npm run build:assets && npm run copy:website-icons",
     "dev:website": "npm run copy:website-icons && cd website && python3 -m http.server 8080",
     "validate:seo": "echo 'Validating SEO files...' && echo 'Sitemap: http://localhost:8080/sitemap.xml' && echo 'Robots: http://localhost:8080/robots.txt'",
-    "build": "echo 'Using pre-built assets'",
-    "prebuild": "npm run build:website",
     "predeploy": "npm run build:website",
     "deploy": "vercel --prod",
     "deploy:preview": "vercel",
