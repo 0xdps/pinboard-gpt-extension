@@ -7,12 +7,7 @@
 const STORAGE_KEY = 'pins';
 const SETTINGS_KEY = 'settings';
 
-// License types
-const LICENSE_TYPES = {
-  FREE: 'free',
-  PRO: 'pro',
-  PREMIUM: 'premium'
-};
+// License types are defined in license.js
 
 // Chrome sync quota limits (for reference)
 const SYNC_QUOTA_BYTES = 102400; // 100KB total

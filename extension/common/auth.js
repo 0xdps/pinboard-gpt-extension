@@ -1,7 +1,7 @@
 // Authentication and API integration for Pinboard GPT
 // Handles user login, license validation, and cloud sync
 
-const API_BASE_URL = 'https://api.pinboard-gpt.dps.codes';
+const API_BASE_URL = 'https://pinboard-gpt.dps.codes/api';
 
 // Auth state management
 async function getAuthToken() {
@@ -41,9 +41,13 @@ async function isLoggedIn() {
 }
 
 // Google Sign-In using Chrome Identity API
+// NOTE: Requires OAuth2 configuration in manifest.json
+// See OAUTH_SETUP.md for setup instructions
 async function signInWithGoogle() {
   try {
     // Get Google OAuth token using Chrome Identity API
+    // This will fail with "Invalid OAuth2 Client ID" if manifest.json
+    // doesn't have the oauth2 section configured properly
     const token = await new Promise((resolve, reject) => {
       chrome.identity.getAuthToken({ interactive: true }, (token) => {
         if (chrome.runtime.lastError) {
@@ -89,7 +93,7 @@ async function signInWithGoogle() {
 
     return { success: true, message: 'Signed in successfully!', user: data.user };
   } catch (error) {
-    console.error('Google sign-in error:', error);
+    console.error('Google sign-in error:', error.message);
     return { success: false, message: 'Google sign-in failed. Please try again.' };
   }
 }

@@ -9,6 +9,7 @@
     "alarms",
     "identity"
   ],
+
   "host_permissions": [
     "https://chatgpt.com/*",
     "https://chat.openai.com/*"

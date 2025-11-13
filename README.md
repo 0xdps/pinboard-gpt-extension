@@ -73,12 +73,18 @@ cd pingpt-chrome-extension
 # Install dependencies (for building icons/assets)
 npm install
 
+# Build extension
+npm run build:chrome
+
 # Load in Chrome
 # 1. Go to chrome://extensions/
 # 2. Enable "Developer Mode"
 # 3. Click "Load unpacked"
-# 4. Select this folder
+# 4. Select the build/chrome/ folder
 ```
+
+**⚠️ Google Sign-In Setup (Optional):**
+If you want to use Google authentication features, you'll need to configure OAuth2 credentials. See [OAUTH_SETUP.md](OAUTH_SETUP.md) for detailed instructions.
 
 ## 📖 Usage
 
