@@ -68,34 +68,47 @@
                 </p>
 
                 <h2>What Data We Collect</h2>
-                <p>Pinboard GPT stores only the data you choose to create via the extension:</p>
-                <ul>
-                        <li>ChatGPT message content that you choose to pin</li>
-                        <li>Custom names and tags you add to pins</li>
-                        <li>URLs of ChatGPT conversations for navigation</li>
-                        <li>Timestamps of when pins are created</li>
-                    </ul>
-                    <p>
-                        Storage depends on your plan:
-                    </p>
-                    <ul>
-                        <li><strong>Free (up to 10 pins):</strong> All pin data is stored locally in your browser using IndexedDB and does not leave your device.</li>
-                        <li><strong>Pro:</strong> Pins are synced across your Chrome devices using the browser's sync storage (Chrome Sync). Data is still protected by the browser and your Google account.</li>
-                        <li><strong>Premium:</strong> Offers optional cloud sync with our encrypted storage backend to enable cross-browser sync and larger storage limits. Cloud sync is optional and only enabled if you opt in.</li>
-                    </ul>
-                    <p>
-                        By default, new users are on the Free tier and their data remains local. Upgrading to Pro or Premium enables additional sync features described above.
-                    </p>
+                <p>
+                    Pinboard GPT recognizes two separate collection models:
+                </p>
+                <ol>
+                    <li><strong>Local / browser-managed data (Free & Pro):</strong> For Free users (up to 10 pins) and Pro users (when using browser sync), all pin data remains under your control — stored locally in your browser (IndexedDB) or encrypted in your browser's sync service (Chrome Sync / Firefox Sync). We do <em>not</em> collect or transmit this data to our servers for Free or Pro users by default.</li>
+                    <li><strong>Optional cloud collection (Premium, opt-in):</strong> If you explicitly opt into Premium cloud sync, we will securely store the following data on our encrypted backend to enable cross-browser sync and larger storage limits:
+                        <ul>
+                            <li>ChatGPT message content that you choose to pin</li>
+                            <li>Custom names and tags you add to pins</li>
+                            <li>URLs of ChatGPT conversations for navigation</li>
+                            <li>Timestamps of when pins are created</li>
+                        </ul>
+                    </li>
+                </ol>
+                <p>
+                    By default, new users are on the Free tier and their data remains local. Pro users who enable browser sync still keep data managed by the browser provider — we only receive or store pin data if you explicitly enable Premium cloud sync.
+                </p>
 
-                <h2>What We Don't Do</h2>
-                <ul>
-                        <li>❌ No analytics or tracking</li>
-                        <li>❌ No user accounts or authentication</li>
-                        <li>❌ No data transmission to external servers</li>
-                        <li>❌ No third-party services or SDKs</li>
-                        <li>❌ No cookies (except browser-native storage)</li>
-                        <li>❌ No advertising or monetization</li>
-                    </ul>
+                                <h2>What We Don't Do</h2>
+                                <ul>
+                                                <li>❌ No analytics or tracking</li>
+                                                <li>❌ No data transmission to external servers by default</li>
+                                                <li>❌ No third-party SDKs for data collection</li>
+                                                <li>❌ No cookies for tracking (only browser-native storage):</li>
+                                                <li>❌ No advertising or hidden monetization</li>
+                                        </ul>
+
+                                <div style="margin-top:12px;">
+                                    <strong>Note on Accounts & Authentication:</strong>
+                                    <p>
+                                        Although the extension requires no account for basic use, signing in is required when you choose to purchase Pro/Premium or enable cloud sync. Authentication is optional and used only to:
+                                    </p>
+                                    <ul>
+                                        <li>Authorize purchases and associate licenses with your account (we use industry-standard OAuth providers such as Google for login).</li>
+                                        <li>Enable browser sync (Pro) or optional encrypted cloud sync (Premium) when you explicitly opt in.</li>
+                                        <li>Store minimal profile data (email and display name) and secure tokens required for licensing and sync — we do not collect or store additional personal data without your consent.</li>
+                                    </ul>
+                                    <p>
+                                        In short: basic use remains account-free and local-first. Accounts and authentication are only introduced when you opt into paid features or cross-device sync. We strive to minimize data collection and to make what is stored and why fully transparent.
+                                    </p>
+                                </div>
 
                 <h2>Permissions Explained</h2>
                 <p>Pinboard GPT requests the following browser permissions:</p>
