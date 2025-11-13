@@ -1236,9 +1236,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   // License Badge Display
   async function updateLicenseBadge() {
     const license = await getLicense();
-    const headerBranding = document.querySelector('.header-branding');
+    const headerActions = document.querySelector('.header-actions');
     const syncStatus = document.getElementById('syncStatus');
     const upgradeBtn = document.getElementById('upgradeBtn');
+    const coffeeBtn = document.getElementById('coffeeBtn');
     
     // Remove existing badge
     const existingBadge = document.querySelector('.license-badge');
@@ -1249,15 +1250,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       const badge = document.createElement('span');
       badge.className = `license-badge ${license}`;
       badge.textContent = license === LICENSE_TYPES.PRO ? 'PRO' : 'PREMIUM';
-      headerBranding.appendChild(badge);
-    }
-    
-    // Update sync status and upgrade button visibility
-    if (license === LICENSE_TYPES.PREMIUM || license === LICENSE_TYPES.PRO) {
+      headerActions.prepend(badge);
+
       syncStatus.textContent = '';
       syncStatus.style.color = 'var(--primary)';
       // Hide upgrade button for PRO/PREMIUM users
       if (upgradeBtn) upgradeBtn.style.display = 'none';
+      if (license === LICENSE_TYPES.PREMIUM && coffeeBtn) coffeeBtn.style.display = 'none';
     } else {
       syncStatus.innerHTML = '<span style="cursor: pointer; color: var(--primary);">Upgrade to Pro</span>';
       syncStatus.style.color = 'var(--text-secondary)';
