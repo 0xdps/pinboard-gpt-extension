@@ -7,8 +7,12 @@
 			"destination": "/api"
 		},
 		{
-			"source": "/:path*",
-			"destination": "/website/:path*"
+			"source": "/auth/login",
+			"destination": "/auth/login.html"
+		},
+		{
+			"source": "/auth/callback",
+			"destination": "/auth/callback.html"
 		}
 	],
 	"headers": [
