@@ -768,10 +768,9 @@ extension/common/icons/*.svg
 extension/common/icons/*.png
 
 # Website icons (copied from assets/icons/ during build)
-# website/images/icon.svg
-# website/images/favicon-*.png
-# website/images/favicon.ico
-
+website/images/icon.svg
+website/images/favicon-*.png
+website/images/favicon.ico
 
 *.md
 !README.md

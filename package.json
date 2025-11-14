@@ -25,6 +25,7 @@
     "deploy": "vercel --prod",
     "deploy:preview": "vercel",
     "release": "npm run build && npm run pack",
+    "postinstall": "npm run build:website && npm run build:ext",
     "feedback:setup": "echo '🚀 Feedback Setup:' && echo '1. Create GitHub token: https://github.com/settings/tokens' && echo '2. Run: vercel env add GITHUB_TOKEN' && echo '3. Run: npm run deploy' && echo '4. Test: npm run feedback:test'",
     "feedback:test": "node scripts/test-feedback.js",
     "feedback:logs": "vercel logs --follow",
