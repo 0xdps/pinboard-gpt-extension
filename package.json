@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Pin individual ChatGPT messages or entire chats. Add custom names and tags, search instantly, and jump back to the original conversation. Features dark mode support and ultra-fast serverless API powered by Hono.",
   "scripts": {
-    "clean": "rimraf build extension/common/icons/*.png website/images/*.png website/images/favicon.ico assets/icons/",
+    "clean": "node scripts/clean.js",
     "copy:extension-icons": "mkdirp extension/common/icons && cpx \"assets/icons/icon-*.png\" extension/common/icons",
     "copy:website-icons": "mkdirp website/images && cpx \"assets/icons/favicon-*.png\" website/images && cpx \"assets/icons/favicon.ico\" website/images",
     "copy:icons": "npm run copy:extension-icons && npm run copy:website-icons",
