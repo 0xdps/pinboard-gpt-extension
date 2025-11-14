@@ -36,7 +36,6 @@
     "users:upgrade": "node scripts/upgrade-user.js"
   },
   "dependencies": {
-    "canvas": "^3.2.0",
     "sharp": "^0.34.4"
   },
   "devDependencies": {
