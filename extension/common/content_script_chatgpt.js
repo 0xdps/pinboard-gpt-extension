@@ -5,24 +5,51 @@
 async function getLicense() {
   try {
     const result = await chrome.storage.local.get(['license']);
-    return result.license || { type: LICENSE_TYPES.FREE };
+    const license = result.license;
+    
+    // Handle both string format ("pro") and object format ({type: "pro"})
+    if (typeof license === 'string') {
+      return license;
+    } else if (license?.type) {
+      return license.type;
+    }
+    
+    return LICENSE_TYPES.FREE;
   } catch (error) {
     console.error('Error getting license:', error);
-    return { type: LICENSE_TYPES.FREE };
+    return LICENSE_TYPES.FREE;
   }
 }
 
 async function canAddPin() {
   try {
     const license = await getLicense();
-    const limits = LICENSE_LIMITS[license.type];
+    console.log('[DEBUG] canAddPin - license:', license);
+    console.log('[DEBUG] Available LICENSE_LIMITS keys:', Object.keys(LICENSE_LIMITS));
+    
+    // Handle both string format ("pro") and object format ({type: "pro"})
+    let licenseType;
+    if (typeof license === 'string') {
+      licenseType = license.toLowerCase();
+    } else if (license?.type) {
+      licenseType = String(license.type).toLowerCase();
+    } else {
+      licenseType = LICENSE_TYPES.FREE;
+    }
+    
+    const limits = LICENSE_LIMITS[licenseType] || LICENSE_LIMITS[LICENSE_TYPES.FREE];
+    
+    console.log('[DEBUG] canAddPin - normalized type:', licenseType);
+    console.log('[DEBUG] canAddPin - limits:', limits);
     
     if (limits.maxPins === Infinity) {
+      console.log('[DEBUG] canAddPin - Unlimited pins (PRO/PRO+)');
       return true;
     }
     
     // Count current pins
     const pins = await idbGetAll();
+    console.log('[DEBUG] canAddPin - current pins:', pins.length, 'max:', limits.maxPins);
     return pins.length < limits.maxPins;
   } catch (error) {
     console.error('Error checking pin limit:', error);
@@ -33,7 +60,18 @@ async function canAddPin() {
 async function getRemainingPins() {
   try {
     const license = await getLicense();
-    const limits = LICENSE_LIMITS[license.type];
+    
+    // Handle both string format ("pro") and object format ({type: "pro"})
+    let licenseType;
+    if (typeof license === 'string') {
+      licenseType = license.toLowerCase();
+    } else if (license?.type) {
+      licenseType = String(license.type).toLowerCase();
+    } else {
+      licenseType = LICENSE_TYPES.FREE;
+    }
+    
+    const limits = LICENSE_LIMITS[licenseType] || LICENSE_LIMITS[LICENSE_TYPES.FREE];
     
     if (limits.maxPins === Infinity) {
       return Infinity;
@@ -45,6 +83,111 @@ async function getRemainingPins() {
     console.error('Error getting remaining pins:', error);
     return 0;
   }
+}
+
+// Check license and show appropriate message if limit reached
+async function checkPinLimitAndNotify() {
+  const canAdd = await canAddPin();
+  if (!canAdd) {
+    const license = await getLicense();
+    const licenseType = typeof license === 'string' ? license : (license?.type || LICENSE_TYPES.FREE);
+    
+    if (licenseType === LICENSE_TYPES.FREE || licenseType.toLowerCase() === 'free') {
+      showUpgradeNotification();
+    } else {
+      showNotification('⚠️ Pin limit reached');
+    }
+    return false;
+  }
+  return true;
+}
+
+// Get theme colors based on dark mode setting
+async function getThemeColors() {
+  let isDarkMode = false;
+  try {
+    const result = await chrome.storage.local.get(['theme']);
+    isDarkMode = result.theme === 'dark';
+  } catch (err) {
+    debugLog('Could not load theme setting:', err);
+  }
+
+  return isDarkMode ? {
+    overlay: 'rgba(0, 0, 0, 0.7)',
+    dialogBg: '#2d2d2d',
+    dialogText: '#e4e4e4',
+    headingText: '#ffffff',
+    labelText: '#b8b8b8',
+    previewBg: '#1a1a1a',
+    previewBorder: '#404040',
+    previewText: '#b8b8b8',
+    inputBg: '#1a1a1a',
+    inputBorder: '#404040',
+    inputText: '#e4e4e4',
+    inputPlaceholder: '#808080',
+    tagBg: '#1a3d5f',
+    tagText: '#5da5da',
+    cancelBg: '#1a1a1a',
+    cancelBorder: '#404040',
+    cancelText: '#b8b8b8',
+    cancelHover: '#2d2d2d',
+    saveBg: '#10a37f',
+    saveText: '#ffffff',
+    saveHover: '#0d8a6a',
+    focusBorder: '#10a37f',
+    helpText: '#808080'
+  } : {
+    overlay: 'rgba(0, 0, 0, 0.5)',
+    dialogBg: '#ffffff',
+    dialogText: '#202124',
+    headingText: '#202124',
+    labelText: '#5f6368',
+    previewBg: '#f8f9fa',
+    previewBorder: '#e8eaed',
+    previewText: '#5f6368',
+    inputBg: '#ffffff',
+    inputBorder: '#dadce0',
+    inputText: '#202124',
+    inputPlaceholder: '#80868b',
+    tagBg: '#e8f0fe',
+    tagText: '#1a73e8',
+    cancelBg: '#ffffff',
+    cancelBorder: '#dadce0',
+    cancelText: '#5f6368',
+    cancelHover: '#f8f9fa',
+    saveBg: '#10a37f',
+    saveText: '#ffffff',
+    saveHover: '#0d8a6a',
+    focusBorder: '#10a37f',
+    helpText: '#80868b'
+  };
+}
+
+// Create dialog header with icon
+function createDialogHeader(title, colors) {
+  const header = document.createElement('h2');
+  header.style.cssText = `margin: 0 0 20px 0; font-size: 20px; color: ${colors.headingText}; display: flex; align-items: center; gap: 8px;`;
+  
+  // Use extension icon
+  try {
+    const runtime = chrome.runtime || browser.runtime;
+    if (runtime && runtime.getURL) {
+      const iconImg = document.createElement('img');
+      iconImg.src = runtime.getURL('icons/icon-32.png');
+      iconImg.width = 24;
+      iconImg.height = 24;
+      iconImg.style.cssText = 'display: block; flex-shrink: 0;';
+      header.appendChild(iconImg);
+    }
+  } catch (error) {
+    debugLog('Pinboard GPT: Could not load icon for dialog');
+  }
+  
+  const headerText = document.createElement('span');
+  headerText.textContent = title;
+  header.appendChild(headerText);
+  
+  return header;
 }
 
 // Debug logging system for content script
@@ -449,33 +592,15 @@ function openPinDialogWithData(pinData) {
     
     const messageText = pinData.messageText;
     
-    // Get theme setting from storage
-    let isDarkMode = false;
-    try {
-      // Check extension context before accessing storage
-      if (!isExtensionContextValid()) {
-        debugLog('Pinboard GPT: Extension context invalidated, using default theme');
-      } else {
-        const result = await chrome.storage.local.get(['theme']);
-        isDarkMode = result.theme === 'dark';
-      }
-    } catch (err) {
-      debugLog('Could not load theme setting:', err);
-      
-      // Check if this is due to extension context invalidation
-      if (err.message && err.message.includes('Extension context invalidated')) {
-        debugLog('Pinboard GPT: Extension context invalidated while accessing storage');
-        window.location.reload();
-        return;
-      }
-    }
+    // Get theme colors (consolidated)
+    const colors = await getThemeColors();
     
     // Show the pin dialog with pre-filled data
-    createPinDialog(messageText, pinData, isDarkMode, resolve, reject);
+    createPinDialog(messageText, pinData, colors, resolve, reject);
   });
 }
 
-// Create and show pin dialog
+// Create and show pin dialog (Hover method)
 function openPinDialog(element) {
   return new Promise(async (resolve) => {
     const messageText = element.innerText || element.textContent || '';
@@ -485,22 +610,10 @@ function openPinDialog(element) {
       return;
     }
     
-    // Check license before allowing pin creation
-    const canAdd = await canAddPin();
-    if (!canAdd) {
-      const remaining = await getRemainingPins();
-      const license = await getLicense();
-      
-      if (license.type === LICENSE_TYPES.FREE) {
-        // Show upgrade message for free users
-        showUpgradeNotification();
-        resolve();
-        return;
-      } else {
-        showNotification('⚠️ Pin limit reached');
-        resolve();
-        return;
-      }
+    // Check license before allowing pin creation (consolidated check)
+    if (!(await checkPinLimitAndNotify())) {
+      resolve();
+      return;
     }
     
     // Create pin data from element
@@ -518,75 +631,18 @@ function openPinDialog(element) {
       selectionText: null // No specific selection for hover pins
     };
     
-    // Get theme setting from storage
-    let isDarkMode = false;
-    try {
-      const result = await chrome.storage.local.get(['theme']);
-      isDarkMode = result.theme === 'dark';
-    } catch (err) {
-      debugLog('Could not load theme setting:', err);
-    }
+    // Get theme colors (consolidated)
+    const colors = await getThemeColors();
     
     // Show the pin dialog
-    createPinDialog(messageText, pinData, isDarkMode, resolve, resolve);
+    createPinDialog(messageText, pinData, colors, resolve, resolve);
   });
 }
 
-// Create the pin dialog UI (shared function)
-function createPinDialog(messageText, pinData, isDarkMode, resolve, reject = resolve) {
+// Create the pin dialog UI (shared function) - now accepts colors directly
+function createPinDialog(messageText, pinData, colors, resolve, reject = resolve) {
   try {
     debugLog('Pinboard GPT: Creating pin dialog with data:', pinData);
-    
-    // Get theme colors
-    const colors = isDarkMode ? {
-      overlay: 'rgba(0, 0, 0, 0.7)',
-      dialogBg: '#2d2d2d',
-      dialogText: '#e4e4e4',
-      headingText: '#ffffff',
-      labelText: '#b8b8b8',
-      previewBg: '#1a1a1a',
-      previewBorder: '#404040',
-      previewText: '#b8b8b8',
-      inputBg: '#1a1a1a',
-      inputBorder: '#404040',
-      inputText: '#e4e4e4',
-      inputPlaceholder: '#808080',
-      tagBg: '#1a3d5f',
-      tagText: '#5da5da',
-      cancelBg: '#1a1a1a',
-      cancelBorder: '#404040',
-      cancelText: '#b8b8b8',
-      cancelHover: '#2d2d2d',
-      saveBg: '#10a37f',
-      saveText: '#ffffff',
-      saveHover: '#0d8a6a',
-      focusBorder: '#10a37f',
-      helpText: '#808080'
-    } : {
-      overlay: 'rgba(0, 0, 0, 0.5)',
-      dialogBg: '#ffffff',
-      dialogText: '#202124',
-      headingText: '#202124',
-      labelText: '#5f6368',
-      previewBg: '#f8f9fa',
-      previewBorder: '#e8eaed',
-      previewText: '#5f6368',
-      inputBg: '#ffffff',
-      inputBorder: '#dadce0',
-      inputText: '#202124',
-      inputPlaceholder: '#80868b',
-      tagBg: '#e8f0fe',
-      tagText: '#1a73e8',
-      cancelBg: '#ffffff',
-      cancelBorder: '#dadce0',
-      cancelText: '#5f6368',
-      cancelHover: '#f8f9fa',
-      saveBg: '#10a37f',
-      saveText: '#ffffff',
-      saveHover: '#0d8a6a',
-      focusBorder: '#10a37f',
-      helpText: '#80868b'
-    };
     
     // Create modal overlay
     const overlay = document.createElement('div');
@@ -621,28 +677,8 @@ function createPinDialog(messageText, pinData, isDarkMode, resolve, reject = res
     
     const messagePreview = messageText.length > 300 ? messageText.slice(0, 300) + '...' : messageText;
     
-    // Create dialog elements safely with DOM methods
-    
-    // Header with extension icon
-    const header = document.createElement('h2');
-    header.style.cssText = `margin: 0 0 20px 0; font-size: 20px; color: ${colors.headingText}; display: flex; align-items: center; gap: 8px;`;
-    
-    // Use extension icon
-    try {
-      const runtime = chrome.runtime || browser.runtime;
-      if (runtime && runtime.getURL) {
-        const iconImg = document.createElement('img');
-        iconImg.src = runtime.getURL('icons/icon-32.png');
-        iconImg.width = 24;
-        iconImg.height = 24;
-        iconImg.style.cssText = 'display: block; flex-shrink: 0;';
-        header.appendChild(iconImg);
-      }
-    } catch (error) {
-      debugLog('Pinboard GPT: Could not load icon for dialog');
-    }
-    
-    header.appendChild(document.createTextNode('Pin Message'));
+    // Header (consolidated)
+    const header = createDialogHeader('Pin Message', colors);
     
     // Preview section
     const previewSection = document.createElement('div');
@@ -3350,19 +3386,9 @@ async function pinChat(chatId, chatTitle) {
     return;
   }
   
-  // Check license before allowing pin creation
-  const canAdd = await canAddPin();
-  if (!canAdd) {
-    const license = await getLicense();
-    
-    if (license.type === LICENSE_TYPES.FREE) {
-      // Show upgrade message for free users
-      showUpgradeNotification();
-      return;
-    } else {
-      showNotification('⚠️ Pin limit reached');
-      return;
-    }
+  // Check license before allowing pin creation (consolidated check)
+  if (!(await checkPinLimitAndNotify())) {
+    return;
   }
   
   // Open dialog to get name and tags from user
@@ -3372,56 +3398,8 @@ async function pinChat(chatId, chatTitle) {
 // Open dialog for pinning chat with name and tags
 function openChatPinDialog(chatId, chatTitle) {
   return new Promise(async (resolve) => {
-    // Get theme setting from storage
-    let isDarkMode = false;
-    try {
-      const result = await chrome.storage.local.get(['theme']);
-      isDarkMode = result.theme === 'dark';
-    } catch (err) {
-      debugLog('Could not load theme setting:', err);
-    }
-
-    const colors = isDarkMode ? {
-      overlay: 'rgba(0, 0, 0, 0.7)',
-      dialogBg: '#2d2d2d',
-      headingText: '#ffffff',
-      labelText: '#b8b8b8',
-      inputBg: '#1a1a1a',
-      inputBorder: '#404040',
-      inputText: '#e4e4e4',
-      inputPlaceholder: '#808080',
-      tagBg: '#1a3d5f',
-      tagText: '#5da5da',
-      cancelBg: '#1a1a1a',
-      cancelBorder: '#404040',
-      cancelText: '#b8b8b8',
-      cancelHover: '#2d2d2d',
-      saveBg: '#10a37f',
-      saveText: '#ffffff',
-      saveHover: '#0d8a6a',
-      focusBorder: '#10a37f',
-      helpText: '#808080'
-    } : {
-      overlay: 'rgba(0, 0, 0, 0.5)',
-      dialogBg: '#ffffff',
-      headingText: '#202124',
-      labelText: '#5f6368',
-      inputBg: '#ffffff',
-      inputBorder: '#dadce0',
-      inputText: '#202124',
-      inputPlaceholder: '#80868b',
-      tagBg: '#e8f0fe',
-      tagText: '#1a73e8',
-      cancelBg: '#ffffff',
-      cancelBorder: '#dadce0',
-      cancelText: '#5f6368',
-      cancelHover: '#f8f9fa',
-      saveBg: '#10a37f',
-      saveText: '#ffffff',
-      saveHover: '#0d8a6a',
-      focusBorder: '#10a37f',
-      helpText: '#80868b'
-    };
+    // Get theme colors (consolidated)
+    const colors = await getThemeColors();
 
     // Create modal overlay
     const overlay = document.createElement('div');
@@ -3453,28 +3431,8 @@ function openChatPinDialog(chatId, chatTitle) {
       font-family: system-ui, -apple-system, sans-serif;
     `;
 
-    // Header
-    const header = document.createElement('h2');
-    header.style.cssText = `margin: 0 0 20px 0; font-size: 20px; color: ${colors.headingText}; display: flex; align-items: center; gap: 8px;`;
-    
-    // Use extension icon
-    try {
-      const runtime = chrome.runtime || browser.runtime;
-      if (runtime && runtime.getURL) {
-        const iconImg = document.createElement('img');
-        iconImg.src = runtime.getURL('icons/icon-32.png');
-        iconImg.width = 24;
-        iconImg.height = 24;
-        iconImg.style.cssText = 'display: block; flex-shrink: 0;';
-        header.appendChild(iconImg);
-      }
-    } catch (error) {
-      debugLog('Pinboard GPT: Could not load icon for dialog');
-    }
-    
-    const headerText = document.createElement('span');
-    headerText.textContent = 'Pin Chat';
-    header.appendChild(headerText);
+    // Header (consolidated)
+    const header = createDialogHeader('Pin Chat', colors);
 
     // Name input section
     const nameSection = document.createElement('div');
