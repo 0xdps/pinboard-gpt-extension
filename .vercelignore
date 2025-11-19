@@ -12,7 +12,8 @@ assets/icons/
 
 # Documentation
 *.md
-!website/README.md
+# Only deploy the frontend, not the extension or backend
+!frontend/README.md
 
 # Logs
 *.log

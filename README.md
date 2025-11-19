@@ -137,11 +137,11 @@ npm run deploy
 # Preview deployment  
 npm run deploy:preview
 
-# Build website locally
-npm run build:website
+# Build frontend locally
+npm run build:frontend
 
-# Run website locally
-npm run dev:website
+# Run frontend locally
+npm run dev:frontend
 # Visit: http://localhost:8080
 ```
 
@@ -204,8 +204,9 @@ npm install          # Install dependencies
 npm run build        # Generate icons and assets
 npm run dev:chrome   # Development build for Chrome
 npm run dev:chrome   # Development build for Chrome
-npm run dev:firefox  # Development build for Firefox
-npm run dev:website  # Run website locally
+npm run dev:firefox # Run Firefox build
+npm run dev:frontend  # Run frontend locally
+```
 npm run pack         # Package extension for stores
 npm run release      # Build and package in one step
 

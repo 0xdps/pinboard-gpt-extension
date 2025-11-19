@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 
 const PORT = 8080;
-const WEBSITE_DIR = path.join(__dirname, '../website');
+const FRONTEND_DIR = path.join(__dirname, '../frontend');
 
 const mimeTypes = {
   '.html': 'text/html',
@@ -25,7 +25,7 @@ const mimeTypes = {
 };
 
 const server = http.createServer((req, res) => {
-  let filePath = path.join(WEBSITE_DIR, req.url === '/' ? 'index.html' : req.url);
+  let filePath = path.join(FRONTEND_DIR, req.url === '/' ? 'index.html' : req.url);
   
   // Remove query strings
   filePath = filePath.split('?')[0];
@@ -50,7 +50,7 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`\n🌐 Website server running at http://localhost:${PORT}/`);
-  console.log(`📁 Serving files from: ${WEBSITE_DIR}`);
+  console.log(`\n🌐 Frontend server running at http://localhost:${PORT}/`);
+  console.log(`📁 Serving files from: ${FRONTEND_DIR}`);
   console.log('\n🛑 Press Ctrl+C to stop\n');
 });

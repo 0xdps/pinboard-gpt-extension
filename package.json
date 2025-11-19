@@ -4,28 +4,25 @@
   "description": "Pin individual ChatGPT messages or entire chats. Add custom names and tags, search instantly, and jump back to the original conversation. Features dark mode support and ultra-fast serverless API powered by Hono.",
   "scripts": {
     "clean": "node scripts/clean.js",
-    "copy:extension-icons": "mkdirp extension/common/icons && cpx \"assets/icons/icon-*.png\" extension/common/icons",
-    "copy:website-icons": "mkdirp website/images && cpx \"assets/icons/favicon-*.png\" website/images && cpx \"assets/icons/favicon.ico\" website/images",
-    "copy:icons": "npm run copy:extension-icons && npm run copy:website-icons",
-    "build:chrome": "npm run build:assets && npm run copy:icons && rimraf build/chrome && mkdirp build/chrome && cpx \"extension/common/**\" build/chrome && cpx extension/chrome/idb.js build/chrome && cpx extension/chrome/browser.js build/chrome && cpx extension/chrome/manifest.json build/chrome && node scripts/prepend-browser.js chrome build/chrome && node scripts/build-background.js build/chrome && node scripts/replace-browser-text.js chrome build/chrome/popup.html",
-    "build:firefox": "npm run build:assets && npm run copy:icons && rimraf build/firefox && mkdirp build/firefox && cpx \"extension/common/**\" build/firefox && cpx extension/firefox/idb.js build/firefox && cpx extension/firefox/browser.js build/firefox && cpx extension/firefox/manifest.json build/firefox && node scripts/prepend-browser.js firefox build/firefox && node scripts/build-background.js build/firefox && node scripts/replace-browser-text.js firefox build/firefox/popup.html",
-    "build:ext": "npm run clean && npm run build:chrome && npm run build:firefox",
-    "build:icons": "node scripts/generate-assets.js",
     "build:assets": "node scripts/generate-assets.js",
+
+    "copy:extension-icons": "mkdirp extension/common/icons && cpx \"assets/icons/icon-*.png\" extension/common/icons",
+    "copy:frontend-icons": "mkdirp frontend/images && cpx \"assets/icons/favicon-*.png\" frontend/images && cpx \"assets/icons/favicon.ico\" frontend/images",
+    "copy:icons": "npm run copy:extension-icons && npm run copy:frontend-icons",
+
+    "build:chrome": "npm run build:assets && npm run copy:icons && rimraf build/chrome && mkdirp build/chrome && cpx \"extension/common/**\" build/chrome && cpx \"extension/chrome/*\" build/chrome && node scripts/prepend-browser.js chrome build/chrome && node scripts/build-background.js build/chrome && node scripts/replace-browser-text.js chrome build/chrome/popup.html",
+    "build:firefox": "npm run build:assets && npm run copy:icons && rimraf build/firefox && mkdirp build/firefox && cpx \"extension/common/**\" build/firefox && cpx \"extension/firefox/*\" build/firefox && node scripts/prepend-browser.js firefox build/firefox && node scripts/build-background.js build/firefox && node scripts/replace-browser-text.js firefox build/firefox/popup.html",
+    "build:ext": "npm run clean && npm run build:chrome && npm run build:firefox",
+
+    "build:frontend": "npm run build:assets && npm run copy:frontend-icons",
+    "dev:frontend": "npm run copy:frontend-icons && node scripts/serve-frontend.js",
+
+    "build": "npm run build:frontend && npm run build:ext",
+
     "pack:chrome": "shx mkdir -p pack && node scripts/pack-chrome.js",
     "pack:firefox": "shx mkdir -p pack && node scripts/pack-firefox.js",
     "pack": "npm run build && npm run pack:chrome && npm run pack:firefox",
-    "dev:chrome": "npm run build:chrome && shx echo \"Load build/chrome in Chrome\"",
-    "dev:firefox": "npm run build:firefox && shx echo \"Load build/firefox in Firefox\"",
-    "dev": "npm run build && shx echo \"Built both Chrome and Firefox versions\"",
-    "build:website": "npm run build:assets && npm run copy:website-icons",
-    "dev:website": "npm run copy:website-icons && node scripts/serve-website.js",
-    "predeploy": "npm run build:website",
-    "deploy": "vercel --prod",
-    "deploy:preview": "vercel",
-    "release": "npm run build && npm run pack",
-    "postinstall": "npm run build:website && npm run build:ext",
-    "vercel-build": "npm run build:website",
+
     "users:list": "node scripts/list-users.js",
     "users:upgrade": "node scripts/upgrade-user.js"
   },

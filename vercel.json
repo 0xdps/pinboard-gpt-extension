@@ -1,10 +1,10 @@
 {
 	"framework": null,
-	"outputDirectory": "website",
+	"outputDirectory": "frontend",
 	"rewrites": [
 		{
 			"source": "/api/:path*",
-			"destination": "/api"
+			"destination": "/backend"
 		},
 		{
 			"source": "/auth/login",

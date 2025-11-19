@@ -24,6 +24,8 @@ export { db };
 // Helper function to run migrations if needed
 export async function runMigrations() {
   if (db) {
-    await migrate(db, { migrationsFolder: './api/db/migrations' });
+    console.log('📦 Running database migrations...');
+    await migrate(db, { migrationsFolder: './backend/db/migrations' });
+    console.log('✅ Migrations complete');
   }
 }

@@ -37,29 +37,23 @@ npm run build
 
 ```
 gpt-pinboard-extension/
-├── 📁 extension/           # Extension source code
-│   ├── common/           # Shared code (JS, HTML, CSS, icons)
-│   ├── chrome/           # Chrome-specific manifest.json
-│   └── firefox/          # Firefox-specific manifest.json
-├── 📁 website/            # Static promotional website
-│   ├── index.html        # Main page with browser detection
+├── extension/           # Browser extension source
+│   ├── common/          # Shared code
+│   ├── chrome/          # Chrome-specific
+│   └── firefox/         # Firefox-specific
+├── frontend/            # Static website for the extension
+│   ├── index.html       # Main frontend page
 │   ├── goodbye.html      # Feedback collection page
 │   ├── support.html      # Help and support page
 │   ├── css/styles.css    # Responsive website styles
 │   ├── js/main.js        # Browser detection & feedback
 │   └── images/           # Website assets (generated)
-├── 📁 api/               # Hono-based serverless API
-│   ├── routes/           # API route handlers
-│   │   ├── auth.js       # Google OAuth & email/password auth
-│   │   ├── user.js       # User profile & license management
-│   │   ├── pins.js       # Cloud pin sync (Premium)
-│   │   ├── feedback.js   # Feedback collection
-│   │   └── install.js    # Browser detection & redirects
-│   ├── middleware/       # Authentication middleware
-│   ├── db/               # Turso database & schema
-│   ├── index.js          # Hono app entry point
-│   └── package.json      # API dependencies
-├── 📁 assets/            # Source images for icon generation
+├── 📁 backend/            # Backend API (Hono + Turso)
+│   ├── index.js          # API entry point
+│   ├── routes/           # API endpoints
+│   ├── db/               # Database schema & migrations
+│   └── middleware/       # Auth & API middleware
+├── 📁 frontend/           # Static promotional website
 ├── 📁 scripts/           # Build and utility scripts
 │   ├── generate-assets.js # Icon generation
 │   └── test-feedback.js  # Feedback system testing
@@ -108,14 +102,14 @@ gpt-pinboard-extension/
 │   ├── common/          # Shared extension code (JS, HTML, CSS, icons)
 │   ├── chrome/          # Chrome-specific manifest.json
 │   └── firefox/         # Firefox-specific manifest.json
-├── website/             # Static website for the extension
-│   ├── index.html       # Main website page
+├── frontend/            # Static website for the extension
+│   ├── index.html       # Main frontend page
 │   ├── sitemap.xml      # XML sitemap for SEO
 │   ├── sitemap.xsl      # XSL stylesheet for visual sitemap
 │   ├── robots.txt       # Web crawler directives
-│   ├── css/             # Website styles
-│   ├── js/              # Website JavaScript
-│   └── images/          # Website assets
+│   ├── css/             # Frontend styles
+│   ├── js/              # Frontend JavaScript
+│   └── images/          # Frontend assets
 ├── dist/                # Build output (gitignored)
 │   ├── chrome/          # Chrome extension build
 │   └── firefox/         # Firefox extension build
@@ -151,16 +145,16 @@ Icons and images are generated from source PNG files and automatically copied du
 - **Sources**: `assets/*.png` (version controlled - source images)
 - **Generated**: `assets/icons/` (generated from sources, gitignored)
 - **Extension**: `extension/common/icons/` (copied from generated, gitignored)
-- **Website**: `website/images/` (copied from generated, gitignored)
+- **Frontend**: `frontend/images/` (copied from generated, gitignored)
 - **Distribution**: `build/chrome/` and `build/firefox/` (build outputs, gitignored)
 
 #### Icon Names (Generic)
 - `icon.svg` - Main extension icon (675x675)
 - `logo.svg` - Brand logo (150x75) 
 - `icon-16.png`, `icon-32.png`, `icon-48.png`, `icon-128.png` - Extension manifest icons
-- `favicon-16x16.png`, `favicon-32x32.png`, `favicon-48x48.png` - Website favicon variants
-- `favicon.ico` - Website favicon (32x32)
-- `demo-screenshot.svg` - Website demo image
+- `favicon-16x16.png`, `favicon-32x32.png`, `favicon-48x48.png` - Frontend favicon variants
+- `favicon.ico` - Frontend favicon (32x32)
+- `demo-screenshot.svg` - Frontend demo image
 
 #### Asset Generation
 Assets are generated from source PNG files using:
@@ -198,27 +192,27 @@ npm run build:assets  # Generate all icons from source PNG files
 
 1. **Extension code**: Edit files in `extension/common/`
 2. **Browser-specific**: Edit manifests in `extension/chrome/` or `extension/firefox/`
-3. **Website**: Edit files in `website/` directory
-4. **Rebuild**: Run `npm run build` (for extension) or `npm run dev:website` (for website)
-5. **Test**: Load from `dist/chrome/` or `dist/firefox/` for extension, visit localhost:8080 for website
+3. **Frontend**: Edit files in `frontend/` directory
+4. **Rebuild**: Run `npm run build` (for extension) or `npm run dev:frontend` (for frontend)
+5. **Test**: Load from `dist/chrome/` or `dist/firefox/` for extension, visit localhost:8080 for frontend
 
 All changes to shared extension code automatically apply to both browsers!
 
-#### Website Development
+#### Frontend Development
 
-The project now includes a static website in the `website/` directory.
+The project now includes a static website in the `frontend/` directory.
 
-**Running the website locally:**
+**Running the frontend locally:**
 ```bash
 # From project root
-npm run dev:website
+npm run dev:frontend
 
 # Or manually
-cd website
+cd frontend
 python3 -m http.server 8080
 ```
 
-**Website structure:**
+**Frontend structure:**
 - `index.html` - Main single-page website
 - `sitemap.xml` - XML sitemap for search engines
 - `sitemap.xsl` - Visual stylesheet for sitemap
@@ -337,7 +331,7 @@ function detectBrowserAndExtension() {
 - UNKNOWN/NONE users are redirected to prevent spam and improve UX
 
 #### Testing
-Use `website/test-cross-browser.html` to test verification on both browsers:
+Use `frontend/test-cross-browser.html` to test verification on both browsers:
 ```bash
 npm run dev:website
 # Visit http://localhost:8080/test-cross-browser.html
@@ -360,7 +354,7 @@ npm run feedback:test
 
 ### API Endpoint
 - **Framework**: Hono - Ultra-lightweight (13KB) serverless framework
-- **Path**: `/api/routes/feedback.js`
+- **Path**: `/backend/routes/feedback.js`
 - **Method**: POST
 - **Storage**: Turso database with spam protection
 - **Rate Limiting**: Database-backed (5-minute cooldown per IP)
