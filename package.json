@@ -17,7 +17,7 @@
     "build:frontend": "npm run build:assets && npm run copy:frontend-icons",
     "dev:frontend": "npm run copy:frontend-icons && node scripts/serve-frontend.js",
 
-    "build": "npm run build:frontend && npm run build:ext",
+    "build": "npm run build:frontend",
 
     "pack:chrome": "shx mkdir -p pack && node scripts/pack-chrome.js",
     "pack:firefox": "shx mkdir -p pack && node scripts/pack-firefox.js",
