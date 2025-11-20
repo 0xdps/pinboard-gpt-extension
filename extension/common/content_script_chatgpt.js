@@ -298,9 +298,9 @@ function createPinButtonForMessage(messageContainer) {
     // Create icon with error handling
     try {
       const img = document.createElement('img');
-      img.src = runtime.getURL('icons/icon-16.png');
-      img.width = 16;
-      img.height = 16;
+      img.src = runtime.getURL('icons/icon-32.png');
+      img.width = 24;
+      img.height = 24;
       img.style.display = 'block';
       img.alt = '';
       img.setAttribute('aria-hidden', 'true');
@@ -323,11 +323,9 @@ function createPinButtonForMessage(messageContainer) {
     pinButton.style.cssText = `
       position: absolute;
       z-index: 10000;
-      background: rgba(255, 255, 255, 0.9);
       color: #6b7280;
-      border: 1px solid #e5e7eb;
       border-radius: 8px;
-      padding: 6px;
+      padding: 4px;
       width: 32px;
       height: 32px;
       cursor: pointer;
@@ -336,22 +334,21 @@ function createPinButtonForMessage(messageContainer) {
       pointer-events: auto;
       left: -40px;
       top: 4px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       backdrop-filter: blur(4px);
     `;
     
     // Enhanced hover effects
     const handleMouseEnter = () => {
-      pinButton.style.background = '#3b82f6';
-      pinButton.style.color = 'white';
-      pinButton.style.borderColor = '#3b82f6';
+      // pinButton.style.background = '#3b82f6';
+      // pinButton.style.color = 'white';
+      // pinButton.style.borderColor = '#3b82f6';
       pinButton.style.transform = 'scale(1.05)';
     };
     
     const handleMouseLeave = () => {
-      pinButton.style.background = 'rgba(255, 255, 255, 0.9)';
-      pinButton.style.color = '#6b7280';
-      pinButton.style.borderColor = '#e5e7eb';
+      // pinButton.style.background = 'rgba(255, 255, 255, 0.9)';
+      // pinButton.style.color = '#6b7280';
+      // pinButton.style.borderColor = '#e5e7eb';
       pinButton.style.transform = 'scale(1)';
     };
     
@@ -2725,7 +2722,7 @@ function addPinButtonToPopup(popupContainer) {
   try {
     if (chrome.runtime?.getURL) {
       iconElement = document.createElement('img');
-      iconElement.src = chrome.runtime.getURL('icons/icon-16.png');
+      iconElement.src = chrome.runtime.getURL('icons/icon-32.png');
       iconElement.width = 20;
       iconElement.height = 20;
       iconElement.style.cssText = 'display: block; flex-shrink: 0;';
@@ -3903,10 +3900,9 @@ async function updateChatPinButton() {
       const runtime = chrome.runtime || browser.runtime;
       if (runtime && runtime.getURL) {
         const img = document.createElement('img');
-        img.src = runtime.getURL('icons/icon-16.png');
-        img.width = 16;
-        img.height = 16;
+        img.src = runtime.getURL('icons/icon-48.png');
         img.style.display = 'block';
+        img.style.borderRadius = '50%';
         icon.appendChild(img);
       }
     } catch (error) {
@@ -3925,9 +3921,8 @@ async function updateChatPinButton() {
       const runtime = chrome.runtime || browser.runtime;
       if (runtime && runtime.getURL) {
         const img = document.createElement('img');
-        img.src = runtime.getURL('icons/icon-16.png');
-        img.width = 16;
-        img.height = 16;
+        img.src = runtime.getURL('icons/icon-48.png');
+        img.style.borderRadius = '50%';
         img.style.display = 'block';
         icon.appendChild(img);
       }
@@ -4269,7 +4264,6 @@ style.textContent = `
   }
   
   .pingpt-pin-button:hover {
-    background: rgba(0, 0, 0, 0.1) !important;
     opacity: 1 !important;
   }
   

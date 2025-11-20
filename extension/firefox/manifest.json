@@ -40,7 +40,9 @@
   "content_security_policy": "script-src 'self'; object-src 'self'",
   "web_accessible_resources": [
     "icons/icon-16.png",
-    "icons/icon-32.png"
+    "icons/icon-32.png",
+    "icons/icon-48.png",
+    "icons/icon-128.png"
   ],
   "icons": {
     "16": "icons/icon-16.png",

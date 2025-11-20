@@ -768,7 +768,7 @@ extension/common/icons/*.svg
 extension/common/icons/*.png
 
 # Website icons (copied from assets/icons/ during build)
-!website/images/favicon*
+frontend/images/*
 
 *.md
 !README.md

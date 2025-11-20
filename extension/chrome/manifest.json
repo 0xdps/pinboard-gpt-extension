@@ -3,16 +3,8 @@
   "name": "Pinboard GPT — ChatGPT Message Pinner",
   "description": "Pin individual ChatGPT messages. Add names and tags, search instantly, jump back to conversations. Dark mode support. Local storage.",
   "version": "1.0.0",
-  "permissions": [
-    "storage",
-    "tabs",
-    "alarms",
-    "identity"
-  ],
-  "host_permissions": [
-    "https://chatgpt.com/*",
-    "https://chat.openai.com/*"
-  ],
+  "permissions": ["storage", "tabs", "alarms", "identity"],
+  "host_permissions": ["https://chatgpt.com/*", "https://chat.openai.com/*"],
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
@@ -42,7 +34,12 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["icons/icon-16.png", "icons/icon-32.png"],
+      "resources": [
+        "icons/icon-16.png",
+        "icons/icon-32.png",
+        "icons/icon-48.png",
+        "icons/icon-128.png"
+      ],
       "matches": ["https://chatgpt.com/*", "https://chat.openai.com/*"]
     }
   ],
