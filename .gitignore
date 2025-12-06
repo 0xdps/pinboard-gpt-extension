@@ -543,6 +543,9 @@ ServiceFabricBackup/
 *.ldf
 *.ndf
 
+# Windows automation bat files
+*.bat
+
 # Business Intelligence projects
 *.rdl.data
 *.bim.layout

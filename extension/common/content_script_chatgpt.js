@@ -3900,7 +3900,7 @@ async function updateChatPinButton() {
       const runtime = chrome.runtime || browser.runtime;
       if (runtime && runtime.getURL) {
         const img = document.createElement('img');
-        img.src = runtime.getURL('icons/icon-48.png');
+        img.src = runtime.getURL('icons/icon-32.png');
         img.style.display = 'block';
         img.style.borderRadius = '50%';
         icon.appendChild(img);
@@ -3921,7 +3921,7 @@ async function updateChatPinButton() {
       const runtime = chrome.runtime || browser.runtime;
       if (runtime && runtime.getURL) {
         const img = document.createElement('img');
-        img.src = runtime.getURL('icons/icon-48.png');
+        img.src = runtime.getURL('icons/icon-32.png');
         img.style.borderRadius = '50%';
         img.style.display = 'block';
         icon.appendChild(img);
