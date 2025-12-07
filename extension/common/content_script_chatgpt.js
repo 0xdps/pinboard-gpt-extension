@@ -434,10 +434,6 @@ function findMessageContainer(element) {
     if (current.getAttribute('data-message-author-role')) {
       return current;
     }
-    // Fallback: div containing a child with data-message-author-role
-    if (current.tagName === 'DIV' && current.querySelector('[data-message-author-role]')) {
-      return current;
-    }
     current = current.parentElement;
   }
   return null;
@@ -2522,8 +2518,10 @@ async function highlightPin(pin) {
         }
       } else if (pin.selectionType === 'selection-only' && pin.xpath) {
         // For selection pins, use relative XPath to find the specific element within the message
+        debugLog('Pinboard GPT: Looking for selection-only pin in message index:', pin.messageIndex, 'xpath:', pin.xpath);
         element = findByRelativeXPath(pin.xpath, messageByIndex);
         if (!element && pin.selectionText) {
+          debugLog('Pinboard GPT: Relative XPath failed for selection-only, trying text search for:', pin.selectionText);
           // Fallback: search within the message for the specific text
           const elementText = (messageByIndex.innerText || messageByIndex.textContent || '').trim();
           if (elementText.includes(pin.selectionText)) {
@@ -2537,7 +2535,7 @@ async function highlightPin(pin) {
               debugLog('Pinboard GPT: Using message container for selection (text search)');
             }
           } else {
-            debugLog('Pinboard GPT: Message at index does not contain selection text, falling back to other methods');
+            debugLog('Pinboard GPT: Message at index', pin.messageIndex, 'does not contain selection text:', pin.selectionText);
           }
         } else if (element) {
           debugLog('Pinboard GPT: Found selection element using relative XPath within message');
@@ -2838,7 +2836,7 @@ async function highlightPin(pin) {
     textPreview: (element.innerText || element.textContent || '').slice(0, 100)
   });
   
-  // Scroll to element with instant positioning (same as Chat Outline)
+  // Scroll to element using TWO-JUMP approach for better reliability
   try {
     // Find the scroll container (ChatGPT uses a div, not window)
     let scrollContainer = element.parentElement;
@@ -2856,36 +2854,90 @@ async function highlightPin(pin) {
       scrollContainer = null;
     }
     
-    // Get current positions
-    const messageRect = element.getBoundingClientRect();
-    const containerRect = scrollContainer ? scrollContainer.getBoundingClientRect() : { top: 0 };
-    const currentScroll = scrollContainer ? scrollContainer.scrollTop : window.scrollY;
     const topGap = 80;
     
-    // Calculate target scroll position
-    const targetScroll = currentScroll + messageRect.top - containerRect.top - topGap;
-    const finalScroll = Math.max(0, targetScroll);
+    // JUMP 1: First scroll to the message container start
+    // This ensures we're in the right message before trying to locate the specific element
+    let messageContainer = element;
+    if (pin.messageIndex !== undefined && pin.messageIndex >= 0) {
+      // Use the message container itself for the first jump if we have the index
+      const mainContent = document.querySelector('main') || document.body;
+      const allMessages = getAllMessageElements(mainContent);
+      if (pin.messageIndex < allMessages.length) {
+        messageContainer = allMessages[pin.messageIndex];
+      }
+    }
     
-    debugLog('Pinboard GPT: Pin navigation scroll calculation:', {
+    // Get current positions for message container
+    const messageContainerRect = messageContainer.getBoundingClientRect();
+    const containerRect = scrollContainer ? scrollContainer.getBoundingClientRect() : { top: 0 };
+    const currentScroll = scrollContainer ? scrollContainer.scrollTop : window.scrollY;
+    
+    // Calculate target scroll position for message start
+    const targetScrollMsg = currentScroll + messageContainerRect.top - containerRect.top - topGap;
+    const finalScrollMsg = Math.max(0, targetScrollMsg);
+    
+    debugLog('Pinboard GPT: TWO-JUMP navigation - JUMP 1: Scroll to message container start');
+    debugLog('Pinboard GPT: Message container scroll calculation:', {
       hasScrollContainer: !!scrollContainer,
       currentScroll,
-      messageTop: messageRect.top,
+      messageTop: messageContainerRect.top,
       containerTop: containerRect.top,
-      targetScroll: finalScroll
+      targetScroll: finalScrollMsg
     });
     
-    // Use INSTANT scroll to prevent ChatGPT interference
+    // Use INSTANT scroll for first jump (fast positioning)
     if (scrollContainer) {
       scrollContainer.scrollTo({
-        top: finalScroll,
+        top: finalScrollMsg,
         behavior: 'auto' // INSTANT - no smooth animation
       });
     } else {
       window.scrollTo({
-        top: finalScroll,
+        top: finalScrollMsg,
         behavior: 'auto' // INSTANT - no smooth animation
       });
     }
+    
+    // Wait for first scroll to complete and DOM to settle
+    await new Promise(resolve => setTimeout(resolve, 150));
+    
+    // JUMP 2: Now scroll to the specific pinned element within the message (if different from container)
+    // This is a smoother, shorter scroll that should be more accurate
+    if (element !== messageContainer) {
+      const elementRect = element.getBoundingClientRect();
+      const newContainerRect = scrollContainer ? scrollContainer.getBoundingClientRect() : { top: 0 };
+      const newCurrentScroll = scrollContainer ? scrollContainer.scrollTop : window.scrollY;
+      
+      const targetScrollElem = newCurrentScroll + elementRect.top - newContainerRect.top - topGap;
+      const finalScrollElem = Math.max(0, targetScrollElem);
+      
+      debugLog('Pinboard GPT: TWO-JUMP navigation - JUMP 2: Scroll to specific pinned element');
+      debugLog('Pinboard GPT: Element scroll calculation:', {
+        hasScrollContainer: !!scrollContainer,
+        currentScroll: newCurrentScroll,
+        elementTop: elementRect.top,
+        containerTop: newContainerRect.top,
+        targetScroll: finalScrollElem
+      });
+      
+      // Use SMOOTH scroll for second jump (more visually pleasant, shorter distance)
+      if (scrollContainer) {
+        scrollContainer.scrollTo({
+          top: finalScrollElem,
+          behavior: 'smooth' // SMOOTH - more pleasant for the second jump
+        });
+      } else {
+        window.scrollTo({
+          top: finalScrollElem,
+          behavior: 'smooth' // SMOOTH - more pleasant for the second jump
+        });
+      }
+      
+      // Wait for smooth scroll to complete
+      await new Promise(resolve => setTimeout(resolve, 400));
+    }
+    
   } catch (err) {
     debugLog('Pinboard GPT: Scroll error:', err);
     // Fallback
@@ -2956,18 +3008,49 @@ async function highlightPin(pin) {
 // Get the message container from current text selection
 function getMessageContainerFromSelection() {
   const selection = window.getSelection();
-  if (!selection.rangeCount) return null;
+  if (!selection.rangeCount) {
+    debugLog('Pinboard GPT: No selection range found');
+    return null;
+  }
   
   const range = selection.getRangeAt(0);
   let element = range.commonAncestorContainer;
   
+  debugLog('Pinboard GPT: Selection commonAncestorContainer:', element.nodeType === Node.TEXT_NODE ? 'TEXT_NODE' : element.tagName);
+  
   // If it's a text node, get its parent element
   if (element.nodeType === Node.TEXT_NODE) {
     element = element.parentElement;
+    debugLog('Pinboard GPT: Converted from text node to parent element:', element.tagName);
   }
   
   // Traverse up to find the message container
-  return findMessageContainer(element);
+  let current = element;
+  let depth = 0;
+  let foundContainers = []; // Track all containers with data-message-author-role
+  
+  while (current && current !== document.body && depth < 20) {
+    debugLog('Pinboard GPT: Traversing up depth', depth, ':', current.tagName, 'has data-message-author-role:', current.getAttribute?.('data-message-author-role'));
+    if (current.getAttribute('data-message-author-role')) {
+      foundContainers.push({depth, element: current, role: current.getAttribute('data-message-author-role')});
+      debugLog('Pinboard GPT: Found data-message-author-role at depth', depth, '- role:', current.getAttribute('data-message-author-role'));
+    }
+    current = current.parentElement;
+    depth++;
+  }
+  
+  // Use the FIRST (closest) container found, not the last
+  if (foundContainers.length > 0) {
+    const container = foundContainers[0].element;
+    debugLog('Pinboard GPT: Selected container at depth', foundContainers[0].depth, 'role:', foundContainers[0].role);
+    if (foundContainers.length > 1) {
+      debugLog('Pinboard GPT: WARNING - Found multiple containers:', foundContainers.map(c => `depth=${c.depth}, role=${c.role}`));
+    }
+    return container;
+  }
+  
+  debugLog('Pinboard GPT: Did not find message container traversing up', depth, 'levels');
+  return null;
 }
 
 // Find message container by searching for text content
@@ -3244,7 +3327,22 @@ function addPinButtonToPopup(popupContainer) {
     try {
       let messageContainer = getMessageContainerFromSelection();
       
+      debugLog('Pinboard GPT: getMessageContainerFromSelection result:', messageContainer?.tagName, messageContainer?.getAttribute?.('data-message-author-role'));
+      
+      // VALIDATE: Check if this container is actually in the message elements list
+      if (messageContainer) {
+        const allMessages = getAllMessageElements();
+        const isValidMessage = allMessages.some(msg => msg === messageContainer);
+        debugLog('Pinboard GPT: Is container in message elements list:', isValidMessage);
+        debugLog('Pinboard GPT: Total message elements found:', allMessages.length);
+        if (!isValidMessage) {
+          debugLog('Pinboard GPT: WARNING - Container not in message list, trying text search instead');
+          messageContainer = null;
+        }
+      }
+      
       if (!messageContainer) {
+        debugLog('Pinboard GPT: Could not find message container from selection, trying text search');
         messageContainer = findMessageContainerByText(selectedText);
       }
       
@@ -3252,6 +3350,11 @@ function addPinButtonToPopup(popupContainer) {
         showNotification('⚠️ Could not identify the message container');
         return;
       }
+      
+      const containerIndex = getMessageIndex(messageContainer);
+      debugLog('Pinboard GPT: Found message container at index:', containerIndex);
+      debugLog('Pinboard GPT: Message container innerHTML length:', messageContainer.innerHTML?.length);
+      debugLog('Pinboard GPT: Message container text:', messageContainer.innerText?.slice(0, 100));
       
       // Use cursor position to find target element (same as selection method)
       const range = selection.getRangeAt(0);
@@ -3310,7 +3413,18 @@ function addPinButtonToPopup(popupContainer) {
         selectionType: pinType
       };
       
+      // Log detailed pin creation info
       debugLog('Pinboard GPT: Creating pin from popup:', pin);
+      debugLog('Pinboard GPT: Message container tag:', messageContainer.tagName);
+      debugLog('Pinboard GPT: Selected text:', selectedText.slice(0, 50));
+      debugLog('Pinboard GPT: Pin type:', pinType);
+      debugLog('Pinboard GPT: Target element tag:', targetElement.tagName);
+      debugLog('Pinboard GPT: Stored message index:', pin.messageIndex);
+      const allMsgs = getAllMessageElements(document.querySelector('main') || document.body);
+      debugLog('Pinboard GPT: Total messages in chat:', allMsgs.length);
+      if (pin.messageIndex >= 0 && pin.messageIndex < allMsgs.length) {
+        debugLog('Pinboard GPT: Message at index', pin.messageIndex, 'text preview:', allMsgs[pin.messageIndex].innerText?.slice(0, 50) || '');
+      }
       // Use unified pin creation function
       await createAndShowPinDialog('selection', pin);
       
