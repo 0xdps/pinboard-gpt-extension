@@ -216,7 +216,7 @@ async function handleOpenAndHighlight(pin, sendResponse, forceNewTab = false) {
         debugLog('Pinboard GPT: Tab load timeout');
         tabsAPI.onUpdated.removeListener(onTabUpdate);
         sendResponse({ success: true, highlighted: false, error: 'Tab load timeout' });
-      }, 15000);
+      }, 30000);
       
       // Wait for tab to load with the new URL, then send highlight message
       const onTabUpdate = (tabId, changeInfo, tab) => {
@@ -225,7 +225,7 @@ async function handleOpenAndHighlight(pin, sendResponse, forceNewTab = false) {
           tabsAPI.onUpdated.removeListener(onTabUpdate);
           clearTimeout(responseTimeout);
           
-          // Additional wait for content script to be ready
+          // Additional wait for content script to be ready and page to render
           setTimeout(() => {
             tabsAPI.sendMessage(existingTab.id, {
               action: 'highlight-pin',
@@ -240,7 +240,7 @@ async function handleOpenAndHighlight(pin, sendResponse, forceNewTab = false) {
                 sendResponse({ success: true, highlighted: response?.found || false });
               }
             });
-          }, 1500);
+          }, 3000);
         }
       };
       
@@ -264,7 +264,7 @@ async function handleOpenAndHighlight(pin, sendResponse, forceNewTab = false) {
         debugLog('Pinboard GPT: Tab load timeout');
         tabsAPI.onUpdated.removeListener(onTabUpdate);
         sendResponse({ success: true, highlighted: false, error: 'Tab load timeout' });
-      }, 15000);
+      }, 30000);
       
       // Wait for tab to load, then send highlight message
       const onTabUpdate = (tabId, changeInfo, tab) => {
@@ -273,7 +273,7 @@ async function handleOpenAndHighlight(pin, sendResponse, forceNewTab = false) {
           tabsAPI.onUpdated.removeListener(onTabUpdate);
           clearTimeout(responseTimeout);
           
-          // Additional wait for content script to be ready
+          // Additional wait for content script to be ready and page to render
           setTimeout(() => {
             tabsAPI.sendMessage(newTab.id, {
               action: 'highlight-pin',
@@ -288,7 +288,7 @@ async function handleOpenAndHighlight(pin, sendResponse, forceNewTab = false) {
                 sendResponse({ success: true, highlighted: response?.found || false });
               }
             });
-          }, 1500);
+          }, 3000);
         }
       };
       
