@@ -2,7 +2,7 @@ const fs = require('fs');
 const sharp = require('sharp');
 const path = require('path');
 
-const sizes = [16, 32, 48, 128];
+const sizes = [16, 24, 32, 48, 128];
 
 async function generatePNGIcons(sourcePath, outputDir, baseName) {
   try {

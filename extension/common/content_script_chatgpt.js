@@ -173,7 +173,7 @@ function createDialogHeader(title, colors) {
     const runtime = chrome.runtime || browser.runtime;
     if (runtime && runtime.getURL) {
       const iconImg = document.createElement('img');
-      iconImg.src = runtime.getURL('icons/icon-32.png');
+      iconImg.src = runtime.getURL('icons/icon-24.png');
       iconImg.width = 24;
       iconImg.height = 24;
       iconImg.style.cssText = 'display: block; flex-shrink: 0;';
@@ -298,7 +298,7 @@ function createPinButtonForMessage(messageContainer) {
     // Create icon with error handling
     try {
       const img = document.createElement('img');
-      img.src = runtime.getURL('icons/icon-32.png');
+      img.src = runtime.getURL('icons/icon-24.png');
       img.width = 24;
       img.height = 24;
       img.style.display = 'block';
@@ -1869,7 +1869,7 @@ function createUnifiedPinDialog(options, resolve, reject = resolve) {
       const runtime = chrome.runtime || browser.runtime;
       if (runtime && runtime.getURL) {
         const iconImg = document.createElement('img');
-        iconImg.src = runtime.getURL('icons/icon-32.png');
+        iconImg.src = runtime.getURL('icons/icon-24.png');
         iconImg.width = 24;
         iconImg.height = 24;
         iconImg.style.cssText = 'display: block; flex-shrink: 0;';
@@ -3251,7 +3251,7 @@ function addPinButtonToPopup(popupContainer) {
   try {
     if (chrome.runtime?.getURL) {
       iconElement = document.createElement('img');
-      iconElement.src = chrome.runtime.getURL('icons/icon-32.png');
+      iconElement.src = chrome.runtime.getURL('icons/icon-24.png');
       iconElement.width = 20;
       iconElement.height = 20;
       iconElement.style.cssText = 'display: block; flex-shrink: 0;';
@@ -3976,7 +3976,7 @@ async function updateChatPinButton() {
       const runtime = chrome.runtime || browser.runtime;
       if (runtime && runtime.getURL) {
         const img = document.createElement('img');
-        img.src = runtime.getURL('icons/icon-32.png');
+        img.src = runtime.getURL('icons/icon-24.png');
         img.style.display = 'block';
         img.style.borderRadius = '50%';
         icon.appendChild(img);
@@ -3997,7 +3997,7 @@ async function updateChatPinButton() {
       const runtime = chrome.runtime || browser.runtime;
       if (runtime && runtime.getURL) {
         const img = document.createElement('img');
-        img.src = runtime.getURL('icons/icon-32.png');
+        img.src = runtime.getURL('icons/icon-24.png');
         img.style.borderRadius = '50%';
         img.style.display = 'block';
         icon.appendChild(img);
@@ -4047,19 +4047,19 @@ function addChatPinButton() {
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     `;
     
-    // Create tooltip arrow
+    // Create tooltip arrow (outside, on the right edge)
     const tooltipArrow = document.createElement('span');
     tooltipArrow.className = 'pingpt-tooltip-arrow';
     tooltipArrow.style.cssText = `
       position: absolute;
-      right: -6px;
+      right: 52px;
       top: 50%;
       transform: translateY(-50%);
       width: 0;
       height: 0;
-      border-left: 6px solid rgba(30, 41, 59, 0.95);
       border-top: 6px solid transparent;
       border-bottom: 6px solid transparent;
+      border-left: 6px solid rgba(30, 41, 59, 0.95);
       opacity: 0;
       visibility: hidden;
       transition: opacity 0.2s, visibility 0.2s;
@@ -4194,19 +4194,19 @@ function addManualPinButton() {
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     `;
     
-    // Create tooltip arrow
+    // Create tooltip arrow (outside, on the right edge)
     const tooltipArrow = document.createElement('span');
     tooltipArrow.className = 'pingpt-tooltip-arrow';
     tooltipArrow.style.cssText = `
       position: absolute;
-      right: -6px;
+      right: 52px;
       top: 50%;
       transform: translateY(-50%);
       width: 0;
       height: 0;
-      border-left: 6px solid rgba(30, 41, 59, 0.95);
       border-top: 6px solid transparent;
       border-bottom: 6px solid transparent;
+      border-left: 6px solid rgba(30, 41, 59, 0.95);
       opacity: 0;
       visibility: hidden;
       transition: opacity 0.2s, visibility 0.2s;
