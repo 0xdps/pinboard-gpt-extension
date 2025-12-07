@@ -4,28 +4,13 @@ const tabsAPI = typeof browser !== 'undefined' ? browser.tabs : chrome.tabs;
 const runtimeAPI = typeof browser !== 'undefined' ? browser.runtime : chrome.runtime;
 const identityAPI = typeof chrome !== 'undefined' && chrome.identity ? chrome.identity : null;
 
-// Debug logging system for popup
-let debugEnabled = false;
-
 // Initialize debug setting on popup load
 async function initializePopupDebug() {
   try {
     const debugMode = await getSetting('debugMode');
-    debugEnabled = debugMode === true;
+    window.debugEnabled = debugMode === true;
   } catch (error) {
     // Ignore errors during initialization
-  }
-}
-
-function debugLog(...args) {
-  if (debugEnabled) {
-    console.log(...args);
-  }
-}
-
-function debugError(...args) {
-  if (debugEnabled) {
-    console.error(...args);
   }
 }
 
