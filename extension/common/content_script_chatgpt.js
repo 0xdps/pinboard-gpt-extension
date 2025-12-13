@@ -741,9 +741,17 @@ function initializePinButtons() {
   }
   
   // Re-scan periodically for any missed messages
-  setInterval(() => {
+  // Store interval ID for cleanup
+  const buttonScanInterval = setInterval(() => {
     addButtonsToExistingMessages();
   }, UI_CONFIG.timing.messageButtonScanInterval);
+  
+  // Cleanup on page unload to prevent memory leaks
+  window.addEventListener('beforeunload', () => {
+    if (buttonScanInterval) {
+      clearInterval(buttonScanInterval);
+    }
+  }, { once: true });
 }
 
 // Get XPath for an element RELATIVE to a parent element (not from document root)
@@ -1375,17 +1383,17 @@ function createPinDialog(messageText, pinData, colors, resolve, reject = resolve
     
     cancelBtn.addEventListener('mouseenter', () => {
       cancelBtn.style.background = colors.cancelHover;
-    });
+    }, { passive: true });
     cancelBtn.addEventListener('mouseleave', () => {
       cancelBtn.style.background = colors.cancelBg;
-    });
+    }, { passive: true });
     
     saveBtn.addEventListener('mouseenter', () => {
       saveBtn.style.background = colors.saveHover;
-    });
+    }, { passive: true });
     saveBtn.addEventListener('mouseleave', () => {
       saveBtn.style.background = colors.saveBg;
-    });
+    }, { passive: true });
     
     // Handle input focus
     const inputs = dialog.querySelectorAll('input');
@@ -1445,11 +1453,11 @@ function createPinDialog(messageText, pinData, colors, resolve, reject = resolve
       
       removeBtn.addEventListener('mouseenter', () => {
         removeBtn.style.background = isDarkMode ? 'rgba(93, 165, 218, 0.15)' : 'rgba(26, 115, 232, 0.1)';
-      });
+      }, { passive: true });
       
       removeBtn.addEventListener('mouseleave', () => {
         removeBtn.style.background = 'none';
-      });
+      }, { passive: true });
       
       removeBtn.addEventListener('click', () => {
         removeTag(tagText);
@@ -1722,7 +1730,7 @@ function createPinDialog(messageText, pinData, colors, resolve, reject = resolve
         suggestionEl.addEventListener('mouseenter', () => {
           selectedSuggestionIndex = index;
           updateSuggestionHighlight();
-        });
+        }, { passive: true });
         
         suggestionEl.addEventListener('click', () => {
           selectSuggestion(tag);
@@ -1943,29 +1951,53 @@ function escapeHtml(text) {
 
 // Helper function to convert RGB to Hex
 function rgbToHex(rgb) {
-  const match = rgb.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)/);
-  if (!match) return rgb;
-  
-  const r = parseInt(match[1]);
-  const g = parseInt(match[2]);
-  const b = parseInt(match[3]);
-  
-  return '#' + [r, g, b].map(x => {
-    const hex = x.toString(16);
-    return hex.length === 1 ? '0' + hex : hex;
-  }).join('');
+  try {
+    if (!rgb || typeof rgb !== 'string') return null;
+    
+    const match = rgb.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+    if (!match) return rgb;
+    
+    const r = parseInt(match[1]);
+    const g = parseInt(match[2]);
+    const b = parseInt(match[3]);
+    
+    // Validate RGB values
+    if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255) {
+      return null;
+    }
+    
+    return '#' + [r, g, b].map(x => {
+      const hex = x.toString(16);
+      return hex.length === 1 ? '0' + hex : hex;
+    }).join('');
+  } catch (err) {
+    debugError('Error converting RGB to hex:', err);
+    return null;
+  }
 }
 
 // Helper function to adjust color brightness
 function adjustColor(hex, amount) {
-  const num = parseInt(hex.replace('#', ''), 16);
-  const r = Math.max(0, Math.min(255, (num >> 16) + amount));
-  const g = Math.max(0, Math.min(255, ((num >> 8) & 0x00FF) + amount));
-  const b = Math.max(0, Math.min(255, (num & 0x0000FF) + amount));
-  return '#' + [r, g, b].map(x => {
-    const hex = x.toString(16);
-    return hex.length === 1 ? '0' + hex : hex;
-  }).join('');
+  try {
+    if (!hex || typeof hex !== 'string') return hex;
+    
+    const cleaned = hex.replace('#', '');
+    const num = parseInt(cleaned, 16);
+    
+    if (isNaN(num)) return hex;
+    
+    const r = Math.max(0, Math.min(255, (num >> 16) + amount));
+    const g = Math.max(0, Math.min(255, ((num >> 8) & 0x00FF) + amount));
+    const b = Math.max(0, Math.min(255, (num & 0x0000FF) + amount));
+    
+    return '#' + [r, g, b].map(x => {
+      const hex = x.toString(16);
+      return hex.length === 1 ? '0' + hex : hex;
+    }).join('');
+  } catch (err) {
+    debugError('Error adjusting color:', err);
+    return hex;
+  }
 }
 
 // Helper function to create SVG element safely
@@ -2147,17 +2179,17 @@ async function showUpgradeNotification() {
   
   upgradeBtn.addEventListener('mouseenter', () => {
     upgradeBtn.style.background = colors.saveHover;
-  });
+  }, { passive: true });
   upgradeBtn.addEventListener('mouseleave', () => {
     upgradeBtn.style.background = colors.saveBg;
-  });
+  }, { passive: true });
   
   closeBtn.addEventListener('mouseenter', () => {
     closeBtn.style.background = colors.cancelHover;
-  });
+  }, { passive: true });
   closeBtn.addEventListener('mouseleave', () => {
     closeBtn.style.background = colors.cancelBg;
-  });
+  }, { passive: true });
   
   // Handle upgrade button
   upgradeBtn.addEventListener('click', () => {
@@ -3596,11 +3628,11 @@ function createMessageNavigationDropdown(messages) {
     
     option.addEventListener('mouseenter', () => {
       option.style.background = colors.hoverBg;
-    });
+    }, { passive: true });
     
     option.addEventListener('mouseleave', () => {
       option.style.background = 'transparent';
-    });
+    }, { passive: true });
     
     option.addEventListener('click', () => {
       // Close dropdown first
@@ -3940,7 +3972,7 @@ function addChatPinButton() {
       text.style.visibility = 'visible';
       tooltipArrow.style.opacity = '1';
       tooltipArrow.style.visibility = 'visible';
-    });
+    }, { passive: true });
     
     chatPinBtn.addEventListener('mouseleave', () => {
       chatPinBtn.style.transform = 'scale(1)';
@@ -3949,7 +3981,7 @@ function addChatPinButton() {
       text.style.visibility = 'hidden';
       tooltipArrow.style.opacity = '0';
       tooltipArrow.style.visibility = 'hidden';
-    });
+    }, { passive: true });
     
     chatPinBtn.addEventListener('click', async () => {
       try {
@@ -4091,7 +4123,7 @@ function addManualPinButton() {
       buttonText.style.visibility = 'visible';
       tooltipArrow.style.opacity = '1';
       tooltipArrow.style.visibility = 'visible';
-    });
+    }, { passive: true });
     
     manualBtn.addEventListener('mouseleave', () => {
       manualBtn.style.transform = 'scale(1)';
@@ -4100,7 +4132,7 @@ function addManualPinButton() {
       buttonText.style.visibility = 'hidden';
       tooltipArrow.style.opacity = '0';
       tooltipArrow.style.visibility = 'hidden';
-    });
+    }, { passive: true });
     
     // Function to check and toggle button visibility
     const updateButtonVisibility = () => {

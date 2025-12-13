@@ -129,21 +129,34 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Detect and apply ChatGPT's accent color from the page
   async function detectAndApplyAccentColor() {
     try {
-      // First, load saved values from storage
+      // Check if we're on a ChatGPT tab first
+      const tabs = await tabsAPI.query({ active: true, currentWindow: true });
+      const isOnChatGPT = tabs && tabs[0] && tabs[0].url && tabs[0].url.includes('chatgpt.com');
+      
+      // Load saved values from storage
       const stored = await storageAPI.local.get(['chatgpt-accent-color', 'chatgpt-accent-hover', 'chatgpt-accent-light', 'chatgpt-theme']);
       
       // Apply stored values if available
       if (stored['chatgpt-accent-color']) {
-        document.documentElement.style.setProperty('--accent', stored['chatgpt-accent-color']);
-        document.documentElement.style.setProperty('--accent-hover', stored['chatgpt-accent-hover']);
-        document.documentElement.style.setProperty('--accent-light', stored['chatgpt-accent-light']);
+        // Batch CSS updates to reduce reflows
+        const updates = [
+          ['--accent', stored['chatgpt-accent-color']],
+          ['--accent-hover', stored['chatgpt-accent-hover']],
+          ['--accent-light', stored['chatgpt-accent-light']]
+        ];
+        
+        // Apply all at once using requestAnimationFrame for smooth updates
+        requestAnimationFrame(() => {
+          updates.forEach(([prop, value]) => {
+            document.documentElement.style.setProperty(prop, value);
+          });
+        });
+        
         debugLog('Applied stored accent color:', stored['chatgpt-accent-color']);
       }
       
-      // Try to detect fresh values from active ChatGPT tab
-      const tabs = await tabsAPI.query({ active: true, currentWindow: true });
-      
-      if (tabs && tabs[0] && tabs[0].url && tabs[0].url.includes('chatgpt.com')) {
+      // Only try to detect fresh values if on ChatGPT tab
+      if (isOnChatGPT) {
         // Send message to content script to get accent color and theme
         const response = await new Promise((resolve) => {
           tabsAPI.sendMessage(tabs[0].id, { action: 'get-accent-color' }, (response) => {
@@ -156,10 +169,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
         
         if (response && response.accentColor) {
-          // Apply the detected accent color
-          document.documentElement.style.setProperty('--accent', response.accentColor);
-          document.documentElement.style.setProperty('--accent-hover', response.accentHover || response.accentColor);
-          document.documentElement.style.setProperty('--accent-light', response.accentLight || response.accentColor + '33');
+          // Batch CSS updates to reduce reflows
+          const updates = [
+            ['--accent', response.accentColor],
+            ['--accent-hover', response.accentHover || response.accentColor],
+            ['--accent-light', response.accentLight || response.accentColor + '33']
+          ];
+          
+          requestAnimationFrame(() => {
+            updates.forEach(([prop, value]) => {
+              document.documentElement.style.setProperty(prop, value);
+            });
+          });
           
           // Save to storage for future use
           await storageAPI.local.set({
@@ -859,7 +880,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         tagsEl.removeChild(tagsEl.firstChild);
       }
       
-      // Create tag elements safely
+      // Create tag elements safely using DocumentFragment for better performance
+      const fragment = document.createDocumentFragment();
       pin.tags.slice(0, 5).forEach(tag => { // Limit to 5 tags for UI
         const tagSpan = document.createElement('span');
         tagSpan.className = 'pin-tag';
@@ -872,8 +894,9 @@ document.addEventListener('DOMContentLoaded', async () => {
           search.value = tag;
           search.dispatchEvent(new Event('input', { bubbles: true }));
         });
-        tagsEl.appendChild(tagSpan);
+        fragment.appendChild(tagSpan);
       });
+      tagsEl.appendChild(fragment);
     } else {
       tagsEl.style.display = 'none';
     }
@@ -1142,10 +1165,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
     
+    // Render pins using DocumentFragment for better performance
+    const fragment = document.createDocumentFragment();
     filtered.forEach(p => {
       const el = renderPin(p);
-      listEl.appendChild(el);
+      fragment.appendChild(el);
     });
+    listEl.appendChild(fragment);
 
     // Add event listeners for tag links
     document.querySelectorAll('.pin-tag').forEach(tagEl => {
