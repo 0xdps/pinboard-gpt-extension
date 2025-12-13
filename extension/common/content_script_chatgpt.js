@@ -306,9 +306,9 @@ function createDialogHeader(title, colors) {
     const runtime = chrome.runtime || browser.runtime;
     if (runtime && runtime.getURL) {
       const iconImg = document.createElement('img');
-      iconImg.src = runtime.getURL('icons/icon-24.png');
-      iconImg.width = 24;
-      iconImg.height = 24;
+      iconImg.src = runtime.getURL('icons/icon-16.png');
+      iconImg.width = 16;
+      iconImg.height = 16;
       iconImg.style.cssText = 'display: block; flex-shrink: 0;';
       header.appendChild(iconImg);
     }
@@ -432,9 +432,9 @@ function createPinButtonForMessage(messageContainer) {
     // Create icon with error handling
     try {
       const img = document.createElement('img');
-      img.src = runtime.getURL('icons/icon-24.png');
-      img.width = 24;
-      img.height = 24;
+      img.src = runtime.getURL('icons/icon-16.png');
+      img.width = 16;
+      img.height = 16;
       img.style.display = 'block';
       img.alt = '';
       img.setAttribute('aria-hidden', 'true');
@@ -3099,9 +3099,9 @@ function addPinButtonToPopup(popupContainer) {
   try {
     if (chrome.runtime?.getURL) {
       iconElement = document.createElement('img');
-      iconElement.src = chrome.runtime.getURL('icons/icon-24.png');
-      iconElement.width = 20;
-      iconElement.height = 20;
+      iconElement.src = chrome.runtime.getURL('icons/icon-16.png');
+      iconElement.width = 16;
+      iconElement.height = 16;
       iconElement.style.cssText = 'display: block; flex-shrink: 0;';
       iconElement.alt = 'Pinboard GPT';
       
@@ -3739,6 +3739,8 @@ async function updateChatPinButton() {
       if (runtime && runtime.getURL) {
         const img = document.createElement('img');
         img.src = runtime.getURL('icons/icon-24.png');
+        img.width = 20;
+        img.height = 20;
         img.style.borderRadius = '50%';
         img.style.display = 'block';
         icon.appendChild(img);
