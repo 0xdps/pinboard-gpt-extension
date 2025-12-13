@@ -3268,16 +3268,49 @@ function getRecentMessages(limit = 5) {
 // Create message selection dropdown
 // Create message navigation dropdown (shows all messages, navigates on click)
 function createMessageNavigationDropdown(messages) {
+  // Detect dark mode
+  const isDarkMode = document.documentElement.classList.contains('dark') ||
+                     window.getComputedStyle(document.body).backgroundColor.match(/rgb\(.*?\)/) &&
+                     parseInt(window.getComputedStyle(document.body).backgroundColor.match(/\d+/)[0]) < 128;
+  
+  const colors = isDarkMode ? {
+    bg: '#2d2d2d',
+    border: '#404040',
+    text: '#e4e4e4',
+    headerBg: '#1a1a1a',
+    headerBorder: '#404040',
+    headerText: '#ffffff',
+    hoverBg: '#3d3d3d',
+    previewText: '#b8b8b8',
+    labelAssistant: '#5da5da',
+    labelUser: '#5da5da',
+    numberText: '#808080',
+    shadowColor: 'rgba(0,0,0,0.3)'
+  } : {
+    bg: '#ffffff',
+    border: '#dadce0',
+    text: '#202124',
+    headerBg: '#f8f9fa',
+    headerBorder: '#e8eaed',
+    headerText: '#202124',
+    hoverBg: '#f8f9fa',
+    previewText: '#5f6368',
+    labelAssistant: '#10a37f',
+    labelUser: '#1a73e8',
+    numberText: '#9aa0a6',
+    shadowColor: 'rgba(0,0,0,0.15)'
+  };
+  
   const dropdown = document.createElement('div');
   dropdown.style.cssText = `
     position: fixed;
     bottom: 160px;
     right: 20px;
     z-index: 10001;
-    background: white;
-    border: 1px solid #dadce0;
+    background: ${colors.bg};
+    border: 1px solid ${colors.border};
     border-radius: 8px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    box-shadow: 0 8px 24px ${colors.shadowColor};
     max-width: 400px;
     max-height: 400px;
     overflow-y: auto;
@@ -3288,11 +3321,11 @@ function createMessageNavigationDropdown(messages) {
   const header = document.createElement('div');
   header.style.cssText = `
     padding: 12px 16px;
-    border-bottom: 1px solid #e8eaed;
+    border-bottom: 1px solid ${colors.headerBorder};
     font-weight: 600;
     font-size: 14px;
-    color: #202124;
-    background: #f8f9fa;
+    color: ${colors.headerText};
+    background: ${colors.headerBg};
     border-radius: 8px 8px 0 0;
     position: sticky;
     top: 0;
@@ -3326,11 +3359,12 @@ function createMessageNavigationDropdown(messages) {
     const option = document.createElement('div');
     option.style.cssText = `
       padding: 10px 16px;
-      border-bottom: 1px solid #f1f3f4;
+      border-bottom: 1px solid ${isDarkMode ? '#404040' : '#f1f3f4'};
       cursor: pointer;
       transition: background 0.2s;
       font-size: 12px;
       line-height: 1.4;
+      color: ${colors.text};
     `;
     
     const headerRow = document.createElement('div');
@@ -3345,7 +3379,7 @@ function createMessageNavigationDropdown(messages) {
     roleLabel.style.cssText = `
       font-weight: 600;
       font-size: 10px;
-      color: ${isAssistant ? '#10a37f' : '#1a73e8'};
+      color: ${isAssistant ? colors.labelAssistant : colors.labelUser};
       text-transform: uppercase;
     `;
     roleLabel.textContent = isAssistant ? '🤖 Assistant' : '👤 You';
@@ -3353,7 +3387,7 @@ function createMessageNavigationDropdown(messages) {
     const messageNumber = document.createElement('span');
     messageNumber.style.cssText = `
       font-size: 10px;
-      color: #9aa0a6;
+      color: ${colors.numberText};
       font-weight: 500;
     `;
     messageNumber.textContent = `#${index + 1}`;
@@ -3363,7 +3397,7 @@ function createMessageNavigationDropdown(messages) {
     
     const previewDiv = document.createElement('div');
     previewDiv.style.cssText = `
-      color: #5f6368;
+      color: ${colors.previewText};
       overflow: hidden;
     `;
     previewDiv.textContent = preview;
@@ -3372,7 +3406,7 @@ function createMessageNavigationDropdown(messages) {
     option.appendChild(previewDiv);
     
     option.addEventListener('mouseenter', () => {
-      option.style.background = '#f8f9fa';
+      option.style.background = colors.hoverBg;
     });
     
     option.addEventListener('mouseleave', () => {
