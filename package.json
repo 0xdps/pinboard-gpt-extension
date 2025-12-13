@@ -12,7 +12,7 @@
 
     "build:chrome": "npm run build:assets && npm run copy:icons && rimraf build/chrome && mkdirp build/chrome && cpx \"extension/common/**\" build/chrome && cpx \"extension/chrome/*\" build/chrome && node scripts/prepend-browser.js chrome build/chrome && node scripts/build-background.js build/chrome && node scripts/replace-browser-text.js chrome build/chrome/popup.html",
     "build:firefox": "npm run build:assets && npm run copy:icons && rimraf build/firefox && mkdirp build/firefox && cpx \"extension/common/**\" build/firefox && cpx \"extension/firefox/*\" build/firefox && node scripts/prepend-browser.js firefox build/firefox && node scripts/build-background.js build/firefox && node scripts/replace-browser-text.js firefox build/firefox/popup.html",
-    "build:ext": "npm run clean && npm run build:chrome && npm run build:firefox",
+    "build:extension": "npm run clean && npm run build:chrome && npm run build:firefox",
 
     "build:frontend": "npm run build:assets && npm run copy:frontend-icons",
     "dev:frontend": "npm run copy:frontend-icons && node scripts/serve-frontend.js",
