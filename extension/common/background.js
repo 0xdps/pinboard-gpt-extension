@@ -131,14 +131,15 @@ runtimeAPI.onMessage.addListener((request, sender, sendResponse) => {
 // Handle open-and-highlight requests
 async function handleOpenAndHighlight(pin, sendResponse, forceNewTab = false) {
   try {
-    debugLog('Pinboard GPT: Handling open-and-highlight for pin:', pin.id, pin.pageUrl);
-    debugLog('Pinboard GPT: Using browser-specific tabsAPI for tab query');
+    debugLog('📤 [BG] Handling open-and-highlight for pin:', pin.id, pin.pageUrl);
+    debugLog('📤 [BG] Pin details:', { type: pin.type, messageIndex: pin.messageIndex, forceNewTab });
+    debugLog('📤 [BG] Using browser-specific tabsAPI for tab query');
     
     // New semantics: `reuseSameWindow` (boolean)
     // - true  => reuse an existing ChatGPT tab (do not force new tab)
     // - false => always open a new tab
     let reuseSameWindowRaw = await getSetting('reuseSameWindow');
-    debugLog('Pinboard GPT: Raw reuseSameWindow setting:', reuseSameWindowRaw, typeof reuseSameWindowRaw);
+    debugLog('📤 [BG] Raw reuseSameWindow setting:', reuseSameWindowRaw, typeof reuseSameWindowRaw);
 
     // Default to reuse same window when unset
     let reuseSameWindow = reuseSameWindowRaw === undefined ? true : !!reuseSameWindowRaw;
@@ -146,23 +147,25 @@ async function handleOpenAndHighlight(pin, sendResponse, forceNewTab = false) {
     if (reuseSameWindowRaw === undefined) {
       try {
         await setSetting('reuseSameWindow', reuseSameWindow);
-        debugLog('Pinboard GPT: Defaulted reuseSameWindow to true');
+        debugLog('📤 [BG] Defaulted reuseSameWindow to true');
       } catch (e) {
-        debugLog('Pinboard GPT: Failed to persist default reuseSameWindow:', e);
+        debugLog('📤 [BG] Failed to persist default reuseSameWindow:', e);
       }
     }
 
     // If caller sets forceNewTab, it overrides reuse behavior
     const effectiveReuseSameWindow = forceNewTab === true ? false : reuseSameWindow;
-    debugLog('Pinboard GPT: Tab behavior - reuseSameWindow:', reuseSameWindow, 'forceNewTab:', forceNewTab, 'effectiveReuseSameWindow:', effectiveReuseSameWindow);
+    debugLog('📤 [BG] Tab behavior - reuseSameWindow:', reuseSameWindow, 'forceNewTab:', forceNewTab, 'effectiveReuseSameWindow:', effectiveReuseSameWindow);
     
     const pinUrl = new URL(pin.pageUrl);
     let matchingTabs = [];
     
     // Always check for existing tabs first
+    debugLog('📤 [BG] Querying all tabs...');
     const tabs = await tabsAPI.query({});
+    debugLog('📤 [BG] Total tabs found:', tabs.length);
     
-    debugLog('Pinboard GPT: Pin URL details:', {
+    debugLog('📤 [BG] Pin URL details:', {
       hostname: pinUrl.hostname,
       pathname: pinUrl.pathname,
       href: pinUrl.href
@@ -177,10 +180,10 @@ async function handleOpenAndHighlight(pin, sendResponse, forceNewTab = false) {
           // Match ANY ChatGPT tab - regardless of conversation
           if ((tabUrl.hostname === 'chatgpt.com' || tabUrl.hostname === 'chat.openai.com') &&
               (pinUrl.hostname === 'chatgpt.com' || pinUrl.hostname === 'chat.openai.com')) {
-            debugLog('Pinboard GPT: ✓ MATCH FOUND - ChatGPT tab', {
+            debugLog('📤 [BG] ✓ MATCH FOUND - ChatGPT tab', {
               tabId: tab.id,
-              tabUrl: tab.url,
-              pinUrl: pin.pageUrl
+              tabUrl: tab.url.slice(0, 80) + '...',
+              pinUrl: pin.pageUrl.slice(0, 80) + '...'
             });
             return true;
           }
@@ -188,32 +191,33 @@ async function handleOpenAndHighlight(pin, sendResponse, forceNewTab = false) {
           // Fallback to exact URL match for non-ChatGPT URLs
           const exactMatch = tab.url === pin.pageUrl;
           if (exactMatch) {
-            debugLog('Pinboard GPT: ✓ MATCH FOUND - Exact URL match');
+            debugLog('📤 [BG] ✓ MATCH FOUND - Exact URL match');
           }
           return exactMatch;
         } catch (e) {
-          debugLog('Pinboard GPT: Error parsing tab URL:', e);
+          debugLog('📤 [BG] Error parsing tab URL:', e);
           return tab.url === pin.pageUrl;
         }
       });
     
-    debugLog('Pinboard GPT: Found matching tabs:', matchingTabs.length, matchingTabs.map(t => ({id: t.id, url: t.url})));
+    debugLog('📤 [BG] Found matching tabs:', matchingTabs.length, matchingTabs.map(t => ({id: t.id, url: t.url.slice(0, 60)})));
     
     // If we found a matching tab AND effective setting allows reuse, reuse it
     if (matchingTabs.length > 0 && effectiveReuseSameWindow) {
       // Tab already exists, navigate to the pin URL and highlight
       const existingTab = matchingTabs[0];
-      debugLog('Pinboard GPT: Reusing existing ChatGPT tab:', existingTab.id, 'navigating to:', pin.pageUrl);
+      debugLog('📤 [BG] 🔄 Reusing existing ChatGPT tab:', existingTab.id, 'navigating to:', pin.pageUrl.slice(0, 80));
       
       // Update the tab with the pin's URL and make it active
       await tabsAPI.update(existingTab.id, { 
         url: pin.pageUrl,
         active: true 
       });
+      debugLog('📤 [BG] Tab updated, waiting for load...');
       
       // Set up timeout for the whole operation
       let responseTimeout = setTimeout(() => {
-        debugLog('Pinboard GPT: Tab load timeout');
+        debugLog('📤 [BG] ⚠️ Tab load timeout after 30s');
         tabsAPI.onUpdated.removeListener(onTabUpdate);
         sendResponse({ success: true, highlighted: false, error: 'Tab load timeout' });
       }, 30000);
@@ -221,22 +225,23 @@ async function handleOpenAndHighlight(pin, sendResponse, forceNewTab = false) {
       // Wait for tab to load with the new URL, then send highlight message
       const onTabUpdate = (tabId, changeInfo, tab) => {
         if (tabId === existingTab.id && changeInfo.status === 'complete') {
-          debugLog('Pinboard GPT: Tab loaded with new URL, sending highlight message');
+          debugLog('📤 [BG] ✓ Tab loaded with new URL, sending highlight message to content script');
           tabsAPI.onUpdated.removeListener(onTabUpdate);
           clearTimeout(responseTimeout);
           
           // Additional wait for content script to be ready and page to render
           setTimeout(() => {
+            debugLog('📤 [BG] Sending highlight-pin message to tab:', existingTab.id);
             tabsAPI.sendMessage(existingTab.id, {
               action: 'highlight-pin',
               pin: pin
             }, (response) => {
               const lastError = runtimeAPI.lastError;
               if (lastError) {
-                debugLog('Pinboard GPT: Error highlighting pin:', lastError.message);
+                debugLog('📤 [BG] ❌ Error highlighting pin:', lastError.message);
                 sendResponse({ success: true, highlighted: false, error: lastError.message });
               } else {
-                debugLog('Pinboard GPT: Highlight response from reused tab:', response);
+                debugLog('📤 [BG] ✓ Highlight response from reused tab:', response);
                 sendResponse({ success: true, highlighted: response?.found || false });
               }
             });
@@ -250,18 +255,18 @@ async function handleOpenAndHighlight(pin, sendResponse, forceNewTab = false) {
     
     // Either no matching tab found, or effectiveReuseSameWindow=false (force new tab)
     if (matchingTabs.length > 0) {
-      debugLog('Pinboard GPT: ChatGPT tab exists but effectiveReuseSameWindow=false, creating new tab with URL:', pin.pageUrl);
+      debugLog('📤 [BG] ChatGPT tab exists but effectiveReuseSameWindow=false, creating new tab with URL:', pin.pageUrl.slice(0, 80));
     } else {
-      debugLog('Pinboard GPT: No matching tab found, creating new tab with URL:', pin.pageUrl);
+      debugLog('📤 [BG] No matching tab found, creating new tab with URL:', pin.pageUrl.slice(0, 80));
     }
       
     let newTab;
     newTab = await tabsAPI.create({ url: pin.pageUrl });
-    debugLog('Pinboard GPT: Successfully created new tab:', newTab.id, pin.pageUrl);
+    debugLog('📤 [BG] ✓ Successfully created new tab:', newTab.id, pin.pageUrl.slice(0, 80));
       
       // Set up timeout for the whole operation
       let responseTimeout = setTimeout(() => {
-        debugLog('Pinboard GPT: Tab load timeout');
+        debugLog('📤 [BG] ⚠️ Tab load timeout after 30s');
         tabsAPI.onUpdated.removeListener(onTabUpdate);
         sendResponse({ success: true, highlighted: false, error: 'Tab load timeout' });
       }, 30000);
@@ -269,22 +274,23 @@ async function handleOpenAndHighlight(pin, sendResponse, forceNewTab = false) {
       // Wait for tab to load, then send highlight message
       const onTabUpdate = (tabId, changeInfo, tab) => {
         if (tabId === newTab.id && changeInfo.status === 'complete') {
-          debugLog('Pinboard GPT: Tab loaded, sending highlight message');
+          debugLog('📤 [BG] ✓ New tab loaded, sending highlight message to content script');
           tabsAPI.onUpdated.removeListener(onTabUpdate);
           clearTimeout(responseTimeout);
           
           // Additional wait for content script to be ready and page to render
           setTimeout(() => {
+            debugLog('📤 [BG] Sending highlight-pin message to new tab:', newTab.id);
             tabsAPI.sendMessage(newTab.id, {
               action: 'highlight-pin',
               pin: pin
             }, (response) => {
               const lastError = runtimeAPI.lastError;
               if (lastError) {
-                debugLog('Pinboard GPT: Error highlighting pin:', lastError.message);
+                debugLog('📤 [BG] ❌ Error highlighting pin:', lastError.message);
                 sendResponse({ success: true, highlighted: false, error: lastError.message });
               } else {
-                debugLog('Pinboard GPT: Highlight response:', response);
+                debugLog('📤 [BG] ✓ Highlight response from new tab:', response);
                 sendResponse({ success: true, highlighted: response?.found || false });
               }
             });
@@ -294,7 +300,7 @@ async function handleOpenAndHighlight(pin, sendResponse, forceNewTab = false) {
       
       tabsAPI.onUpdated.addListener(onTabUpdate);
   } catch (error) {
-    debugLog('Pinboard GPT: Error in open-and-highlight:', error);
+    debugLog('📤 [BG] ❌ Error in open-and-highlight:', error);
     sendResponse({ success: false, error: error.message });
   }
 }

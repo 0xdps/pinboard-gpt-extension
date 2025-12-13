@@ -6,6 +6,20 @@
 // Global debug flag - can be enabled via console: window.debugEnabled = true
 window.debugEnabled = window.debugEnabled || false;
 
+// Initialize debug mode from storage on page load
+if (typeof chrome !== 'undefined' && chrome.storage) {
+  try {
+    chrome.storage.local.get(['debugMode'], (result) => {
+      if (result.debugMode === true) {
+        window.debugEnabled = true;
+        console.log('[Pinboard GPT] Debug mode ENABLED from storage');
+      }
+    });
+  } catch (e) {
+    // Ignore errors during initialization
+  }
+}
+
 /**
  * Conditional logging function
  * Only logs when debugEnabled is true
@@ -13,7 +27,7 @@ window.debugEnabled = window.debugEnabled || false;
  */
 function debugLog(...args) {
   if (window.debugEnabled) {
-    console.log(...args);
+    console.log('[Pinboard GPT]', ...args);
   }
 }
 
@@ -24,7 +38,7 @@ function debugLog(...args) {
  */
 function debugError(...args) {
   if (window.debugEnabled) {
-    console.error(...args);
+    console.error('[Pinboard GPT]', ...args);
   }
 }
 

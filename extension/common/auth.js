@@ -166,7 +166,7 @@ async function syncLicenseFromServer() {
     const errorMsg = formatNetworkErrorMessage(error);
     return { success: false, message: '⚠️ ' + errorMsg + ' Using cached license.' };
   }
-}}
+}
 
 // Validate license periodically (called daily)
 async function validateLicense() {
@@ -270,7 +270,7 @@ async function syncPinsToCloud(pins) {
     const errorMsg = formatNetworkErrorMessage(error);
     return { success: false, message: '⚠️ ' + errorMsg + ' Pins saved locally.' };
   }
-}}
+}
 
 // Fetch pins from cloud (for Premium users)
 async function fetchPinsFromCloud() {
@@ -335,7 +335,7 @@ async function fetchPinsFromCloud() {
     const errorMsg = formatNetworkErrorMessage(error);
     return { success: false, message: '⚠️ ' + errorMsg + ' Using local pins.' };
   }
-}}
+}
 
 // Initialize auth on extension load
 async function initializeAuth() {

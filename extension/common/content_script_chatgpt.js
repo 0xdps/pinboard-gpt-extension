@@ -2126,6 +2126,12 @@ function findByTextAnchors(anchors) {
 
 // Highlight a pinned message
 async function highlightPin(pin) {
+  debugLog('=== HIGHLIGHT PIN START ===');
+  debugLog('Pin object:', pin);
+  debugLog('Pin ID:', pin?.id);
+  debugLog('Pin Type:', pin?.type);
+  debugLog('Pin Message Index:', pin?.messageIndex);
+  debugLog('Pin Xpath:', pin?.xpath);
   
   // For chat pins, just confirm we're on the right page - don't scroll or highlight
   if (pin.type === 'chat') {
@@ -2135,10 +2141,13 @@ async function highlightPin(pin) {
   }
   
   // Wait briefly for page to stabilize
+  debugLog('Waiting for page to stabilize...');
   await new Promise(resolve => setTimeout(resolve, UI_CONFIG.timing.navigationWait));
   
   // Poll for messages to appear (handles slow loading)
+  debugLog('Checking for message elements...');
   let messageElementsFound = getAllMessageElements(document.querySelector('main') || document.body).length;
+  debugLog('Message elements found:', messageElementsFound);
   let pollAttempts = 0;
   const maxPollAttempts = 5; // ~1 second total with 200ms intervals
   
@@ -2159,61 +2168,98 @@ async function highlightPin(pin) {
   
   // PRIMARY METHOD: Try message index first (most reliable)
   if (pin.messageIndex !== undefined && pin.messageIndex >= 0) {
-    debugLog('Pinboard GPT: Attempting to find message by index:', pin.messageIndex);
+    debugLog('Pinboard GPT: [METHOD 1] Attempting to find message by index:', pin.messageIndex);
+    const mainContent = document.querySelector('main') || document.body;
+    const allMessages = getAllMessageElements(mainContent);
+    debugLog('Pinboard GPT: Total messages available:', allMessages.length);
+    
+    if (pin.messageIndex < allMessages.length) {
+      element = allMessages[pin.messageIndex];
+      debugLog('Pinboard GPT: [METHOD 1 SUCCESS] Found element by index');
+      debugLog('Pinboard GPT: Element:', element.tagName, element.className.slice(0, 50));
+    } else {
+      debugLog('Pinboard GPT: [METHOD 1 FAILED] Message index out of bounds:', pin.messageIndex, 'total:', allMessages.length);
+    }
+  }
+  
+  // SECONDARY METHOD: Try XPath if available and index failed
+  if (!element && pin.xpath) {
+    debugLog('Pinboard GPT: [METHOD 2] Attempting to find message by XPath');
+    debugLog('Pinboard GPT: XPath:', pin.xpath.slice(0, 100) + '...');
+    try {
+      const result = document.evaluate(
+        pin.xpath,
+        document,
+        null,
+        XPathResult.FIRST_ORDERED_NODE_TYPE,
+        null
+      );
+      if (result.singleNodeValue) {
+        element = result.singleNodeValue;
+        debugLog('Pinboard GPT: [METHOD 2 SUCCESS] Found element by XPath');
+      } else {
+        debugLog('Pinboard GPT: [METHOD 2 FAILED] XPath returned no result');
+      }
+    } catch (xpathError) {
+      debugLog('Pinboard GPT: [METHOD 2 ERROR] XPath evaluation failed:', xpathError.message);
+    }
+  }
+  
+  // TERTIARY METHOD: Use anchor search (text-based matching)
+  if (!element && pin.anchors) {
+    debugLog('Pinboard GPT: [METHOD 3] Attempting to find message by text anchors');
+    element = findElementByAnchors(pin.anchors);
+    if (element) {
+      debugLog('Pinboard GPT: [METHOD 3 SUCCESS] Found element by text anchors');
+    } else {
+      debugLog('Pinboard GPT: [METHOD 3 FAILED] No element matched text anchors');
+    }
+  }
+  
+  // QUATERNARY METHOD: Search by text content (last resort)
+  if (!element && (pin.messageText || pin.selectionText)) {
+    debugLog('Pinboard GPT: [METHOD 4] Attempting to find message by text search');
+    const searchText = (pin.selectionText || pin.messageText).slice(0, 100);
+    debugLog('Pinboard GPT: Searching for text:', searchText.slice(0, 50) + '...');
+    
     const mainContent = document.querySelector('main') || document.body;
     const allMessages = getAllMessageElements(mainContent);
     
-    if (pin.messageIndex < allMessages.length) {
-      const messageByIndex = allMessages[pin.messageIndex];
-      debugLog('Pinboard GPT: Found message by index:', messageByIndex.tagName);
+    let bestMatch = null;
+    let bestMatchScore = 0;
+    
+    for (let i = 0; i < allMessages.length; i++) {
+      const msg = allMessages[i];
+      const msgText = (msg.innerText || msg.textContent || '').slice(0, 500);
       
-      // For full message pins, use the entire message container
-      if (pin.selectionType === 'full-message') {
-        element = messageByIndex;
-        debugLog('Pinboard GPT: Using full message container from index');
-      } else if (pin.selectionType === 'full-message-with-highlight' && pin.xpath) {
-        // For full message with highlight, try relative XPath first to get the specific element
-        element = findByRelativeXPath(pin.xpath, messageByIndex);
-        if (!element) {
-          // Fallback to full message container if xpath fails
-          element = messageByIndex;
-          debugLog('Pinboard GPT: Relative XPath failed, using full message container');
-        } else {
-          debugLog('Pinboard GPT: Found highlighted element using relative XPath within message');
-        }
-      } else if (pin.selectionType === 'selection-only' && pin.xpath) {
-        // For selection pins, use relative XPath to find the specific element within the message
-        debugLog('Pinboard GPT: Looking for selection-only pin in message index:', pin.messageIndex, 'xpath:', pin.xpath);
-        element = findByRelativeXPath(pin.xpath, messageByIndex);
-        if (!element && pin.selectionText) {
-          debugLog('Pinboard GPT: Relative XPath failed for selection-only, trying text search for:', pin.selectionText);
-          // Fallback: search within the message for the specific text
-          const elementText = (messageByIndex.innerText || messageByIndex.textContent || '').trim();
-          if (elementText.includes(pin.selectionText)) {
-            const searchText = pin.selectionText;
-            const specificChild = findSpecificElementByText(searchText, messageByIndex);
-            if (specificChild && specificChild !== messageByIndex) {
-              element = specificChild;
-              debugLog('Pinboard GPT: Found specific element within message for selection (text search)');
-            } else {
-              element = messageByIndex;
-              debugLog('Pinboard GPT: Using message container for selection (text search)');
-            }
-          } else {
-            debugLog('Pinboard GPT: Message at index', pin.messageIndex, 'does not contain selection text:', pin.selectionText);
-          }
-        } else if (element) {
-          debugLog('Pinboard GPT: Found selection element using relative XPath within message');
-        }
-      }
+      // Calculate match score
+      const normalizedPin = normalizeText(searchText);
+      const normalizedMsg = normalizeText(msgText);
+      const matchScore = normalizedMsg.includes(normalizedPin) ? 1 : 0;
       
-      if (element) {
-        debugLog('Pinboard GPT: Successfully located element using message index');
+      if (matchScore > bestMatchScore) {
+        bestMatchScore = matchScore;
+        bestMatch = msg;
+        debugLog('Pinboard GPT: [METHOD 4] Better match found at index', i, 'score:', matchScore);
       }
+    }
+    
+    if (bestMatch && bestMatchScore > 0) {
+      element = bestMatch;
+      debugLog('Pinboard GPT: [METHOD 4 SUCCESS] Found element via text search');
+      debugLog('Pinboard GPT: Text search element bounds:', element.getBoundingClientRect());
     } else {
-      debugLog('Pinboard GPT: Message index out of bounds (index:', pin.messageIndex, 'total messages:', allMessages.length + ')');
+      debugLog('Pinboard GPT: [METHOD 4 FAILED] No text match found');
     }
   }
+  
+  if (!element) {
+    debugLog('Pinboard GPT: [CRITICAL] Could not find message using any method!');
+    showNotification('⚠️ Could not find the pinned message on this page');
+    return { found: false };
+  }
+  
+  debugLog('Pinboard GPT: [SUCCESS] Element found, proceeding with scroll and highlight');
   
   // FALLBACK 1: Try XPath if index method failed
   if (!element && pin.xpath) {
@@ -2504,6 +2550,8 @@ async function highlightPin(pin) {
   
   // Scroll to element using TWO-JUMP approach for better reliability
   try {
+    debugLog('Pinboard GPT: [SCROLL PHASE] Starting scroll sequence...');
+    
     // Find the scroll container (ChatGPT uses a div, not window)
     let scrollContainer = element.parentElement;
     while (scrollContainer && scrollContainer !== document.body) {
@@ -2511,12 +2559,14 @@ async function highlightPin(pin) {
       if ((style.overflow === 'auto' || style.overflow === 'scroll' || 
            style.overflowY === 'auto' || style.overflowY === 'scroll') &&
           scrollContainer.scrollHeight > scrollContainer.clientHeight) {
+        debugLog('Pinboard GPT: Found scroll container:', scrollContainer.tagName, scrollContainer.className.slice(0, 50));
         break;
       }
       scrollContainer = scrollContainer.parentElement;
     }
     
     if (!scrollContainer || scrollContainer === document.body) {
+      debugLog('Pinboard GPT: No custom scroll container found, using window scroll');
       scrollContainer = null;
     }
     
@@ -3138,19 +3188,23 @@ try {
       }
       
       if (msg.action === 'highlight-pin' && msg.pin) {
-        debugLog('Pinboard GPT: Content script received highlight-pin message for pin:', msg.pin.id);
+        debugLog('🔍 [MESSAGE HANDLER] Content script received highlight-pin message');
+        debugLog('🔍 [MESSAGE HANDLER] Pin details:', { id: msg.pin.id, type: msg.pin.type, messageIndex: msg.pin.messageIndex });
+        
         highlightPin(msg.pin).then(result => {
-          debugLog('Pinboard GPT: Highlight result:', result);
+          debugLog('🔍 [MESSAGE HANDLER] Highlight completed successfully');
+          debugLog('🔍 [MESSAGE HANDLER] Result:', result);
           sendResponse(result);
         }).catch(err => {
-          debugLog('Pinboard GPT: Highlight error:', err);
+          debugLog('🔍 [MESSAGE HANDLER] ❌ Highlight failed with error');
+          debugError('🔍 [MESSAGE HANDLER] Error details:', err);
           sendResponse({ found: false, error: err.message });
         });
         return true; // Will respond asynchronously
       }
-    
-    return false;
-  });
+      
+      return false;
+    });
   }
 } catch (error) {
   debugLog('Pinboard GPT: Failed to set up message listener:', error.message);
