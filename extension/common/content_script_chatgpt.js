@@ -7,8 +7,13 @@ console.log('[Pinboard GPT] Content script initializing...');
 // Check if extension context is still valid
 function isExtensionContextValid() {
   try {
-    const isValid = !!(chrome?.runtime?.getURL);
-    return isValid;
+    // Check multiple indicators of valid extension context
+    // chrome.runtime.id is the most reliable indicator
+    if (!chrome || !chrome.runtime) return false;
+    
+    // Try to access runtime.id - this will throw if context is invalid
+    const id = chrome.runtime.id;
+    return !!id;
   } catch (error) {
     // Silent fail - context is invalid
     return false;
@@ -17,6 +22,12 @@ function isExtensionContextValid() {
 
 async function getLicense() {
   try {
+    // Check if extension context is valid before accessing storage
+    if (!isExtensionContextValid()) {
+      debugLog('Extension context invalid, returning FREE license');
+      return LICENSE_TYPES.FREE;
+    }
+    
     const result = await chrome.storage.local.get(['license']);
     const license = result.license;
     
@@ -329,10 +340,14 @@ let debugEnabled = false;
 // Initialize debug setting on script load
 (async function initializeContentDebug() {
   try {
-    // Check if chrome extension context is available
-    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id) {
+    // Check if chrome extension context is available using our helper
+    if (isExtensionContextValid()) {
       // Send message to background to get debug setting
       chrome.runtime.sendMessage({ action: 'get-debug-setting' }, (response) => {
+        if (chrome.runtime.lastError) {
+          // Silently handle error - extension might be reloading
+          return;
+        }
         if (response && typeof response.debugEnabled === 'boolean') {
           debugEnabled = response.debugEnabled;
         }
@@ -413,15 +428,13 @@ function createPinButtonForMessage(messageContainer) {
     
     console.log('[Pinboard GPT] Creating pin button for message');
     
-    // Validate extension context  
+    // Get extension runtime for icon URL
     const runtime = chrome.runtime;
     
     if (!runtime?.getURL) {
-      console.error('[Pinboard GPT] Extension context not available - chrome.runtime.getURL is missing');
+      // Extension context lost, silently return
       return null;
     }
-    
-    console.log('[Pinboard GPT] Extension context valid, proceeding with button creation');
     
     // Create button with optimized approach
     const pinButton = document.createElement('button');
@@ -507,9 +520,9 @@ function createPinButtonForMessage(messageContainer) {
       
       // Check extension context before processing
       if (!isExtensionContextValid()) {
-        console.error('[Pinboard GPT] Extension context invalidated at click time');
-        console.warn('[Pinboard GPT] chrome.runtime is:', typeof chrome?.runtime);
-        alert('Extension context lost. Please refresh the page.');
+        console.log('[Pinboard GPT] Extension context invalidated, silently ignoring click');
+        // Don't show alert - just silently ignore the click
+        // This is normal when extension is reloading
         return;
       }
       
@@ -1928,6 +1941,33 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
+// Helper function to convert RGB to Hex
+function rgbToHex(rgb) {
+  const match = rgb.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+  if (!match) return rgb;
+  
+  const r = parseInt(match[1]);
+  const g = parseInt(match[2]);
+  const b = parseInt(match[3]);
+  
+  return '#' + [r, g, b].map(x => {
+    const hex = x.toString(16);
+    return hex.length === 1 ? '0' + hex : hex;
+  }).join('');
+}
+
+// Helper function to adjust color brightness
+function adjustColor(hex, amount) {
+  const num = parseInt(hex.replace('#', ''), 16);
+  const r = Math.max(0, Math.min(255, (num >> 16) + amount));
+  const g = Math.max(0, Math.min(255, ((num >> 8) & 0x00FF) + amount));
+  const b = Math.max(0, Math.min(255, (num & 0x0000FF) + amount));
+  return '#' + [r, g, b].map(x => {
+    const hex = x.toString(16);
+    return hex.length === 1 ? '0' + hex : hex;
+  }).join('');
+}
+
 // Helper function to create SVG element safely
 function createSVGElement(width, height, viewBox, pathData, styles = {}) {
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -2977,15 +3017,6 @@ function findSpecificElementByText(searchText, messageContainer) {
   return targetElement;
 }
 
-// Check if extension context is still valid
-function isExtensionContextValid() {
-  try {
-    return !!(chrome.runtime && chrome.runtime.id);
-  } catch (e) {
-    return false;
-  }
-}
-
 // Add pin option to ChatGPT's native selection popup
 function addPinOptionToChatGPTPopup() {
   // Watch for ChatGPT's selection popup to appear
@@ -3316,6 +3347,73 @@ try {
       // Handle ping from background script to check if content script is loaded
       if (msg.action === 'ping') {
         sendResponse({ pong: true, ready: true });
+        return true;
+      }
+      
+      // Handle accent color detection request from popup
+      if (msg.action === 'get-accent-color') {
+        try {
+          // Read ChatGPT's theme accent color from CSS custom properties
+          let accentColor = '#6b7280'; // fallback grey
+          
+          // Get the root element to read CSS variables
+          const rootStyles = window.getComputedStyle(document.documentElement);
+          
+          // Detect theme (dark/light) from --bg-primary color
+          let isDark = false;
+          const bgPrimary = rootStyles.getPropertyValue('--bg-primary').trim();
+          if (bgPrimary) {
+            // Convert to RGB if needed to check brightness
+            let rgb = bgPrimary;
+            if (bgPrimary.startsWith('#')) {
+              // Convert hex to rgb
+              const hex = bgPrimary.replace('#', '');
+              const r = parseInt(hex.substring(0, 2), 16);
+              const g = parseInt(hex.substring(2, 4), 16);
+              const b = parseInt(hex.substring(4, 6), 16);
+              rgb = `rgb(${r}, ${g}, ${b})`;
+            }
+            
+            // Extract RGB values
+            const rgbMatch = rgb.match(/\d+/g);
+            if (rgbMatch && rgbMatch.length >= 3) {
+              const r = parseInt(rgbMatch[0]);
+              const g = parseInt(rgbMatch[1]);
+              const b = parseInt(rgbMatch[2]);
+              
+              // Calculate brightness (0-255). Dark if < 128
+              const brightness = (r + g + b) / 3;
+              isDark = brightness < 128;
+            }
+          }
+          
+          // Try to get the theme entity accent color (used for buttons, links, etc.)
+          const entityAccent = rootStyles.getPropertyValue('--theme-entity-accent').trim();
+          if (entityAccent) {
+            // Convert rgb() to hex if needed
+            accentColor = entityAccent.startsWith('rgb') ? rgbToHex(entityAccent) : entityAccent;
+          } else {
+            // Fallback: try submit button background
+            const submitBg = rootStyles.getPropertyValue('--theme-submit-btn-bg').trim();
+            if (submitBg) {
+              accentColor = submitBg.startsWith('rgb') ? rgbToHex(submitBg) : submitBg;
+            }
+          }
+          
+          // Generate hover and light variants
+          const accentHover = adjustColor(accentColor, -20);
+          const accentLight = accentColor + '26';
+          
+          sendResponse({ 
+            accentColor,
+            accentHover,
+            accentLight,
+            theme: isDark ? 'dark' : 'light'
+          });
+        } catch (err) {
+          debugError('Error detecting accent color:', err);
+          sendResponse({ accentColor: '#19c37d' });
+        }
         return true;
       }
       

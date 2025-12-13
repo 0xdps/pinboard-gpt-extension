@@ -74,8 +74,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const exportBtn = document.getElementById('exportBtn');
   const importBtn = document.getElementById('importBtn');
   const importFile = document.getElementById('importFile');
-  const themeText = document.getElementById('themeText');
-  const themeToggle = document.getElementById('themeToggle');
   const debugText = document.getElementById('debugText');
   const debugToggle = document.getElementById('debugToggle');
   
@@ -102,38 +100,87 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Initialize theme
   async function initializeTheme() {
     try {
-      const { theme } = await storageAPI.local.get(['theme']);
+      // Detect and apply ChatGPT's accent color and theme
+      const detectedTheme = await detectAndApplyAccentColor();
       
-      // If theme is 'auto', try to detect from ChatGPT's parent window
-      let isDark = theme === 'dark' || theme === undefined;
+      // Use detected theme, fallback to stored, then default to dark
+      let isDark = true; // default
       
-      if (theme === 'auto') {
-        // Try to detect ChatGPT's dark mode from the parent window (if popup is docked)
-        try {
-          const chromeWindow = chrome.extension.getBackgroundPage?.();
-          if (chromeWindow && window.opener) {
-            isDark = window.opener.document.documentElement.classList.contains('dark');
-          }
-        } catch (e) {
-          // Fallback to dark mode if detection fails
-          isDark = true;
+      if (detectedTheme) {
+        isDark = detectedTheme === 'dark';
+      } else {
+        // Check stored theme
+        const stored = await storageAPI.local.get(['chatgpt-theme']);
+        if (stored['chatgpt-theme']) {
+          isDark = stored['chatgpt-theme'] === 'dark';
         }
       }
       
-      themeToggle.checked = isDark;
+      // Apply theme to popup
       document.body.classList.toggle('dark-mode', isDark);
-      updateThemeText(isDark);
-      
-      // Save default theme if not set
-      if (theme === undefined) {
-        await storageAPI.local.set({ theme: 'auto' });
-      }
+      debugLog('Applied theme:', isDark ? 'dark' : 'light');
     } catch (err) {
       debugError('Error loading theme:', err);
       // Default to dark mode on error (matches ChatGPT default)
-      themeToggle.checked = true;
       document.body.classList.add('dark-mode');
-      updateThemeText(true);
+    }
+  }
+
+  // Detect and apply ChatGPT's accent color from the page
+  async function detectAndApplyAccentColor() {
+    try {
+      // First, load saved values from storage
+      const stored = await storageAPI.local.get(['chatgpt-accent-color', 'chatgpt-accent-hover', 'chatgpt-accent-light', 'chatgpt-theme']);
+      
+      // Apply stored values if available
+      if (stored['chatgpt-accent-color']) {
+        document.documentElement.style.setProperty('--accent', stored['chatgpt-accent-color']);
+        document.documentElement.style.setProperty('--accent-hover', stored['chatgpt-accent-hover']);
+        document.documentElement.style.setProperty('--accent-light', stored['chatgpt-accent-light']);
+        debugLog('Applied stored accent color:', stored['chatgpt-accent-color']);
+      }
+      
+      // Try to detect fresh values from active ChatGPT tab
+      const tabs = await tabsAPI.query({ active: true, currentWindow: true });
+      
+      if (tabs && tabs[0] && tabs[0].url && tabs[0].url.includes('chatgpt.com')) {
+        // Send message to content script to get accent color and theme
+        const response = await new Promise((resolve) => {
+          tabsAPI.sendMessage(tabs[0].id, { action: 'get-accent-color' }, (response) => {
+            if (runtimeAPI.lastError) {
+              resolve(null);
+            } else {
+              resolve(response);
+            }
+          });
+        });
+        
+        if (response && response.accentColor) {
+          // Apply the detected accent color
+          document.documentElement.style.setProperty('--accent', response.accentColor);
+          document.documentElement.style.setProperty('--accent-hover', response.accentHover || response.accentColor);
+          document.documentElement.style.setProperty('--accent-light', response.accentLight || response.accentColor + '33');
+          
+          // Save to storage for future use
+          await storageAPI.local.set({
+            'chatgpt-accent-color': response.accentColor,
+            'chatgpt-accent-hover': response.accentHover,
+            'chatgpt-accent-light': response.accentLight,
+            'chatgpt-theme': response.theme
+          });
+          
+          debugLog('Detected and saved ChatGPT accent color:', response.accentColor, 'theme:', response.theme);
+          
+          // Return the detected theme
+          return response.theme;
+        }
+      }
+      
+      // Return stored theme if available
+      return stored['chatgpt-theme'] || null;
+    } catch (err) {
+      debugLog('Could not detect ChatGPT accent color, using stored/default:', err);
+      return null;
     }
   }
 
@@ -166,36 +213,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function updateDebugText(isEnabled) {
     if (isEnabled) {
-      debugText.textContent = '🐛 Debug mode ON';
-      debugText.style.color = '#ff6b6b';
+      debugText.textContent = 'Debug mode';
+      debugText.style.color = 'var(--danger)';
     } else {
-      debugText.textContent = '🐛 Debug mode OFF';
-      debugText.style.color = '#888';
+      debugText.textContent = 'Debug mode';
+      debugText.style.color = 'var(--text-primary)';
     }
   }
-
-  function updateThemeText(isDark) {
-    if (isDark) {
-      themeText.textContent = '🌙 Dark mode';
-      themeText.style.color = '#19c37d';
-    } else {
-      themeText.textContent = '☀️ Light mode';
-      themeText.style.color = '#10a37f';
-    }
-  }
-
-  // Theme toggle handler
-  themeToggle.onchange = async () => {
-    const isDark = themeToggle.checked;
-    document.body.classList.toggle('dark-mode', isDark);
-    updateThemeText(isDark);
-    
-    try {
-      await storageAPI.local.set({ theme: isDark ? 'dark' : 'light' });
-    } catch (err) {
-      debugError('Error saving theme:', err);
-    }
-  };
 
   // Debug mode toggle handler
   debugToggle.onchange = async () => {
@@ -797,7 +821,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const openBtn = pinElement.querySelector('.open-btn');
     const editBtn = pinElement.querySelector('.edit-btn');
     const deleteBtn = pinElement.querySelector('.delete-btn');
-    const infoBtn = pinElement.querySelector('.info-btn');
     
     // Handle different pin types
     let title, messagePreview;
@@ -894,12 +917,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         showNotification('❌ Failed to delete pin', 'error');
       }
     });
-    
-    // Enhanced info tooltip with relative time
-    const dateTime = new Date(pin.pinnedAt);
-    const relativeTime = getRelativeTime(dateTime);
-    const fullDateTime = dateTime.toLocaleString();
-    infoBtn.setAttribute('data-tooltip', `Pinned ${relativeTime}\n${fullDateTime}`);
     
     // Add keyboard navigation
     pinElement.setAttribute('tabindex', '0');
@@ -1381,23 +1398,16 @@ document.addEventListener('DOMContentLoaded', async () => {
       badge.textContent = license === LICENSE_TYPES.PRO ? 'PRO' : 'PREMIUM';
       headerActions.prepend(badge);
 
-      syncStatus.textContent = '';
-      syncStatus.style.color = 'var(--primary)';
+      syncStatus.textContent = license === LICENSE_TYPES.PRO ? 'Pro' : 'Premium';
+      syncStatus.classList.add('pro');
       // Hide upgrade button for PRO/PREMIUM users
       if (upgradeBtn) upgradeBtn.style.display = 'none';
       if (license === LICENSE_TYPES.PREMIUM && coffeeBtn) coffeeBtn.style.display = 'none';
     } else {
-      syncStatus.innerHTML = '<span style="cursor: pointer; color: var(--primary);">Upgrade to Pro</span>';
-      syncStatus.style.color = 'var(--text-secondary)';
+      syncStatus.textContent = 'Free';
+      syncStatus.classList.remove('pro');
       // Show upgrade button for FREE users
       if (upgradeBtn) upgradeBtn.style.display = 'block';
-      
-      const upgradeLink = syncStatus.querySelector('span');
-      if (upgradeLink) {
-        upgradeLink.onclick = () => {
-          tabsAPI.create({ url: 'https://pinboard-gpt.dps.codes/pricing.html' });
-        };
-      }
     }
   }
 

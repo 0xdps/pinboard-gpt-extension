@@ -16,7 +16,8 @@ const SYNC_MAX_ITEMS = 512;
 // Check if extension context is still valid
 function isExtensionContextValid() {
   try {
-    return browser && browser.runtime && !browser.runtime.lastError;
+    // Check if chrome.runtime.id exists (undefined means context invalidated)
+    return chrome && chrome.runtime && chrome.runtime.id !== undefined;
   } catch (e) {
     return false;
   }
@@ -149,29 +150,31 @@ async function updateSettings(newSettings) {
 // Settings storage functions
 async function getSetting(key) {
   if (!isExtensionContextValid()) {
-    throw new Error('Extension context is invalid. Please reload the page and try again.');
+    console.warn('Extension context invalid, returning undefined for setting:', key);
+    return undefined;
   }
   
   try {
-    const result = await browser.storage.local.get([key]);
+    const result = await chrome.storage.local.get([key]);
     return result[key];
   } catch (error) {
     console.error('Error getting setting:', key, error);
-    throw error;
+    return undefined;
   }
 }
 
 async function setSetting(key, value) {
   if (!isExtensionContextValid()) {
-    throw new Error('Extension context is invalid. Please reload the page and try again.');
+    console.warn('Extension context invalid, cannot save setting:', key);
+    return undefined;
   }
   
   try {
-    await browser.storage.local.set({ [key]: value });
+    await chrome.storage.local.set({ [key]: value });
     return value;
   } catch (error) {
     console.error('Error setting:', key, value, error);
-    throw error;
+    return undefined;
   }
 }
 
