@@ -17,21 +17,21 @@ async function configureUninstallUrl() {
       // Public JWK as base64url JSON
       params.set('pub', btoa(unescape(encodeURIComponent(JSON.stringify(installData.publicJwk)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''));
       runtimeAPI.setUninstallURL(`${base}?${params.toString()}`);
-      debugLog('Pinboard GPT: Uninstall URL configured with local-signed token');
+      debugLog('Uninstall URL configured with local-signed token');
     } else {
       // Fall back to simple uninstall page without any token
       runtimeAPI.setUninstallURL(base);
-      debugLog('Pinboard GPT: Uninstall URL configured without token');
+      debugLog('Uninstall URL configured without token');
     }
   } catch (e) {
-    debugLog('Pinboard GPT: Failed to configure uninstall URL', e);
+    debugLog('Failed to configure uninstall URL', e);
     try { runtimeAPI.setUninstallURL('https://pinboard-gpt.dps.codes/goodbye.html'); } catch (err) { /* ignore */ }
   }
 }
 
 // Handle extension installation
 runtimeAPI.onInstalled.addListener((details) => {
-  debugLog('Pinboard GPT: Extension installed/updated', details.reason);
+  debugLog('Extension installed/updated', details.reason);
   
   if (details.reason === 'install') {
     (async () => {
@@ -63,7 +63,7 @@ runtimeAPI.onInstalled.addListener((details) => {
         await configureUninstallUrl();
         tabsAPI.create({ url: 'https://pinboard-gpt.dps.codes/welcome.html' });
       } catch (e) {
-        debugLog('Pinboard GPT: Error during install-time signing flow', e);
+        debugLog('Error during install-time signing flow', e);
         // Fallback: persist minimal install record and configure uninstall URL
         const installationData = {
           extensionId: runtimeAPI.id,
@@ -97,26 +97,26 @@ function arrayBufferToBase64Url(buffer) {
 
 // Handle internal messages (from popup, content scripts, etc.)
 runtimeAPI.onMessage.addListener((request, sender, sendResponse) => {
-  debugLog('Pinboard GPT: Background received message:', request.action, request);
-  debugLog('Pinboard GPT: Browser info:', {
+  debugLog('Background received message:', request.action, request);
+  debugLog('Browser info:', {
     isFirefox: isFirefox,
     userAgent: navigator.userAgent.includes('Firefox') ? 'Firefox' : 'Chrome/Other'
   });
 
   if (request.action === 'open-and-highlight' && request.pin) {
-    debugLog('Pinboard GPT: About to handle open-and-highlight');
+    debugLog('About to handle open-and-highlight');
     try {
       handleOpenAndHighlight(request.pin, sendResponse, request.forceNewTab === true);
       return true; // Will respond asynchronously
     } catch (error) {
-      debugLog('Pinboard GPT: Error in handleOpenAndHighlight:', error);
+      debugLog('Error in handleOpenAndHighlight:', error);
       sendResponse({ success: false, error: error.message });
       return false;
     }
   }
   
   if (request.action === 'get-debug-setting') {
-    debugLog('Pinboard GPT: Content script requesting debug setting');
+    debugLog('Content script requesting debug setting');
     getSetting('debugMode').then(debugMode => {
       sendResponse({ debugEnabled: debugMode === true });
     }).catch(() => {
@@ -335,7 +335,7 @@ runtimeAPI.onMessageExternal.addListener((request, sender, sendResponse) => {
   return false;
 });
 
-debugLog('Pinboard GPT: Background script loaded');
+debugLog('Background script loaded');
 
 // Ensure uninstall URL is configured on startup (if possible)
 try { configureUninstallUrl(); } catch (e) { /* ignore */ }

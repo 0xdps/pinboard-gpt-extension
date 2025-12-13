@@ -125,24 +125,24 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Initialize debug mode setting
   async function initializeDebugMode() {
     try {
-      debugLog('Pinboard GPT: Loading debug mode setting...');
+      debugLog('Loading debug mode setting...');
       
       const debugMode = await getSetting('debugMode');
-      debugLog('Pinboard GPT: Loaded debug mode setting:', debugMode);
+      debugLog('Loaded debug mode setting:', debugMode);
       
       // Default to false if not set
       const isDebugEnabled = debugMode === true;
       debugToggle.checked = isDebugEnabled;
       updateDebugText(isDebugEnabled);
-      debugLog('Pinboard GPT: Set debug toggle to:', isDebugEnabled);
+      debugLog('Set debug toggle to:', isDebugEnabled);
       
       // Save default setting if not set
       if (debugMode === undefined) {
-        debugLog('Pinboard GPT: Setting default debug mode to false');
+        debugLog('Setting default debug mode to false');
         await setSetting('debugMode', false);
       }
     } catch (err) {
-      debugError('Pinboard GPT: Error loading debug mode:', err);
+      debugError('Error loading debug mode:', err);
       // Default to false on error
       debugToggle.checked = false;
       updateDebugText(false);
@@ -185,18 +185,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Debug mode toggle handler
   debugToggle.onchange = async () => {
     const isDebugEnabled = debugToggle.checked;
-    debugLog('Pinboard GPT: Debug mode changed to:', isDebugEnabled);
+    debugLog('Debug mode changed to:', isDebugEnabled);
     updateDebugText(isDebugEnabled);
     
     try {
       await setSetting('debugMode', isDebugEnabled);
-      debugLog('Pinboard GPT: Successfully saved debug mode setting:', isDebugEnabled);
+      debugLog('Successfully saved debug mode setting:', isDebugEnabled);
       
       // Verify it was saved
       const debugMode = await getSetting('debugMode');
-      debugLog('Pinboard GPT: Verified saved debug setting:', debugMode);
+      debugLog('Verified saved debug setting:', debugMode);
     } catch (err) {
-      debugError('Pinboard GPT: Error saving debug mode:', err);
+      debugError('Error saving debug mode:', err);
     }
   };
 
@@ -440,11 +440,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function openPin(pinId) {
     const stored = (await getPins()).find(x => x.id === pinId);
     if (stored?.pageUrl) {
-      debugLog('Pinboard GPT: Opening pin:', stored.id, stored.pageUrl);
+      debugLog('Opening pin:', stored.id, stored.pageUrl);
       runtimeAPI.sendMessage({ action: 'open-and-highlight', pin: stored }, (resp) => {
-        debugLog('Pinboard GPT: Response from background script:', resp, 'Error:', runtimeAPI.lastError);
+        debugLog('Response from background script:', resp, 'Error:', runtimeAPI.lastError);
         if (runtimeAPI.lastError) {
-          debugLog('Pinboard GPT: Background script error:', runtimeAPI.lastError.message);
+          debugLog('Background script error:', runtimeAPI.lastError.message);
           showNotification('Error communicating with background script', 'error');
           return;
         } else if (resp?.success) {
@@ -458,7 +458,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           }
         } else {
           // Error response from background script
-          debugLog('Pinboard GPT: Highlighting failed:', resp?.error);
+          debugLog('Highlighting failed:', resp?.error);
           showNotification('Pin opened but highlighting failed', 'warning');
           setTimeout(() => window.close(), UI_CONFIG.timing.windowCloseDelay);
         }
@@ -478,7 +478,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Delegate to background script for centralized tab handling
     runtimeAPI.sendMessage({ action: 'open-and-highlight', pin: stored, forceNewTab: true }, (resp) => {
       if (runtimeAPI.lastError) {
-        debugLog('Pinboard GPT: Error sending open-and-highlight from popup:', runtimeAPI.lastError.message);
+        debugLog('Error sending open-and-highlight from popup:', runtimeAPI.lastError.message);
         showNotification('Failed to open pin', 'error');
         return;
       }
@@ -490,7 +490,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           setTimeout(() => window.close(), UI_CONFIG.timing.windowCloseDelay);
         }
       } else {
-        debugLog('Pinboard GPT: Background failed to open-and-highlight:', resp?.error);
+        debugLog('Background failed to open-and-highlight:', resp?.error);
         showNotification('Failed to open pin', 'error');
       }
     });
@@ -945,7 +945,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         await render();
         showNotification('Pin updated', 'success');
       } catch (err) {
-        debugLog('Pinboard GPT: Failed to save edited pin:', err);
+        debugLog('Failed to save edited pin:', err);
         showNotification('Failed to update pin', 'error');
       }
       close();

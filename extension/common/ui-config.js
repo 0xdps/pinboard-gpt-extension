@@ -292,7 +292,7 @@ async function retryWithBackoff(operation, options = {}) {
         UI_CONFIG.network.retryMaxDelay
       );
 
-      debugLog(`Pinboard GPT: Retry attempt ${attempt}/${maxAttempts} in ${delay}ms`, error.message);
+      debugLog(`Retry attempt ${attempt}/${maxAttempts} in ${delay}ms`, error.message);
       
       // Wait before retrying
       await new Promise(resolve => setTimeout(resolve, delay));

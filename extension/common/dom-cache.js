@@ -54,7 +54,7 @@ const DOMCache = (() => {
    */
   function invalidateCache() {
     cacheValid = false;
-    debugLog('Pinboard GPT: DOM cache invalidated');
+    debugLog('DOM cache invalidated');
   }
 
   /**
@@ -87,9 +87,9 @@ const DOMCache = (() => {
         characterData: false
       });
 
-      debugLog('Pinboard GPT: DOM cache observer initialized');
+      debugLog('DOM cache observer initialized');
     } catch (err) {
-      debugError('Pinboard GPT: Failed to initialize DOM cache observer:', err);
+      debugError('Failed to initialize DOM cache observer:', err);
     }
   }
 
@@ -102,7 +102,7 @@ const DOMCache = (() => {
       messageCache = findAllMessages();
       cacheValid = true;
       lastUpdateTime = Date.now();
-      debugLog(`Pinboard GPT: Cache updated - ${messageCache.length} messages`);
+      debugLog(`Cache updated - ${messageCache.length} messages`);
     }
     return messageCache;
   }
@@ -143,7 +143,7 @@ const DOMCache = (() => {
       observer.disconnect();
       observer = null;
     }
-    debugLog('Pinboard GPT: DOM cache cleared');
+    debugLog('DOM cache cleared');
   }
 
   /**

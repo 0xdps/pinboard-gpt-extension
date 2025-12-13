@@ -120,7 +120,7 @@ async function syncLicenseFromServer() {
           UI_CONFIG.network.retryInitialDelay * Math.pow(UI_CONFIG.network.retryBackoffMultiplier, attempt - 1),
           UI_CONFIG.network.retryMaxDelay
         );
-        debugLog(`Pinboard GPT: License sync retry ${attempt}/${UI_CONFIG.network.retryMaxAttempts} in ${delay}ms`);
+        debugLog(`License sync retry ${attempt}/${UI_CONFIG.network.retryMaxAttempts} in ${delay}ms`);
         await new Promise(resolve => setTimeout(resolve, delay));
       }
     }
@@ -155,7 +155,7 @@ async function syncLicenseFromServer() {
       licenseData: licenseData 
     });
 
-    debugLog('Pinboard GPT: License synced successfully:', licenseType);
+    debugLog('License synced successfully:', licenseType);
     return { 
       success: true, 
       licenseType: licenseType,
@@ -247,7 +247,7 @@ async function syncPinsToCloud(pins) {
           UI_CONFIG.network.retryInitialDelay * Math.pow(UI_CONFIG.network.retryBackoffMultiplier, attempt - 1),
           UI_CONFIG.network.retryMaxDelay
         );
-        debugLog(`Pinboard GPT: Cloud sync retry ${attempt}/${UI_CONFIG.network.retryMaxAttempts} in ${delay}ms`);
+        debugLog(`Cloud sync retry ${attempt}/${UI_CONFIG.network.retryMaxAttempts} in ${delay}ms`);
         await new Promise(resolve => setTimeout(resolve, delay));
       }
     }
@@ -263,7 +263,7 @@ async function syncPinsToCloud(pins) {
       return { success: false, message: errorMsg };
     }
 
-    debugLog('Pinboard GPT: Pins synced to cloud successfully');
+    debugLog('Pins synced to cloud successfully');
     return { success: true, message: 'Pins synced to cloud' };
   } catch (error) {
     debugError('Cloud sync error:', error);
@@ -312,7 +312,7 @@ async function fetchPinsFromCloud() {
           UI_CONFIG.network.retryInitialDelay * Math.pow(UI_CONFIG.network.retryBackoffMultiplier, attempt - 1),
           UI_CONFIG.network.retryMaxDelay
         );
-        debugLog(`Pinboard GPT: Cloud fetch retry ${attempt}/${UI_CONFIG.network.retryMaxAttempts} in ${delay}ms`);
+        debugLog(`Cloud fetch retry ${attempt}/${UI_CONFIG.network.retryMaxAttempts} in ${delay}ms`);
         await new Promise(resolve => setTimeout(resolve, delay));
       }
     }
@@ -328,7 +328,7 @@ async function fetchPinsFromCloud() {
       return { success: false, message: errorMsg };
     }
 
-    debugLog('Pinboard GPT: Pins fetched from cloud successfully');
+    debugLog('Pins fetched from cloud successfully');
     return { success: true, pins: data.pins || [] };
   } catch (error) {
     debugError('Cloud fetch error:', error);
