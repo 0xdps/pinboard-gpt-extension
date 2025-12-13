@@ -5,36 +5,33 @@
   "scripts": {
     "clean": "node scripts/clean.js",
     "build:assets": "node scripts/generate-assets.js",
-
     "copy:extension-icons": "mkdirp extension/common/icons && cpx \"assets/icons/icon-*.png\" extension/common/icons",
     "copy:frontend-icons": "mkdirp frontend/images && cpx \"assets/icons/favicon-*.png\" frontend/images && cpx \"assets/icons/favicon.ico\" frontend/images",
-    "copy:icons": "npm run copy:extension-icons && npm run copy:frontend-icons",
-
-    "build:chrome": "npm run build:assets && npm run copy:icons && rimraf build/chrome && mkdirp build/chrome && cpx \"extension/common/**\" build/chrome && cpx \"extension/chrome/*\" build/chrome && node scripts/prepend-browser.js chrome build/chrome && node scripts/build-background.js build/chrome && node scripts/replace-browser-text.js chrome build/chrome/popup.html",
-    "build:firefox": "npm run build:assets && npm run copy:icons && rimraf build/firefox && mkdirp build/firefox && cpx \"extension/common/**\" build/firefox && cpx \"extension/firefox/*\" build/firefox && node scripts/prepend-browser.js firefox build/firefox && node scripts/build-background.js build/firefox && node scripts/replace-browser-text.js firefox build/firefox/popup.html",
-    "build:extension": "npm run clean && npm run build:chrome && npm run build:firefox",
-
-    "build:frontend": "npm run build:assets && npm run copy:frontend-icons",
+    "copy:icons": "run-p copy:extension-icons copy:frontend-icons",
+    "prebuild": "npm run clean && run-p build:assets copy:icons",
+    "build:chrome": "node scripts/build.js chrome",
+    "build:firefox": "node scripts/build.js firefox",
+    "build:extension": "npm run prebuild && run-p build:chrome build:firefox",
+    "build:frontend": "run-p build:assets copy:frontend-icons",
     "dev:frontend": "npm run copy:frontend-icons && node scripts/serve-frontend.js",
-
     "build": "npm run build:frontend",
-
-    "pack:chrome": "shx mkdir -p pack && node scripts/pack-chrome.js",
-    "pack:firefox": "shx mkdir -p pack && node scripts/pack-firefox.js",
-    "pack": "npm run build && npm run pack:chrome && npm run pack:firefox",
-
+    "pack:chrome": "node scripts/pack.js chrome",
+    "pack:firefox": "node scripts/pack.js firefox",
+    "pack:all": "node scripts/pack.js all",
+    "pack": "npm run build:extension && npm run pack:all",
     "users:list": "node scripts/list-users.js",
     "users:upgrade": "node scripts/upgrade-user.js"
   },
-  "dependencies": {
-    "sharp": "^0.34.4"
-  },
   "devDependencies": {
     "@libsql/client": "^0.15.15",
+    "archiver": "^7.0.1",
     "cpx": "^1.5.0",
     "cross-env": "^10.1.0",
     "dotenv": "^17.2.3",
+    "glob": "^13.0.0",
     "mkdirp": "^3.0.1",
+    "sharp": "^0.34.4",
+    "npm-run-all": "^4.1.5",
     "rimraf": "^6.1.0",
     "shx": "^0.4.0"
   }
