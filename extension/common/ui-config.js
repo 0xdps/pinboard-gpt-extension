@@ -159,7 +159,8 @@ const UI_CONFIG = {
       backdropBg: 'rgba(0, 0, 0, 0.5)',
       tagBg: '#e8f0fe',
       tagText: '#1a73e8',
-      tagBorder: '#aecbfa'
+      tagBorder: '#aecbfa',
+      tagRemoveHover: 'rgba(26, 115, 232, 0.1)'
     },
     dark: {
       bg: '#2d2d2d',
@@ -180,7 +181,8 @@ const UI_CONFIG = {
       backdropBg: 'rgba(0, 0, 0, 0.7)',
       tagBg: '#1a3d5f',
       tagText: '#64b5f6',
-      tagBorder: '#1565c0'
+      tagBorder: '#1565c0',
+      tagRemoveHover: 'rgba(93, 165, 218, 0.15)'
     }
   },
 
@@ -204,6 +206,83 @@ const UI_CONFIG = {
       // Button colors for dark theme
       neutral: '#374151',     // Unpinned button
       pinned: '#1f2937'       // Pinned button (darker)
+    }
+  },
+
+  // Theme-aware Tooltip Styling
+  tooltip: {
+    fixed: {},
+    light: {
+      background: 'rgba(255, 255, 255, 0.95)',
+      color: '#202124',
+      shadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+      arrowColor: 'rgba(255, 255, 255, 0.95)'
+    },
+    dark: {
+      background: 'rgba(30, 41, 59, 0.95)',
+      color: 'white',
+      shadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+    
+
+  // Theme-aware Notification Styling
+  notification: {
+    fixed: {
+      // Notification colors (same across all themes)
+      successBg: '#ff6b35',
+      successText: '#ffffff',
+      successBorder: '#d65a2b',
+      errorBg: '#d33b27',
+      errorText: '#ffffff',
+      errorBorder: '#b03020',
+      warningBg: '#f57c00',
+      warningText: '#ffffff',
+      warningBorder: '#d46b00',
+      infoBg: '#1a73e8',
+      infoText: '#ffffff',
+      infoBorder: '#1557b0'
+    },
+    light: {
+      boxShadow: '0 8px 24px rgba(0,0,0,0.1)'
+    },
+    dark: {
+      boxShadow: '0 8px 24px rgba(0,0,0,0.3)'
+    }
+  },  arrowColor: 'rgba(30, 41, 59, 0.95)'
+    }
+  },
+
+  // Theme-aware Dropdown/Navigation Styling
+  dropdown: {
+    fixed: {},
+    light: {
+      bg: '#ffffff',
+      border: '#dadce0',
+      text: '#202124',
+      headerBg: '#f8f9fa',
+      headerBorder: '#e8eaed',
+      headerText: '#202124',
+      hoverBg: '#f8f9fa',
+      previewText: '#5f6368',
+      labelAssistant: '#ff6b35',
+      labelUser: '#1a73e8',
+      numberText: '#9aa0a6',
+      shadowColor: 'rgba(0,0,0,0.15)',
+      itemBorder: '#f1f3f4'
+    },
+    dark: {
+      bg: '#2d2d2d',
+      border: '#404040',
+      text: '#e4e4e4',
+      headerBg: '#1a1a1a',
+      headerBorder: '#404040',
+      headerText: '#ffffff',
+      hoverBg: '#3d3d3d',
+      previewText: '#b8b8b8',
+      labelAssistant: '#5da5da',
+      labelUser: '#5da5da',
+      numberText: '#808080',
+      shadowColor: 'rgba(0,0,0,0.3)',
+      itemBorder: '#404040'
     }
   },
 

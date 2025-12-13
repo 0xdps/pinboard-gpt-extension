@@ -50,27 +50,13 @@ function debugError(...args) {
  * @param {string} type - Type of notification: 'success', 'error', 'warning', 'info' (default: 'success')
  */
 function showNotification(message, duration = 2000, type = 'success') {
-  // Detect ChatGPT's dark mode
-  const isDarkMode = document.documentElement.classList.contains('dark') ||
-                     document.body.classList.contains('dark');
-  
-  // Theme colors that match ChatGPT's palette
-  const themeColors = {
-    success: isDarkMode 
-      ? { bg: '#ff6b35', text: '#ffffff', border: '#d65a2b' }
-      : { bg: '#ff6b35', text: '#ffffff', border: '#d65a2b' },
-    error: isDarkMode 
-      ? { bg: '#d33b27', text: '#ffffff', border: '#b03020' }
-      : { bg: '#d33b27', text: '#ffffff', border: '#b03020' },
-    warning: isDarkMode 
-      ? { bg: '#f57c00', text: '#ffffff', border: '#d46b00' }
-      : { bg: '#f57c00', text: '#ffffff', border: '#d46b00' },
-    info: isDarkMode 
-      ? { bg: '#1a73e8', text: '#ffffff', border: '#1557b0' }
-      : { bg: '#1a73e8', text: '#ffffff', border: '#1557b0' }
+  // Get notification colors from UI_CONFIG
+  const typePrefix = type.charAt(0).toUpperCase() + type.slice(1); // success -> Success
+  const colors = {
+    bg: UI_CONFIG.get(`notification.${type}Bg`),
+    text: UI_CONFIG.get(`notification.${type}Text`),
+    border: UI_CONFIG.get(`notification.${type}Border`)
   };
-  
-  const colors = themeColors[type] || themeColors.success;
   
   const notif = document.createElement('div');
   notif.textContent = message;
@@ -85,7 +71,7 @@ function showNotification(message, duration = 2000, type = 'success') {
     border-radius: 12px;
     font-size: 14px;
     font-weight: 500;
-    box-shadow: 0 8px 24px ${isDarkMode ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.1)'};
+    box-shadow: ${UI_CONFIG.get('notification.boxShadow')};
     animation: slideIn 0.3s ease;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
     max-width: 400px;

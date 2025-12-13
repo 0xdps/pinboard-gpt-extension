@@ -275,89 +275,44 @@ function isDarkMode() {
  * @returns {Object} Tooltip colors for current theme
  */
 function getTooltipColors() {
-  const isDark = isDarkMode();
   return {
-    background: isDark ? 'rgba(30, 41, 59, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-    color: isDark ? 'white' : '#202124',
-    shadow: isDark ? '0 4px 12px rgba(0, 0, 0, 0.3)' : '0 4px 12px rgba(0, 0, 0, 0.15)',
-    arrowColor: isDark ? 'rgba(30, 41, 59, 0.95)' : 'rgba(255, 255, 255, 0.95)'
+    background: UI_CONFIG.get('tooltip.background'),
+    color: UI_CONFIG.get('tooltip.color'),
+    shadow: UI_CONFIG.get('tooltip.shadow'),
+    arrowColor: UI_CONFIG.get('tooltip.arrowColor')
   };
 }
 
 async function getThemeColors() {
-  // Detect dark mode from ChatGPT's actual DOM
-  const isDark = isDarkMode();
-  
-  // Get actual ChatGPT colors from computed styles
-  let bgColor = '#ffffff';
-  let textColor = '#202124';
-  
-  try {
-    const mainElement = document.querySelector('main') || document.body;
-    const computedStyle = window.getComputedStyle(mainElement);
-    bgColor = computedStyle.backgroundColor || bgColor;
-    textColor = computedStyle.color || textColor;
-  } catch (err) {
-    debugLog('Could not get computed styles:', err);
-  }
-
-  // ChatGPT color palette (official)
-  return isDark ? {
-    // Dark mode - matches ChatGPT's actual dark theme
-    overlay: 'rgba(0, 0, 0, 0.5)',
-    dialogBg: '#212121',
-    dialogText: '#ececec',
-    headingText: '#ffffff',
-    labelText: '#a0a0a0',
-    previewBg: '#1a1a1a',
-    previewBorder: '#353535',
-    previewText: '#a0a0a0',
-    inputBg: '#1a1a1a',
-    inputBorder: '#353535',
-    inputText: '#ececec',
-    inputPlaceholder: '#707070',
-    tagBg: '#1a3d5f',
-    tagText: '#5da5da',
-    cancelBg: '#1a1a1a',
-    cancelBorder: '#353535',
-    cancelText: '#a0a0a0',
-    cancelHover: '#2a2a2a',
-    saveBg: '#10a37f',
-    saveText: '#ffffff',
-    saveHover: '#0d8a6a',
-    focusBorder: '#10a37f',
-    helpText: '#707070',
-    borderRadius: '12px',
-    shadow: 'rgba(0, 0, 0, 0.3)',
-    hoverBg: '#2a2a2a'
-  } : {
-    // Light mode - matches ChatGPT's actual light theme
-    overlay: 'rgba(0, 0, 0, 0.4)',
-    dialogBg: '#ffffff',
-    dialogText: '#0d0d0d',
-    headingText: '#0d0d0d',
-    labelText: '#565656',
-    previewBg: '#f7f7f8',
-    previewBorder: '#d1d5db',
-    previewText: '#565656',
-    inputBg: '#ffffff',
-    inputBorder: '#d1d5db',
-    inputText: '#0d0d0d',
-    inputPlaceholder: '#8e8e8e',
-    tagBg: '#e8f0fe',
-    tagText: '#1a73e8',
-    cancelBg: '#f7f7f8',
-    cancelBorder: '#d1d5db',
-    cancelText: '#565656',
-    cancelHover: '#f7f7f8',
-    saveBg: '#10a37f',
-    saveText: '#ffffff',
-    saveHover: '#0d8a6a',
-    focusBorder: '#10a37f',
-    helpText: '#8e8e8e',
-    borderRadius: '12px',
-    shadow: 'rgba(0, 0, 0, 0.1)',
-    hoverBg: '#f7f7f8'
+  // Return theme colors from UI_CONFIG instead of hardcoded values
+  // This function is kept for backwards compatibility with existing dialog code
+  return {
+    overlay: UI_CONFIG.get('dialog.backdropBg'),
+    dialogBg: UI_CONFIG.get('dialog.bg'),
+    dialogText: UI_CONFIG.get('dialog.text'),
+    headingText: UI_CONFIG.get('dialog.headingText'),
+    labelText: UI_CONFIG.get('dialog.labelText'),
+    previewBg: UI_CONFIG.get('dialog.previewBg'),
+    previewBorder: UI_CONFIG.get('dialog.previewBorder'),
+    previewText: UI_CONFIG.get('dialog.previewText'),
+    inputBg: UI_CONFIG.get('dialog.inputBg'),
+    inputBorder: UI_CONFIG.get('dialog.inputBorder'),
+    inputText: UI_CONFIG.get('dialog.inputText'),
+    inputPlaceholder: UI_CONFIG.get('dialog.inputPlaceholder'),
+    tagBg: UI_CONFIG.get('dialog.tagBg'),
+    tagText: UI_CONFIG.get('dialog.tagText'),
+    cancelBg: UI_CONFIG.get('dialog.buttonSecondary'),
+    cancelBorder: UI_CONFIG.get('dialog.buttonSecondaryBorder'),
+    cancelText: UI_CONFIG.get('dialog.buttonSecondaryText'),
+    cancelHover: UI_CONFIG.get('dialog.buttonSecondaryHover'),
+    saveBg: UI_CONFIG.get('colors.accent'),
+    saveText: UI_CONFIG.get('colors.white'),
+    saveHover: UI_CONFIG.get('colors.accentHover'),
+    focusBorder: UI_CONFIG.get('colors.accent'),
+    helpText: UI_CONFIG.get('dialog.labelText'),
+    borderRadius: UI_CONFIG.get('dialog.borderRadius'),
+    shadow: UI_CONFIG.get('dialog.backdropBg'),
+    hoverBg: UI_CONFIG.get('dialog.buttonSecondaryHover')
   };
 }
 
@@ -1466,9 +1421,6 @@ function createPinDialog(messageText, pinData, colors, resolve, reject = resolve
     const tagInput = document.getElementById('tag-input');
     let currentTags = [];
     
-    // Detect dark mode from colors
-    const isDarkMode = colors.dialogBg === '#2d2d2d';
-    
     function createTagElement(tagText) {
       const tagEl = document.createElement('span');
       tagEl.style.cssText = `
@@ -1506,7 +1458,7 @@ function createPinDialog(messageText, pinData, colors, resolve, reject = resolve
       `;
       
       removeBtn.addEventListener('mouseenter', () => {
-        removeBtn.style.background = isDarkMode ? 'rgba(93, 165, 218, 0.15)' : 'rgba(26, 115, 232, 0.1)';
+        removeBtn.style.background = UI_CONFIG.get('dialog.tagRemoveHover');
       }, { passive: true });
       
       removeBtn.addEventListener('mouseleave', () => {
@@ -3558,47 +3510,16 @@ function getRecentMessages(limit = 5) {
 // Create message selection dropdown
 // Create message navigation dropdown (shows all messages, navigates on click)
 function createMessageNavigationDropdown(messages) {
-  // Detect dark mode
-  const isDark = isDarkMode();
-  
-  const colors = isDark ? {
-    bg: '#2d2d2d',
-    border: '#404040',
-    text: '#e4e4e4',
-    headerBg: '#1a1a1a',
-    headerBorder: '#404040',
-    headerText: '#ffffff',
-    hoverBg: '#3d3d3d',
-    previewText: '#b8b8b8',
-    labelAssistant: '#5da5da',
-    labelUser: '#5da5da',
-    numberText: '#808080',
-    shadowColor: 'rgba(0,0,0,0.3)'
-  } : {
-    bg: '#ffffff',
-    border: '#dadce0',
-    text: '#202124',
-    headerBg: '#f8f9fa',
-    headerBorder: '#e8eaed',
-    headerText: '#202124',
-    hoverBg: '#f8f9fa',
-    previewText: '#5f6368',
-    labelAssistant: '#ff6b35',
-    labelUser: '#1a73e8',
-    numberText: '#9aa0a6',
-    shadowColor: 'rgba(0,0,0,0.15)'
-  };
-  
   const dropdown = document.createElement('div');
   dropdown.style.cssText = `
     position: fixed;
     bottom: 160px;
     right: 20px;
     z-index: 10001;
-    background: ${colors.bg};
-    border: 1px solid ${colors.border};
+    background: ${UI_CONFIG.get('dropdown.bg')};
+    border: 1px solid ${UI_CONFIG.get('dropdown.border')};
     border-radius: 8px;
-    box-shadow: 0 8px 24px ${colors.shadowColor};
+    box-shadow: 0 8px 24px ${UI_CONFIG.get('dropdown.shadowColor')};
     max-width: 400px;
     max-height: 400px;
     overflow-y: auto;
@@ -3609,11 +3530,11 @@ function createMessageNavigationDropdown(messages) {
   const header = document.createElement('div');
   header.style.cssText = `
     padding: 12px 16px;
-    border-bottom: 1px solid ${colors.headerBorder};
+    border-bottom: 1px solid ${UI_CONFIG.get('dropdown.headerBorder')};
     font-weight: 600;
     font-size: 14px;
-    color: ${colors.headerText};
-    background: ${colors.headerBg};
+    color: ${UI_CONFIG.get('dropdown.headerText')};
+    background: ${UI_CONFIG.get('dropdown.headerBg')};
     border-radius: 8px 8px 0 0;
     position: sticky;
     top: 0;
@@ -3647,12 +3568,12 @@ function createMessageNavigationDropdown(messages) {
     const option = document.createElement('div');
     option.style.cssText = `
       padding: 10px 16px;
-      border-bottom: 1px solid ${isDarkMode ? '#404040' : '#f1f3f4'};
+      border-bottom: 1px solid ${UI_CONFIG.get('dropdown.itemBorder')};
       cursor: pointer;
       transition: background 0.2s;
       font-size: 12px;
       line-height: 1.4;
-      color: ${colors.text};
+      color: ${UI_CONFIG.get('dropdown.text')};
     `;
     
     const headerRow = document.createElement('div');
@@ -3667,7 +3588,7 @@ function createMessageNavigationDropdown(messages) {
     roleLabel.style.cssText = `
       font-weight: 600;
       font-size: 10px;
-      color: ${isAssistant ? colors.labelAssistant : colors.labelUser};
+      color: ${isAssistant ? UI_CONFIG.get('dropdown.labelAssistant') : UI_CONFIG.get('dropdown.labelUser')};
       text-transform: uppercase;
     `;
     roleLabel.textContent = isAssistant ? '🤖 Assistant' : '👤 You';
@@ -3675,7 +3596,7 @@ function createMessageNavigationDropdown(messages) {
     const messageNumber = document.createElement('span');
     messageNumber.style.cssText = `
       font-size: 10px;
-      color: ${colors.numberText};
+      color: ${UI_CONFIG.get('dropdown.numberText')};
       font-weight: 500;
     `;
     messageNumber.textContent = `#${index + 1}`;
@@ -3685,7 +3606,7 @@ function createMessageNavigationDropdown(messages) {
     
     const previewDiv = document.createElement('div');
     previewDiv.style.cssText = `
-      color: ${colors.previewText};
+      color: ${UI_CONFIG.get('dropdown.previewText')};
       overflow: hidden;
     `;
     previewDiv.textContent = preview;
@@ -3694,7 +3615,7 @@ function createMessageNavigationDropdown(messages) {
     option.appendChild(previewDiv);
     
     option.addEventListener('mouseenter', () => {
-      option.style.background = colors.hoverBg;
+      option.style.background = UI_CONFIG.get('dropdown.hoverBg');
     }, { passive: true });
     
     option.addEventListener('mouseleave', () => {
