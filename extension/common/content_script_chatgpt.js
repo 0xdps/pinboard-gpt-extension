@@ -262,10 +262,31 @@ function setupDialogKeyboardNavigation(dialog, overlay, focusableElements, close
 }
 
 // Get theme colors based on dark mode setting
+/**
+ * Detect if dark mode is currently active
+ * @returns {boolean} True if dark mode is active
+ */
+function isDarkMode() {
+  return document.documentElement.classList.contains('dark');
+}
+
+/**
+ * Get tooltip colors based on current theme
+ * @returns {Object} Tooltip colors for current theme
+ */
+function getTooltipColors() {
+  const isDark = isDarkMode();
+  return {
+    background: isDark ? 'rgba(30, 41, 59, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+    color: isDark ? 'white' : '#202124',
+    shadow: isDark ? '0 4px 12px rgba(0, 0, 0, 0.3)' : '0 4px 12px rgba(0, 0, 0, 0.15)',
+    arrowColor: isDark ? 'rgba(30, 41, 59, 0.95)' : 'rgba(255, 255, 255, 0.95)'
+  };
+}
+
 async function getThemeColors() {
   // Detect dark mode from ChatGPT's actual DOM
-  const isDarkMode = document.documentElement.classList.contains('dark') ||
-                     document.body.classList.contains('dark');
+  const isDark = isDarkMode();
   
   // Get actual ChatGPT colors from computed styles
   let bgColor = '#ffffff';
@@ -281,7 +302,7 @@ async function getThemeColors() {
   }
 
   // ChatGPT color palette (official)
-  return isDarkMode ? {
+  return isDark ? {
     // Dark mode - matches ChatGPT's actual dark theme
     overlay: 'rgba(0, 0, 0, 0.5)',
     dialogBg: '#212121',
@@ -510,8 +531,8 @@ function createPinButtonForMessage(messageContainer) {
     // Apply optimized styles
     pinButton.style.cssText = `
       position: absolute;
-      z-index: ${UI_CONFIG.button.zIndex};
-      color: #6b7280;
+      z-index: ${UI_CONFIG.get('button.zIndex')};
+      color: ${UI_CONFIG.get('colors.textSecondary')};
       border-radius: 8px;
       padding: 4px;
       width: 32px;
@@ -1866,7 +1887,7 @@ function createPinDialog(messageText, pinData, colors, resolve, reject = resolve
     
     // Focus border handling for tags container
     tagInput.addEventListener('focus', () => {
-      tagsContainer.style.borderColor = '#10a37f';
+      tagsContainer.style.borderColor = '#ff6b35';
     });
     
     tagInput.addEventListener('blur', () => {
@@ -2935,8 +2956,8 @@ async function highlightPin(pin) {
   
   // Use a very subtle highlight that's easy on the eyes - no border, no margin/padding
   element.style.transition = 'all 0.4s ease';
-  element.style.background = 'rgba(16, 163, 127, 0.03)'; // Much more subtle green tint
-  element.style.boxShadow = '0 1px 6px rgba(16, 163, 127, 0.1)'; // Very soft shadow glow
+  element.style.background = 'rgba(255, 107, 53, 0.03)'; // Much more subtle orange tint
+  element.style.boxShadow = '0 1px 6px rgba(255, 107, 53, 0.1)'; // Very soft shadow glow
   element.style.borderRadius = '8px';
   
   // Ensure the element doesn't expand too wide
@@ -3434,7 +3455,7 @@ try {
       if (msg.action === 'get-accent-color') {
         try {
           // Read ChatGPT's theme accent color from CSS custom properties
-          let accentColor = '#6b7280'; // fallback grey
+          let accentColor = UI_CONFIG.get('colors.textSecondary'); // fallback grey
           
           // Get the root element to read CSS variables
           const rootStyles = window.getComputedStyle(document.documentElement);
@@ -3538,11 +3559,9 @@ function getRecentMessages(limit = 5) {
 // Create message navigation dropdown (shows all messages, navigates on click)
 function createMessageNavigationDropdown(messages) {
   // Detect dark mode
-  const isDarkMode = document.documentElement.classList.contains('dark') ||
-                     window.getComputedStyle(document.body).backgroundColor.match(/rgb\(.*?\)/) &&
-                     parseInt(window.getComputedStyle(document.body).backgroundColor.match(/\d+/)[0]) < 128;
+  const isDark = isDarkMode();
   
-  const colors = isDarkMode ? {
+  const colors = isDark ? {
     bg: '#2d2d2d',
     border: '#404040',
     text: '#e4e4e4',
@@ -3564,7 +3583,7 @@ function createMessageNavigationDropdown(messages) {
     headerText: '#202124',
     hoverBg: '#f8f9fa',
     previewText: '#5f6368',
-    labelAssistant: '#10a37f',
+    labelAssistant: '#ff6b35',
     labelUser: '#1a73e8',
     numberText: '#9aa0a6',
     shadowColor: 'rgba(0,0,0,0.15)'
@@ -3909,7 +3928,8 @@ async function updateChatPinButton() {
       icon.appendChild(svg);
     }
     text.textContent = 'Unpin Chat';
-    button.style.background = '#10a37f';
+    // Use darker theme-aware color for pinned state
+    button.style.background = UI_CONFIG.get('button.pinned');
   } else {
     // Use extension icon for unpinned state
     icon.textContent = '';
@@ -3932,7 +3952,8 @@ async function updateChatPinButton() {
       icon.appendChild(svg);
     }
     text.textContent = 'Pin Chat';
-    button.style.background = '#2d3748';
+    // Use theme-aware neutral color (light gray for light mode, darker for dark mode)
+    button.style.background = UI_CONFIG.get('button.neutral');
   }
 }
 
@@ -3950,13 +3971,17 @@ function addChatPinButton() {
     
     const text = document.createElement('span');
     text.className = 'chat-pin-text pingpt-tooltip';
+    
+    // Theme-aware tooltip colors for pin button
+    const tooltipColors = getTooltipColors();
+    
     text.style.cssText = `
       position: absolute;
       right: 58px;
       top: 50%;
       transform: translateY(-50%);
-      background: rgba(30, 41, 59, 0.95);
-      color: white;
+      background: ${tooltipColors.background};
+      color: ${tooltipColors.color};
       padding: 8px 14px;
       border-radius: 8px;
       font-size: 13px;
@@ -3966,12 +3991,13 @@ function addChatPinButton() {
       transition: opacity 0.2s, visibility 0.2s;
       pointer-events: none;
       font-weight: 500;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      box-shadow: ${tooltipColors.shadow};
     `;
     
     // Create tooltip arrow (outside, on the right edge)
     const tooltipArrow = document.createElement('span');
     tooltipArrow.className = 'pingpt-tooltip-arrow';
+    
     tooltipArrow.style.cssText = `
       position: absolute;
       right: 52px;
@@ -3981,7 +4007,7 @@ function addChatPinButton() {
       height: 0;
       border-top: 6px solid transparent;
       border-bottom: 6px solid transparent;
-      border-left: 6px solid rgba(30, 41, 59, 0.95);
+      border-left: 6px solid ${tooltipColors.arrowColor};
       opacity: 0;
       visibility: hidden;
       transition: opacity 0.2s, visibility 0.2s;
@@ -3992,12 +4018,16 @@ function addChatPinButton() {
     chatPinBtn.appendChild(tooltipArrow);
     
     chatPinBtn.title = '';
+    
+    // Use theme-aware neutral color for button
+    const buttonBg = UI_CONFIG.get('button.neutral');
+    
     chatPinBtn.style.cssText = `
       position: fixed;
       bottom: 40px;
       right: 20px;
       z-index: 10000;
-      background: #2d3748;
+      background: ${buttonBg};
       color: white;
       border: none;
       border-radius: 50%;
@@ -4015,6 +4045,13 @@ function addChatPinButton() {
     `;
     
     chatPinBtn.addEventListener('mouseenter', () => {
+      // Update tooltip colors based on current theme
+      const colors = getTooltipColors();
+      
+      text.style.background = colors.background;
+      text.style.color = colors.color;
+      tooltipArrow.style.borderLeftColor = colors.arrowColor;
+      
       chatPinBtn.style.transform = 'scale(1.05)';
       chatPinBtn.style.boxShadow = '0 6px 16px rgba(0,0,0,0.3)';
       text.style.opacity = '1';
@@ -4103,13 +4140,17 @@ function addManualPinButton() {
     const buttonText = document.createElement('span');
     buttonText.textContent = 'Chat Outline';
     buttonText.className = 'pingpt-tooltip';
+    
+    // Theme-aware tooltip colors
+    const outlineTooltipColors = getTooltipColors();
+    
     buttonText.style.cssText = `
       position: absolute;
       right: 58px;
       top: 50%;
       transform: translateY(-50%);
-      background: rgba(30, 41, 59, 0.95);
-      color: white;
+      background: ${outlineTooltipColors.background};
+      color: ${outlineTooltipColors.color};
       padding: 8px 14px;
       border-radius: 8px;
       font-size: 13px;
@@ -4119,12 +4160,13 @@ function addManualPinButton() {
       transition: opacity 0.2s, visibility 0.2s;
       pointer-events: none;
       font-weight: 500;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      box-shadow: ${outlineTooltipColors.shadow};
     `;
     
     // Create tooltip arrow (outside, on the right edge)
     const tooltipArrow = document.createElement('span');
     tooltipArrow.className = 'pingpt-tooltip-arrow';
+    
     tooltipArrow.style.cssText = `
       position: absolute;
       right: 52px;
@@ -4134,7 +4176,7 @@ function addManualPinButton() {
       height: 0;
       border-top: 6px solid transparent;
       border-bottom: 6px solid transparent;
-      border-left: 6px solid rgba(30, 41, 59, 0.95);
+      border-left: 6px solid ${outlineTooltipColors.arrowColor};
       opacity: 0;
       visibility: hidden;
       transition: opacity 0.2s, visibility 0.2s;
@@ -4144,12 +4186,14 @@ function addManualPinButton() {
     manualBtn.appendChild(tooltipArrow);
     
     manualBtn.title = '';
+    
+    // Use orange accent color for chat outline button
     manualBtn.style.cssText = `
       position: fixed;
       bottom: 100px;
       right: 20px;
       z-index: 10000;
-      background: #10a37f;
+      background: #ff6b35;
       color: white;
       border: none;
       border-radius: 50%;
@@ -4167,6 +4211,13 @@ function addManualPinButton() {
     `;
     
     manualBtn.addEventListener('mouseenter', () => {
+      // Update tooltip colors based on current theme
+      const colors = getTooltipColors();
+      
+      buttonText.style.background = colors.background;
+      buttonText.style.color = colors.color;
+      tooltipArrow.style.borderLeftColor = colors.arrowColor;
+      
       manualBtn.style.transform = 'scale(1.05)';
       manualBtn.style.boxShadow = '0 6px 16px rgba(0,0,0,0.3)';
       buttonText.style.opacity = '1';

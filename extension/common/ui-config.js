@@ -59,66 +59,14 @@ const UI_CONFIG = {
     fadeOutDuration: '0.3s'
   },
 
-  // Modal/Dialog Colors (Light Mode)
-  lightMode: {
-    dialogBg: '#ffffff',
-    dialogText: '#202124',
-    headingText: '#202124',
-    labelText: '#5f6368',
-    inputBg: '#ffffff',
-    inputBorder: '#dadce0',
-    inputText: '#202124',
-    inputPlaceholder: '#9aa0a6',
-    previewBg: '#f8f9fa',
-    previewBorder: '#e8eaed',
-    previewText: '#202124',
-    buttonPrimary: '#10a37f',
-    buttonPrimaryHover: '#0d8a6a',
-    buttonSecondary: '#f8f9fa',
-    buttonSecondaryText: '#5f6368',
-    buttonSecondaryBorder: '#dadce0',
-    buttonSecondaryHover: '#e8eaed',
-    backdropBg: 'rgba(0, 0, 0, 0.5)',
-    tagBg: '#e8f0fe',
-    tagText: '#1a73e8',
-    tagBorder: '#aecbfa',
-    successColor: '#10a37f',
-    errorColor: '#d33b27',
-    warningColor: '#f57c00',
-    infoColor: '#1a73e8'
-  },
-
-  // Modal/Dialog Colors (Dark Mode)
-  darkMode: {
-    dialogBg: '#2d2d2d',
-    dialogText: '#e4e4e4',
-    headingText: '#ffffff',
-    labelText: '#b8b8b8',
-    inputBg: '#1a1a1a',
-    inputBorder: '#404040',
-    inputText: '#e4e4e4',
-    inputPlaceholder: '#808080',
-    previewBg: '#1a1a1a',
-    previewBorder: '#404040',
-    previewText: '#e4e4e4',
-    buttonPrimary: '#10a37f',
-    buttonPrimaryHover: '#0d8a6a',
-    buttonSecondary: '#404040',
-    buttonSecondaryText: '#e4e4e4',
-    buttonSecondaryBorder: '#505050',
-    buttonSecondaryHover: '#505050',
-    backdropBg: 'rgba(0, 0, 0, 0.7)',
-    tagBg: '#1a3d5f',
-    tagText: '#64b5f6',
-    tagBorder: '#1565c0',
-    successColor: '#10a37f',
-    errorColor: '#ef4444',
-    warningColor: '#f59e0b',
-    infoColor: '#3b82f6'
-  },
-
-  // Colors (Light Mode)
+  // Theme-aware Colors
   colors: {
+    fixed: {
+      // Brand colors (same across themes)
+      accent: '#ff6b35',
+      accentHover: '#d65a2b',
+      white: '#ffffff'
+    },
     light: {
       // Primary
       primary: '#1a73e8',
@@ -144,7 +92,6 @@ const UI_CONFIG = {
       previewBorder: '#e8eaed',
       
       // Semantic
-      success: '#10a37f',
       error: '#d33b27',
       warning: '#f57c00',
       info: '#1a73e8'
@@ -174,20 +121,90 @@ const UI_CONFIG = {
       previewBorder: '#404040',
       
       // Semantic
-      success: '#10a37f',
       error: '#ef4444',
       warning: '#f59e0b',
       info: '#3b82f6'
     }
   },
 
-  // Button Styling
+  // Theme-aware Dialog/Modal Styling
+  dialog: {
+    fixed: {
+      // Non-color properties (same across themes)
+      maxWidth: '500px',
+      padding: '24px',
+      borderRadius: '12px',
+      boxShadowBlur: '60px',
+      backdropFilter: 'blur(4px)',
+      zIndex: 100000,
+      previewMaxHeight: '150px'
+    },
+    light: {
+      // Colors that change with theme
+      bg: '#ffffff',
+      text: '#202124',
+      headingText: '#202124',
+      labelText: '#5f6368',
+      inputBg: '#ffffff',
+      inputBorder: '#dadce0',
+      inputText: '#202124',
+      inputPlaceholder: '#9aa0a6',
+      previewBg: '#f8f9fa',
+      previewBorder: '#e8eaed',
+      previewText: '#202124',
+      buttonSecondary: '#f8f9fa',
+      buttonSecondaryText: '#5f6368',
+      buttonSecondaryBorder: '#dadce0',
+      buttonSecondaryHover: '#e8eaed',
+      backdropBg: 'rgba(0, 0, 0, 0.5)',
+      tagBg: '#e8f0fe',
+      tagText: '#1a73e8',
+      tagBorder: '#aecbfa'
+    },
+    dark: {
+      bg: '#2d2d2d',
+      text: '#e4e4e4',
+      headingText: '#ffffff',
+      labelText: '#b8b8b8',
+      inputBg: '#1a1a1a',
+      inputBorder: '#404040',
+      inputText: '#e4e4e4',
+      inputPlaceholder: '#808080',
+      previewBg: '#1a1a1a',
+      previewBorder: '#404040',
+      previewText: '#e4e4e4',
+      buttonSecondary: '#404040',
+      buttonSecondaryText: '#e4e4e4',
+      buttonSecondaryBorder: '#505050',
+      buttonSecondaryHover: '#505050',
+      backdropBg: 'rgba(0, 0, 0, 0.7)',
+      tagBg: '#1a3d5f',
+      tagText: '#64b5f6',
+      tagBorder: '#1565c0'
+    }
+  },
+
+  // Theme-aware Button Styling
   button: {
-    padding: '10px 20px',
-    borderRadius: '8px',
-    fontSize: '14px',
-    fontWeight: '600',
-    transitionDuration: '0.2s'
+    fixed: {
+      // Non-color properties (same across themes)
+      padding: '10px 20px',
+      borderRadius: '8px',
+      fontSize: '14px',
+      fontWeight: '600',
+      transitionDuration: '0.2s',
+      zIndex: 10000
+    },
+    light: {
+      // Button colors for light theme
+      neutral: '#6b7280',     // Unpinned button
+      pinned: '#4b5563'       // Pinned button (darker)
+    },
+    dark: {
+      // Button colors for dark theme
+      neutral: '#374151',     // Unpinned button
+      pinned: '#1f2937'       // Pinned button (darker)
+    }
   },
 
   // Input Styling
@@ -265,6 +282,54 @@ const UI_CONFIG = {
     trackStorageOps: true,          // Track storage operations
     trackDOMQueries: true,          // Track DOM query performance
     trackAPIcalls: true             // Track API call performance
+  },
+
+  /**
+   * Get a configuration value with automatic theme detection
+   * Supports both theme-aware and non-themed properties
+   * 
+   * @param {string} path - Dot-separated path to the property (e.g., 'colors.primary', 'button.neutral')
+   * @returns {*} The configuration value
+   * 
+   * @example
+   * UI_CONFIG.get('colors.accent')        // Returns '#ff6b35' (from fixed)
+   * UI_CONFIG.get('colors.primary')       // Returns '#1a73e8' or '#4f46e5' (theme-based)
+   * UI_CONFIG.get('button.neutral')       // Returns '#6b7280' or '#374151' (theme-based)
+   * UI_CONFIG.get('timing.debounceDelay') // Returns 150 (non-themed)
+   */
+  get(path) {
+    const parts = path.split('.');
+    let obj = this;
+    
+    // Navigate to the target object
+    for (let i = 0; i < parts.length - 1; i++) {
+      obj = obj[parts[i]];
+      if (!obj) return undefined;
+    }
+    
+    const lastPart = parts[parts.length - 1];
+    
+    // Check if this object has theme structure (fixed/light/dark)
+    if (obj.fixed || obj.light || obj.dark) {
+      // First check fixed properties (theme-independent)
+      if (obj.fixed && obj.fixed[lastPart] !== undefined) {
+        return obj.fixed[lastPart];
+      }
+      
+      // Then check theme-specific properties
+      const isDark = typeof isDarkMode === 'function' ? isDarkMode() : 
+                     (typeof document !== 'undefined' && document.documentElement?.classList.contains('dark'));
+      const theme = isDark ? 'dark' : 'light';
+      
+      if (obj[theme] && obj[theme][lastPart] !== undefined) {
+        return obj[theme][lastPart];
+      }
+      
+      return undefined;
+    }
+    
+    // For non-themed properties, return directly
+    return obj[lastPart];
   }
 };
 

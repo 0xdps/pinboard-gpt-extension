@@ -57,8 +57,8 @@ function showNotification(message, duration = 2000, type = 'success') {
   // Theme colors that match ChatGPT's palette
   const themeColors = {
     success: isDarkMode 
-      ? { bg: '#10a37f', text: '#ffffff', border: '#0d8a6a' }
-      : { bg: '#10a37f', text: '#ffffff', border: '#0d8a6a' },
+      ? { bg: '#ff6b35', text: '#ffffff', border: '#d65a2b' }
+      : { bg: '#ff6b35', text: '#ffffff', border: '#d65a2b' },
     error: isDarkMode 
       ? { bg: '#d33b27', text: '#ffffff', border: '#b03020' }
       : { bg: '#d33b27', text: '#ffffff', border: '#b03020' },
