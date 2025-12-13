@@ -12,11 +12,11 @@
         return;
     }
     
-    console.log('Pinboard GPT: Web verification script loaded');
+    debugLog('Pinboard GPT: Web verification script loaded');
     
     // Get runtime reference (Chrome only)
     if (!chrome?.runtime) {
-        console.log('Pinboard GPT: Chrome extension runtime not available');
+        debugLog('Pinboard GPT: Chrome extension runtime not available');
         return;
     }
     
@@ -51,7 +51,7 @@
                     browser: 'chrome'
                 };
                 
-                console.log('Pinboard GPT: Extension marker injected successfully');
+                debugLog('Pinboard GPT: Extension marker injected successfully');
                 
                 // Dispatch a custom event to notify the page
                 const event = new CustomEvent('pingptExtensionDetected', {
@@ -87,7 +87,7 @@
         if (event.data && event.data.type === 'pingpt-auth-token') {
             const { token, userData, licenseData } = event.data;
             
-            console.log('Pinboard GPT: Received auth token from website');
+            debugLog('Pinboard GPT: Received auth token from website');
             
             // Store token and user data in extension storage
             chrome.storage.local.set({
@@ -96,7 +96,7 @@
                 license: licenseData?.type || 'FREE',
                 licenseData: licenseData
             }, () => {
-                console.log('Pinboard GPT: Auth token saved successfully');
+                debugLog('Pinboard GPT: Auth token saved successfully');
                 
                 // Notify the webpage that token was saved
                 window.postMessage({

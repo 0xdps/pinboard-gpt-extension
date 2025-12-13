@@ -9,7 +9,7 @@ async function getAuthToken() {
     const result = await chrome.storage.local.get(['authToken']);
     return result.authToken || null;
   } catch (error) {
-    console.error('Error getting auth token:', error);
+    debugError('Error getting auth token:', error);
     return null;
   }
 }
@@ -19,7 +19,7 @@ async function setAuthToken(token) {
     await chrome.storage.local.set({ authToken: token });
     return true;
   } catch (error) {
-    console.error('Error setting auth token:', error);
+    debugError('Error setting auth token:', error);
     return false;
   }
 }
@@ -29,7 +29,7 @@ async function clearAuthToken() {
     await chrome.storage.local.remove(['authToken', 'userData']);
     return true;
   } catch (error) {
-    console.error('Error clearing auth token:', error);
+    debugError('Error clearing auth token:', error);
     return false;
   }
 }
@@ -75,7 +75,7 @@ async function logoutUser() {
     
     return { success: true, message: 'Logged out successfully' };
   } catch (error) {
-    console.error('Logout error:', error);
+    debugError('Logout error:', error);
     return { success: false, message: 'Logout failed' };
   }
 }
@@ -88,13 +88,42 @@ async function syncLicenseFromServer() {
       return { success: false, message: 'Not logged in' };
     }
 
-    const response = await fetch(`${API_BASE_URL}/user/license`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-    });
+    let response;
+    let lastError;
+    
+    // Retry with backoff for network errors only
+    // HTTP errors (including 401) are returned as successful Response objects, not thrown
+    for (let attempt = 1; attempt <= UI_CONFIG.network.retryMaxAttempts; attempt++) {
+      try {
+        response = await withTimeout(
+          fetch(`${API_BASE_URL}/user/license`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          }),
+          UI_CONFIG.network.apiTimeout
+        );
+        // Success - exit retry loop
+        break;
+      } catch (error) {
+        lastError = error;
+        // Only retry on network/timeout errors
+        if (attempt === UI_CONFIG.network.retryMaxAttempts) {
+          throw error;
+        }
+        if (!isRetryableError(error)) {
+          throw error;
+        }
+        const delay = Math.min(
+          UI_CONFIG.network.retryInitialDelay * Math.pow(UI_CONFIG.network.retryBackoffMultiplier, attempt - 1),
+          UI_CONFIG.network.retryMaxDelay
+        );
+        debugLog(`Pinboard GPT: License sync retry ${attempt}/${UI_CONFIG.network.retryMaxAttempts} in ${delay}ms`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
 
     const data = await response.json();
 
@@ -104,7 +133,8 @@ async function syncLicenseFromServer() {
         await clearAuthToken();
         return { success: false, message: 'Session expired. Please login again.' };
       }
-      return { success: false, message: data.message || 'Failed to fetch license' };
+      const errorMsg = data.message || formatNetworkErrorMessage(new Error(), response.status);
+      return { success: false, message: errorMsg };
     }
 
     // Update local license based on server data
@@ -125,16 +155,18 @@ async function syncLicenseFromServer() {
       licenseData: licenseData 
     });
 
+    debugLog('Pinboard GPT: License synced successfully:', licenseType);
     return { 
       success: true, 
       licenseType: licenseType,
       expiresAt: data.expiresAt 
     };
   } catch (error) {
-    console.error('License sync error:', error);
-    return { success: false, message: 'Network error. Using cached license.' };
+    debugError('License sync error:', error);
+    const errorMsg = formatNetworkErrorMessage(error);
+    return { success: false, message: '⚠️ ' + errorMsg + ' Using cached license.' };
   }
-}
+}}
 
 // Validate license periodically (called daily)
 async function validateLicense() {
@@ -168,7 +200,7 @@ async function validateLicense() {
     // Validate with server
     return await syncLicenseFromServer();
   } catch (error) {
-    console.error('License validation error:', error);
+    debugError('License validation error:', error);
     // On error, keep existing license (graceful degradation)
     return { success: false, message: 'Validation failed, using cached license' };
   }
@@ -187,27 +219,58 @@ async function syncPinsToCloud(pins) {
       return { success: false, message: 'Cloud sync requires Premium plan' };
     }
 
-    const response = await fetch(`${API_BASE_URL}/pins/sync`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ pins }),
-    });
+    let response;
+    
+    // Retry with backoff for network errors only
+    for (let attempt = 1; attempt <= UI_CONFIG.network.retryMaxAttempts; attempt++) {
+      try {
+        response = await withTimeout(
+          fetch(`${API_BASE_URL}/pins/sync`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ pins }),
+          }),
+          UI_CONFIG.network.apiTimeout
+        );
+        break; // Success - exit retry loop
+      } catch (error) {
+        if (attempt === UI_CONFIG.network.retryMaxAttempts) {
+          throw error;
+        }
+        if (!isRetryableError(error)) {
+          throw error;
+        }
+        const delay = Math.min(
+          UI_CONFIG.network.retryInitialDelay * Math.pow(UI_CONFIG.network.retryBackoffMultiplier, attempt - 1),
+          UI_CONFIG.network.retryMaxDelay
+        );
+        debugLog(`Pinboard GPT: Cloud sync retry ${attempt}/${UI_CONFIG.network.retryMaxAttempts} in ${delay}ms`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
 
     const data = await response.json();
 
     if (!response.ok) {
-      return { success: false, message: data.message || 'Sync failed' };
+      if (response.status === 401) {
+        await clearAuthToken();
+        return { success: false, message: 'Session expired. Please login again.' };
+      }
+      const errorMsg = data.message || formatNetworkErrorMessage(new Error(), response.status);
+      return { success: false, message: errorMsg };
     }
 
+    debugLog('Pinboard GPT: Pins synced to cloud successfully');
     return { success: true, message: 'Pins synced to cloud' };
   } catch (error) {
-    console.error('Cloud sync error:', error);
-    return { success: false, message: 'Network error. Pins saved locally.' };
+    debugError('Cloud sync error:', error);
+    const errorMsg = formatNetworkErrorMessage(error);
+    return { success: false, message: '⚠️ ' + errorMsg + ' Pins saved locally.' };
   }
-}
+}}
 
 // Fetch pins from cloud (for Premium users)
 async function fetchPinsFromCloud() {
@@ -222,26 +285,57 @@ async function fetchPinsFromCloud() {
       return { success: false, message: 'Cloud sync requires Premium plan' };
     }
 
-    const response = await fetch(`${API_BASE_URL}/pins/sync`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-    });
+    let response;
+    
+    // Retry with backoff for network errors only
+    for (let attempt = 1; attempt <= UI_CONFIG.network.retryMaxAttempts; attempt++) {
+      try {
+        response = await withTimeout(
+          fetch(`${API_BASE_URL}/pins/sync`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          }),
+          UI_CONFIG.network.apiTimeout
+        );
+        break; // Success - exit retry loop
+      } catch (error) {
+        if (attempt === UI_CONFIG.network.retryMaxAttempts) {
+          throw error;
+        }
+        if (!isRetryableError(error)) {
+          throw error;
+        }
+        const delay = Math.min(
+          UI_CONFIG.network.retryInitialDelay * Math.pow(UI_CONFIG.network.retryBackoffMultiplier, attempt - 1),
+          UI_CONFIG.network.retryMaxDelay
+        );
+        debugLog(`Pinboard GPT: Cloud fetch retry ${attempt}/${UI_CONFIG.network.retryMaxAttempts} in ${delay}ms`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
 
     const data = await response.json();
 
     if (!response.ok) {
-      return { success: false, message: data.message || 'Fetch failed' };
+      if (response.status === 401) {
+        await clearAuthToken();
+        return { success: false, message: 'Session expired. Please login again.' };
+      }
+      const errorMsg = data.message || formatNetworkErrorMessage(new Error(), response.status);
+      return { success: false, message: errorMsg };
     }
 
+    debugLog('Pinboard GPT: Pins fetched from cloud successfully');
     return { success: true, pins: data.pins || [] };
   } catch (error) {
-    console.error('Cloud fetch error:', error);
-    return { success: false, message: 'Network error. Using local pins.' };
+    debugError('Cloud fetch error:', error);
+    const errorMsg = formatNetworkErrorMessage(error);
+    return { success: false, message: '⚠️ ' + errorMsg + ' Using local pins.' };
   }
-}
+}}
 
 // Initialize auth on extension load
 async function initializeAuth() {
@@ -259,7 +353,7 @@ async function initializeAuth() {
       });
     }
   } catch (error) {
-    console.error('Auth initialization error:', error);
+    debugError('Auth initialization error:', error);
   }
 }
 

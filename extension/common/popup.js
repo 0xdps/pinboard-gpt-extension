@@ -4,6 +4,59 @@ const tabsAPI = typeof browser !== 'undefined' ? browser.tabs : chrome.tabs;
 const runtimeAPI = typeof browser !== 'undefined' ? browser.runtime : chrome.runtime;
 const identityAPI = typeof chrome !== 'undefined' && chrome.identity ? chrome.identity : null;
 
+// Modal/Dialog keyboard navigation helper
+function setupModalKeyboardNavigation(modal) {
+  const focusableSelectors = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+  const allFocusable = Array.from(modal.querySelectorAll(focusableSelectors))
+    .filter(el => !el.hasAttribute('disabled'));
+  
+  if (allFocusable.length === 0) return;
+  
+  const firstFocusable = allFocusable[0];
+  const lastFocusable = allFocusable[allFocusable.length - 1];
+  
+  // Focus first element on modal open
+  setTimeout(() => {
+    firstFocusable.focus();
+  }, 50);
+  
+  // Handle Tab key for focus trap
+  const handleKeyDown = (e) => {
+    if (e.key === 'Tab') {
+      if (e.shiftKey) {
+        // Shift+Tab - go backward
+        if (document.activeElement === firstFocusable) {
+          e.preventDefault();
+          lastFocusable.focus();
+        }
+      } else {
+        // Tab - go forward
+        if (document.activeElement === lastFocusable) {
+          e.preventDefault();
+          firstFocusable.focus();
+        }
+      }
+    }
+    
+    // Escape key to close
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      // Trigger the close button click
+      const closeBtn = modal.querySelector('.close-btn, #closeEditModal, #closeSettings, #closeUpgrade');
+      if (closeBtn) {
+        closeBtn.click();
+      }
+    }
+  };
+  
+  modal.addEventListener('keydown', handleKeyDown);
+  
+  // Return function to remove listeners when modal closes
+  return () => {
+    modal.removeEventListener('keydown', handleKeyDown);
+  };
+}
+
 // Initialize debug setting on popup load
 async function initializePopupDebug() {
   try {
@@ -163,9 +216,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Settings Modal Handlers
   settingsBtn.onclick = async () => {
-    await updateAuthDisplay();
-    await updateLicenseDisplay();
-    settingsModal.style.display = 'flex';
+    try {
+      await updateAuthDisplay();
+      await updateLicenseDisplay();
+      settingsModal.style.display = 'flex';
+      // Setup keyboard navigation for the modal
+      setupModalKeyboardNavigation(settingsModal);
+    } catch (error) {
+      debugError('Error opening settings:', error);
+      showNotification('❌ Failed to open settings', 'error');
+    }
   };
 
   // Coffee Button Handler
@@ -210,12 +270,19 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Logout handler
   if (logoutBtn) {
     logoutBtn.onclick = async () => {
-      const result = await logoutUser();
-      if (result.success) {
-        showNotification(result.message, 'success');
-        await updateAuthDisplay();
-        await updateLicenseDisplay();
-        await updateLicenseBadge();
+      try {
+        const result = await logoutUser();
+        if (result.success) {
+          showNotification(result.message, 'success');
+          await updateAuthDisplay();
+          await updateLicenseDisplay();
+          await updateLicenseBadge();
+        } else {
+          showNotification(result.message || 'Logout failed', 'error');
+        }
+      } catch (error) {
+        debugError('Error during logout:', error);
+        showNotification('❌ Logout failed', 'error');
       }
     };
   }
@@ -223,20 +290,27 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Sync license handler
   if (syncLicenseBtn) {
     syncLicenseBtn.onclick = async () => {
-      syncLicenseBtn.disabled = true;
-      syncLicenseBtn.textContent = 'Syncing...';
-      
-      const result = await syncLicenseFromServer();
-      
-      syncLicenseBtn.disabled = false;
-      syncLicenseBtn.innerHTML = '<span class="btn-icon">🔄</span><span>Sync License</span>';
-      
-      if (result.success) {
-        showNotification('License synced successfully!', 'success');
-        await updateLicenseDisplay();
-        await updateLicenseBadge();
-      } else {
-        showNotification(result.message || 'Sync failed', 'error');
+      try {
+        syncLicenseBtn.disabled = true;
+        syncLicenseBtn.textContent = 'Syncing...';
+        
+        const result = await syncLicenseFromServer();
+        
+        syncLicenseBtn.disabled = false;
+        syncLicenseBtn.innerHTML = '<span class="btn-icon">🔄</span><span>Sync License</span>';
+        
+        if (result.success) {
+          showNotification('License synced successfully!', 'success');
+          await updateLicenseDisplay();
+          await updateLicenseBadge();
+        } else {
+          showNotification(result.message || 'Sync failed', 'error');
+        }
+      } catch (error) {
+        debugError('Error syncing license:', error);
+        syncLicenseBtn.disabled = false;
+        syncLicenseBtn.innerHTML = '<span class="btn-icon">🔄</span><span>Sync License</span>';
+        showNotification('❌ License sync failed', 'error');
       }
     };
   }
@@ -380,13 +454,13 @@ document.addEventListener('DOMContentLoaded', async () => {
           } else {
             // Pin was opened but not highlighted
             showNotification('Pin opened but message not found on page', 'warning');
-            setTimeout(() => window.close(), 1500);
+            setTimeout(() => window.close(), UI_CONFIG.timing.windowCloseDelay);
           }
         } else {
           // Error response from background script
           debugLog('Pinboard GPT: Highlighting failed:', resp?.error);
           showNotification('Pin opened but highlighting failed', 'warning');
-          setTimeout(() => window.close(), 1500);
+          setTimeout(() => window.close(), UI_CONFIG.timing.windowCloseDelay);
         }
       });
     } else {
@@ -413,7 +487,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           window.close();
         } else {
           showNotification('Opened in new tab but message not found', 'warning');
-          setTimeout(() => window.close(), 1500);
+          setTimeout(() => window.close(), UI_CONFIG.timing.windowCloseDelay);
         }
       } else {
         debugLog('Pinboard GPT: Background failed to open-and-highlight:', resp?.error);
@@ -439,6 +513,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       exportBtn.style.display = 'none';
       
       modal.style.display = 'flex';
+      
+      // Setup keyboard navigation for the modal
+      setupModalKeyboardNavigation(modal);
       
       function cleanup() {
         modal.style.display = 'none';
@@ -486,6 +563,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       
       modal.style.display = 'flex';
       
+      // Setup keyboard navigation for the modal
+      setupModalKeyboardNavigation(modal);
+      
       function cleanup() {
         modal.style.display = 'none';
         cancelBtn.removeEventListener('click', handleCancel);
@@ -519,7 +599,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const pin = (await getPins()).find(x => x.id === pinId);
     if (!pin) return;
     
-    const title = pin.name || pin.messageText.slice(0, 50) + (pin.messageText.length > 50 ? '...' : '');
+    const title = pin.name || pin.messageText.slice(0, UI_CONFIG.textLengths.selectionTextTrimWhenLarge) + (pin.messageText.length > UI_CONFIG.textLengths.selectionTextTrimWhenLarge ? '...' : '');
     
     const confirmed = await showConfirmation('Delete Pin', `Delete "${title}"?`);
     if (confirmed) {
@@ -616,7 +696,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     setTimeout(() => {
       notification.style.animation = 'slideOut 0.3s ease';
       setTimeout(() => notification.remove(), 300);
-    }, 3000);
+      }, UI_CONFIG.timing.notificationDuration);
   }
 
   function escapeHtml(s){ return (s||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
@@ -669,13 +749,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Add click handler to the entire card (for opening)
     pinElement.style.cursor = 'pointer';
-    pinElement.addEventListener('click', (e) => {
+    pinElement.addEventListener('click', async (e) => {
       // Don't trigger if clicking on action buttons
       if (e.target.closest('.pin-actions')) {
         return;
       }
       // Open the pin
-      openPin(pin.id);
+      try {
+        await openPin(pin.id);
+      } catch (error) {
+        debugError('Error opening pin:', error);
+        showNotification('❌ Failed to open pin', 'error');
+      }
     });
     
     // Get elements to populate
@@ -751,9 +836,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Set button data and enhanced tooltips
     openBtn.setAttribute('data-id', pin.id);
     openBtn.setAttribute('data-tooltip', 'Open pin in new tab');
-    openBtn.addEventListener('click', (e) => {
+    openBtn.addEventListener('click', async (e) => {
       e.stopPropagation();
-      openPinInNewTab(pin.id);
+      try {
+        await openPinInNewTab(pin.id);
+      } catch (error) {
+        debugError('Error opening pin in new tab:', error);
+        showNotification('❌ Failed to open pin', 'error');
+      }
     });
 
     // Edit button - open edit modal
@@ -762,15 +852,25 @@ document.addEventListener('DOMContentLoaded', async () => {
       editBtn.setAttribute('data-tooltip', 'Edit pin');
       editBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        openEditModal(pin.id);
+        try {
+          openEditModal(pin.id);
+        } catch (error) {
+          debugError('Error opening edit modal:', error);
+          showNotification('❌ Failed to open editor', 'error');
+        }
       });
     }
     
     deleteBtn.setAttribute('data-id', pin.id);
     deleteBtn.setAttribute('data-tooltip', 'Delete pin (Del)');
-    deleteBtn.addEventListener('click', (e) => {
+    deleteBtn.addEventListener('click', async (e) => {
       e.stopPropagation();
-      deletePin(pin.id);
+      try {
+        await deletePin(pin.id);
+      } catch (error) {
+        debugError('Error deleting pin:', error);
+        showNotification('❌ Failed to delete pin', 'error');
+      }
     });
     
     // Enhanced info tooltip with relative time
@@ -781,13 +881,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Add keyboard navigation
     pinElement.setAttribute('tabindex', '0');
-    pinElement.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-          openPin(pin.id);
-      } else if (e.key === 'Delete' || e.key === 'Backspace') {
-        e.preventDefault();
-        deletePin(pin.id);
+    pinElement.addEventListener('keydown', async (e) => {
+      try {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          await openPin(pin.id);
+        } else if (e.key === 'Delete' || e.key === 'Backspace') {
+          e.preventDefault();
+          await deletePin(pin.id);
+        }
+      } catch (error) {
+        debugError('Error handling keyboard navigation:', error);
+        showNotification('❌ Action failed', 'error');
       }
     });
     
@@ -805,10 +910,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     const tagsInput = document.getElementById('editTags');
 
     let currentEditingId = null;
+    let removeKeyboardHandler = null;
 
     function close() {
       editModal.style.display = 'none';
       currentEditingId = null;
+      if (removeKeyboardHandler) {
+        removeKeyboardHandler();
+      }
     }
 
     closeBtn.addEventListener('click', close);
@@ -849,9 +958,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!pin) return;
         currentEditingId = pinId;
         titleInput.value = pin.name || '';
-        descInput.value = pin.description || (pin.messageText && pin.messageText.slice(0, 300)) || '';
+        descInput.value = pin.description || (pin.messageText && pin.messageText.slice(0, UI_CONFIG.textLengths.messagePreviewMax)) || '';
         tagsInput.value = (pin.tags || []).join(', ');
         editModal.style.display = 'flex';
+        
+        // Setup keyboard navigation for the modal
+        removeKeyboardHandler = setupModalKeyboardNavigation(editModal);
       }
     };
   }
@@ -1100,7 +1212,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Debounce other searches
     searchTimeout = setTimeout(() => {
       render();
-    }, 300);
+    }, UI_CONFIG.timing.transitionDuration);
   });
 
   exportBtn.onclick = async () => {
@@ -1172,7 +1284,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           await idbAdd(p);
           imported++;
         } catch (err) {
-          console.warn('Failed to import pin:', err);
+          debugError('Failed to import pin:', err);
           skipped++;
         }
       }

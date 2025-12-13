@@ -16,7 +16,7 @@ async function getLicense() {
     
     return LICENSE_TYPES.FREE;
   } catch (error) {
-    console.error('Error getting license:', error);
+    debugError('Error getting license:', error);
     return LICENSE_TYPES.FREE;
   }
 }
@@ -24,8 +24,8 @@ async function getLicense() {
 async function canAddPin() {
   try {
     const license = await getLicense();
-    console.log('[DEBUG] canAddPin - license:', license);
-    console.log('[DEBUG] Available LICENSE_LIMITS keys:', Object.keys(LICENSE_LIMITS));
+    debugLog('[DEBUG] canAddPin - license:', license);
+    debugLog('[DEBUG] Available LICENSE_LIMITS keys:', Object.keys(LICENSE_LIMITS));
     
     // Handle both string format ("pro") and object format ({type: "pro"})
     let licenseType;
@@ -39,20 +39,20 @@ async function canAddPin() {
     
     const limits = LICENSE_LIMITS[licenseType] || LICENSE_LIMITS[LICENSE_TYPES.FREE];
     
-    console.log('[DEBUG] canAddPin - normalized type:', licenseType);
-    console.log('[DEBUG] canAddPin - limits:', limits);
+    debugLog('[DEBUG] canAddPin - normalized type:', licenseType);
+    debugLog('[DEBUG] canAddPin - limits:', limits);
     
     if (limits.maxPins === Infinity) {
-      console.log('[DEBUG] canAddPin - Unlimited pins (PRO/PRO+)');
+      debugLog('[DEBUG] canAddPin - Unlimited pins (PRO/PRO+)');
       return true;
     }
     
     // Count current pins
     const pins = await idbGetAll();
-    console.log('[DEBUG] canAddPin - current pins:', pins.length, 'max:', limits.maxPins);
+    debugLog('[DEBUG] canAddPin - current pins:', pins.length, 'max:', limits.maxPins);
     return pins.length < limits.maxPins;
   } catch (error) {
-    console.error('Error checking pin limit:', error);
+    debugError('Error checking pin limit:', error);
     return false;
   }
 }
@@ -80,7 +80,7 @@ async function getRemainingPins() {
     const pins = await idbGetAll();
     return Math.max(0, limits.maxPins - pins.length);
   } catch (error) {
-    console.error('Error getting remaining pins:', error);
+    debugError('Error getting remaining pins:', error);
     return 0;
   }
 }
@@ -100,6 +100,108 @@ async function checkPinLimitAndNotify() {
     return false;
   }
   return true;
+}
+
+// Validation limits for pins
+const PIN_VALIDATION_LIMITS = {
+  nameMaxLength: 255,
+  nameMinLength: 1,
+  descriptionMaxLength: 2000,
+  maxTags: 10,
+  tagMaxLength: 50
+};
+
+// Validate pin data before saving
+function validatePin(pin) {
+  const errors = [];
+  
+  // Validate name
+  if (!pin.name || pin.name.trim().length === 0) {
+    errors.push('Pin name is required');
+  } else if (pin.name.length > PIN_VALIDATION_LIMITS.nameMaxLength) {
+    errors.push(`Pin name must be under ${PIN_VALIDATION_LIMITS.nameMaxLength} characters (currently ${pin.name.length})`);
+  }
+  
+  // Validate description if present
+  if (pin.description && pin.description.length > PIN_VALIDATION_LIMITS.descriptionMaxLength) {
+    errors.push(`Description must be under ${PIN_VALIDATION_LIMITS.descriptionMaxLength} characters (currently ${pin.description.length})`);
+  }
+  
+  // Validate tags
+  if (pin.tags && pin.tags.length > PIN_VALIDATION_LIMITS.maxTags) {
+    errors.push(`Maximum ${PIN_VALIDATION_LIMITS.maxTags} tags allowed (currently ${pin.tags.length})`);
+  }
+  
+  if (pin.tags) {
+    for (const tag of pin.tags) {
+      if (tag.length > PIN_VALIDATION_LIMITS.tagMaxLength) {
+        errors.push(`Tag "${tag.slice(0, 20)}..." is too long (max ${PIN_VALIDATION_LIMITS.tagMaxLength} chars)`);
+        break;
+      }
+    }
+  }
+  
+  // Validate required fields
+  if (!pin.messageText) {
+    errors.push('Pin content (message text) is missing');
+  }
+  
+  return {
+    valid: errors.length === 0,
+    errors: errors
+  };
+}
+
+// Keyboard navigation helpers for dialogs
+function setupDialogKeyboardNavigation(dialog, overlay, focusableElements, closeCallback) {
+  // Get all focusable elements within the dialog
+  const focusableSelectors = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+  const allFocusable = Array.from(dialog.querySelectorAll(focusableSelectors))
+    .filter(el => !el.hasAttribute('disabled'));
+  
+  if (allFocusable.length === 0) {
+    return;
+  }
+  
+  const firstFocusable = allFocusable[0];
+  const lastFocusable = allFocusable[allFocusable.length - 1];
+  
+  // Focus first element on dialog open
+  setTimeout(() => {
+    firstFocusable.focus();
+  }, 100);
+  
+  // Handle Tab key for focus trap
+  dialog.addEventListener('keydown', (e) => {
+    if (e.key === 'Tab') {
+      if (e.shiftKey) {
+        // Shift+Tab - go backward
+        if (document.activeElement === firstFocusable) {
+          e.preventDefault();
+          lastFocusable.focus();
+        }
+      } else {
+        // Tab - go forward
+        if (document.activeElement === lastFocusable) {
+          e.preventDefault();
+          firstFocusable.focus();
+        }
+      }
+    }
+    
+    // Escape key to close
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      closeCallback();
+    }
+  });
+  
+  // Close dialog when clicking overlay
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) {
+      closeCallback();
+    }
+  });
 }
 
 // Get theme colors based on dark mode setting
@@ -273,7 +375,7 @@ function createPinButtonForMessage(messageContainer) {
     const runtime = chrome.runtime;
     
     if (!runtime?.getURL) {
-      console.warn('Pinboard GPT: Extension context not available');
+      debugError('Pinboard GPT: Extension context not available');
       return null;
     }
     
@@ -322,7 +424,7 @@ function createPinButtonForMessage(messageContainer) {
     // Apply optimized styles
     pinButton.style.cssText = `
       position: absolute;
-      z-index: 10000;
+      z-index: ${UI_CONFIG.button.zIndex};
       color: #6b7280;
       border-radius: 8px;
       padding: 4px;
@@ -366,7 +468,7 @@ function createPinButtonForMessage(messageContainer) {
         pinButton.style.transform = 'scale(0.95)';
         setTimeout(() => {
           pinButton.style.transform = 'scale(1)';
-        }, 150);
+        }, UI_CONFIG.timing.debounceDelay);
         
         // Check license before allowing pin creation
         if (!(await checkPinLimitAndNotify())) {
@@ -413,14 +515,14 @@ function createPinButtonForMessage(messageContainer) {
       messageContainer.appendChild(pinButton);
       
     } catch (error) {
-      console.warn('Pinboard GPT: Error setting up button container:', error);
+      debugError('Pinboard GPT: Error setting up button container:', error);
       return null;
     }
     
     return pinButton;
     
   } catch (error) {
-    console.warn('Pinboard GPT: Error creating pin button:', error);
+    debugError('Pinboard GPT: Error creating pin button:', error);
     return null;
   }
 }
@@ -456,35 +558,15 @@ function getMessageIndex(messageElement) {
 }
 
 function getAllMessageElements(root = document) {
-  const selectors = [
-    '[data-message-author-role]',
-    '[data-author]',
-    '[data-user-type]',
-    '.message',
-    '.chat-message',
-    '[role="article"]',
-    '.msg',
-    '.conversation-item'
-  ];
-
-  const seen = new Set();
-  const results = [];
-
-  for (const sel of selectors) {
-    try {
-      const nodes = root.querySelectorAll(sel);
-      nodes.forEach(n => {
-        if (n && n.nodeType === 1 && !seen.has(n)) {
-          seen.add(n);
-          results.push(n);
-        }
-      });
-    } catch (e) {
-      // ignore invalid selectors or errors
-    }
+  try {
+    // Optimized single selector using :is() to combine all patterns
+    // This is much more performant than multiple querySelectorAll calls
+    const selector = ':is([data-message-author-role], [data-author], [data-user-type], .message, .chat-message, [role="article"], .msg, .conversation-item)';
+    return Array.from(root.querySelectorAll(selector));
+  } catch (e) {
+    debugError('Pinboard GPT: Error getting message elements:', e);
+    return [];
   }
-
-  return results;
 }
 
 // Add pin buttons to all existing messages and observe for new ones
@@ -557,7 +639,7 @@ function initializePinButtons() {
   // Re-scan periodically for any missed messages
   setInterval(() => {
     addButtonsToExistingMessages();
-  }, 3000);
+  }, UI_CONFIG.timing.messageButtonScanInterval);
 }
 
 // Get XPath for an element RELATIVE to a parent element (not from document root)
@@ -660,7 +742,7 @@ function showChatPinDialog(chatData) {
         right: 0;
         bottom: 0;
         background: ${colors.overlay};
-        z-index: 100000;
+        z-index: ${UI_CONFIG.zIndex.dialog};
         display: flex;
         align-items: center;
         justify-content: center;
@@ -669,6 +751,10 @@ function showChatPinDialog(chatData) {
 
       // Create dialog
       const dialog = document.createElement('div');
+      dialog.role = 'alertdialog';
+      dialog.setAttribute('aria-modal', 'true');
+      dialog.setAttribute('aria-labelledby', 'pin-chat-dialog-title');
+      dialog.setAttribute('aria-describedby', 'pin-chat-dialog-description');
       dialog.style.cssText = `
         background: ${colors.dialogBg};
         border-radius: 12px;
@@ -683,12 +769,14 @@ function showChatPinDialog(chatData) {
       `;
 
       const header = createDialogHeader('Pin Chat', colors);
+      header.id = 'pin-chat-dialog-title';
       dialog.appendChild(header);
 
       // Chat name input section
       const nameSection = document.createElement('div');
       nameSection.style.cssText = `margin: 16px 0;`;
       const nameLabel = document.createElement('label');
+      nameLabel.htmlFor = 'pin-chat-name-input';
       nameLabel.textContent = 'Chat Name:';
       nameLabel.style.cssText = `
         display: block;
@@ -698,6 +786,9 @@ function showChatPinDialog(chatData) {
       `;
       const nameInputEl = document.createElement('input');
       nameInputEl.type = 'text';
+      nameInputEl.id = 'pin-chat-name-input';
+      nameInputEl.setAttribute('aria-label', 'Chat name');
+      nameInputEl.setAttribute('aria-required', 'true');
       nameInputEl.value = chatData.chatTitle || 'Untitled Chat';
       nameInputEl.style.cssText = `
         width: 100%;
@@ -718,6 +809,7 @@ function showChatPinDialog(chatData) {
       const descSection = document.createElement('div');
       descSection.style.cssText = `margin: 16px 0;`;
       const descLabel = document.createElement('label');
+      descLabel.htmlFor = 'pin-chat-description-input';
       descLabel.textContent = 'Description (optional):';
       descLabel.style.cssText = `
         display: block;
@@ -726,6 +818,8 @@ function showChatPinDialog(chatData) {
         font-size: 14px;
       `;
       const descInputEl = document.createElement('textarea');
+      descInputEl.id = 'pin-chat-description-input';
+      descInputEl.setAttribute('aria-label', 'Chat description (optional)');
       descInputEl.rows = 3;
       descInputEl.style.cssText = `
         width: 100%;
@@ -747,6 +841,7 @@ function showChatPinDialog(chatData) {
       const tagsSection = document.createElement('div');
       tagsSection.style.cssText = `margin: 16px 0;`;
       const tagsLabel = document.createElement('label');
+      tagsLabel.htmlFor = 'pin-chat-tags-input';
       tagsLabel.textContent = 'Tags (up to 3):';
       tagsLabel.style.cssText = `
         display: block;
@@ -757,6 +852,9 @@ function showChatPinDialog(chatData) {
       tagsSection.appendChild(tagsLabel);
 
       const tagsContainer = document.createElement('div');
+      tagsContainer.id = 'pin-chat-tags-input';
+      tagsContainer.role = 'region';
+      tagsContainer.setAttribute('aria-label', 'Tags section');
       tagsContainer.style.cssText = `
         display: flex;
         flex-wrap: wrap;
@@ -799,6 +897,8 @@ function showChatPinDialog(chatData) {
 
         const tagInput = document.createElement('input');
         tagInput.type = 'text';
+        tagInput.setAttribute('aria-label', 'Add a tag');
+        tagInput.setAttribute('aria-controls', 'pin-chat-tags-input');
         tagInput.placeholder = tags.length < 3 ? 'Add tag and press Enter' : 'Max 3 tags';
         tagInput.disabled = tags.length >= 3;
         tagInput.style.cssText = `
@@ -833,6 +933,7 @@ function showChatPinDialog(chatData) {
       `;
 
       const cancelBtn = document.createElement('button');
+      cancelBtn.setAttribute('aria-label', 'Cancel and close this dialog');
       cancelBtn.textContent = 'Cancel';
       cancelBtn.style.cssText = `
         flex: 1;
@@ -848,6 +949,7 @@ function showChatPinDialog(chatData) {
       cancelBtn.onmouseout = () => cancelBtn.style.background = colors.cancelBg;
 
       const saveBtn = document.createElement('button');
+      saveBtn.setAttribute('aria-label', 'Save and pin this chat');
       saveBtn.textContent = 'Pin Chat';
       saveBtn.style.cssText = `
         flex: 1;
@@ -882,6 +984,14 @@ function showChatPinDialog(chatData) {
             pinnedAt: Date.now()
           };
 
+          // Validate pin data
+          const validation = validatePin(pin);
+          if (!validation.valid) {
+            const errorMessage = validation.errors[0] || 'Invalid pin data';
+            showNotification('❌ ' + errorMessage, 'error');
+            return;
+          }
+
           await idbAdd(pin);
           showNotification('✅ Chat pinned successfully!');
           updateChatPinButton();
@@ -898,20 +1008,17 @@ function showChatPinDialog(chatData) {
         resolve();
       };
 
-      overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) {
-          overlay.remove();
-          resolve();
-        }
-      });
-
       buttonsDiv.appendChild(cancelBtn);
       buttonsDiv.appendChild(saveBtn);
       dialog.appendChild(buttonsDiv);
       overlay.appendChild(dialog);
       document.body.appendChild(overlay);
 
-      nameInputEl.focus();
+      // Setup keyboard navigation for the dialog
+      setupDialogKeyboardNavigation(dialog, overlay, null, () => {
+        overlay.remove();
+        resolve();
+      });
     } catch (error) {
       debugError('Pinboard GPT: Error in showChatPinDialog:', error);
       showNotification('❌ Error showing chat pin dialog: ' + error.message);
@@ -937,7 +1044,7 @@ function createPinDialog(messageText, pinData, colors, resolve, reject = resolve
       right: 0;
       bottom: 0;
       background: ${colors.overlay};
-      z-index: 100000;
+      z-index: ${UI_CONFIG.zIndex.dialog};
       display: flex;
       align-items: center;
       justify-content: center;
@@ -946,6 +1053,10 @@ function createPinDialog(messageText, pinData, colors, resolve, reject = resolve
     
     // Create dialog
     const dialog = document.createElement('div');
+    dialog.role = 'alertdialog';
+    dialog.setAttribute('aria-modal', 'true');
+    dialog.setAttribute('aria-labelledby', 'pin-message-dialog-title');
+    dialog.setAttribute('aria-describedby', 'pin-message-dialog-description');
     dialog.style.cssText = `
       background: ${colors.dialogBg};
       border-radius: 12px;
@@ -959,16 +1070,19 @@ function createPinDialog(messageText, pinData, colors, resolve, reject = resolve
       color: ${colors.dialogText};
     `;
     
-    const messagePreview = messageText.length > 300 ? messageText.slice(0, 300) + '...' : messageText;
+    const messagePreview = messageText.length > UI_CONFIG.textLengths.messagePreviewMax ? messageText.slice(0, UI_CONFIG.textLengths.messagePreviewMax) + '...' : messageText;
     
     // Header (consolidated)
     const header = createDialogHeader('Pin Message', colors);
+    header.id = 'pin-message-dialog-title';
+    dialog.appendChild(header);
     
     // Preview section
     const previewSection = document.createElement('div');
     previewSection.style.cssText = 'margin-bottom: 16px;';
     
     const previewLabel = document.createElement('label');
+    previewLabel.id = 'pin-message-preview-label';
     previewLabel.style.cssText = `display: block; font-weight: 600; margin-bottom: 6px; color: ${colors.labelText}; font-size: 14px;`;
     
     // Set label based on selection type
@@ -981,12 +1095,14 @@ function createPinDialog(messageText, pinData, colors, resolve, reject = resolve
     }
     
     const previewDiv = document.createElement('div');
+    previewDiv.setAttribute('aria-labelledby', 'pin-message-preview-label');
+    previewDiv.setAttribute('role', 'region');
     previewDiv.style.cssText = `
       background: ${colors.previewBg};
       border: 1px solid ${colors.previewBorder};
       border-radius: 6px;
       padding: 12px;
-      max-height: 150px;
+      max-height: ${UI_CONFIG.dialog.previewMaxHeight};
       overflow-y: auto;
       font-size: 13px;
       color: ${colors.previewText};
@@ -1010,6 +1126,8 @@ function createPinDialog(messageText, pinData, colors, resolve, reject = resolve
     const nameInputEl = document.createElement('input');
     nameInputEl.type = 'text';
     nameInputEl.id = 'pin-name';
+    nameInputEl.setAttribute('aria-label', 'Pin name');
+    nameInputEl.setAttribute('aria-describedby', 'pin-name-help');
     nameInputEl.placeholder = 'Give this pin a memorable name...';
     nameInputEl.style.cssText = `
       width: 100%;
@@ -1032,11 +1150,14 @@ function createPinDialog(messageText, pinData, colors, resolve, reject = resolve
     tagsSection.style.cssText = 'margin-bottom: 24px;';
     
     const tagsLabel = document.createElement('label');
+    tagsLabel.htmlFor = 'tag-input';
     tagsLabel.style.cssText = `display: block; font-weight: 600; margin-bottom: 6px; color: ${colors.labelText}; font-size: 14px;`;
     tagsLabel.textContent = 'Tags (optional, max 3)';
     
     const tagsContainerEl = document.createElement('div');
     tagsContainerEl.id = 'tags-container';
+    tagsContainerEl.role = 'region';
+    tagsContainerEl.setAttribute('aria-label', 'Tags list');
     tagsContainerEl.style.cssText = `
       min-height: 40px;
       border: 1px solid ${colors.inputBorder};
@@ -1053,6 +1174,9 @@ function createPinDialog(messageText, pinData, colors, resolve, reject = resolve
     const tagInputEl = document.createElement('input');
     tagInputEl.type = 'text';
     tagInputEl.id = 'tag-input';
+    tagInputEl.setAttribute('aria-label', 'Add a tag');
+    tagInputEl.setAttribute('aria-controls', 'tags-container');
+    tagInputEl.setAttribute('aria-describedby', 'tags-help');
     tagInputEl.placeholder = 'Add a tag...';
     tagInputEl.autocomplete = 'off';
     tagInputEl.spellcheck = false;
@@ -1072,6 +1196,7 @@ function createPinDialog(messageText, pinData, colors, resolve, reject = resolve
     tagsContainerEl.appendChild(tagInputEl);
     
     const tagsHelp = document.createElement('div');
+    tagsHelp.id = 'tags-help';
     tagsHelp.style.cssText = `font-size: 12px; color: ${colors.helpText};`;
     tagsHelp.textContent = 'Type to see suggestions from existing tags, or press Enter to add new tags';
     
@@ -1085,6 +1210,7 @@ function createPinDialog(messageText, pinData, colors, resolve, reject = resolve
     
     const cancelBtnEl = document.createElement('button');
     cancelBtnEl.id = 'pin-cancel';
+    cancelBtnEl.setAttribute('aria-label', 'Cancel and close this dialog');
     cancelBtnEl.textContent = 'Cancel';
     cancelBtnEl.style.cssText = `
       padding: 10px 20px;
@@ -1100,6 +1226,7 @@ function createPinDialog(messageText, pinData, colors, resolve, reject = resolve
     
     const saveBtnEl = document.createElement('button');
     saveBtnEl.id = 'pin-save';
+    saveBtnEl.setAttribute('aria-label', 'Save and pin this message');
     saveBtnEl.textContent = 'Save Pin';
     saveBtnEl.style.cssText = `
       padding: 10px 20px;
@@ -1125,6 +1252,12 @@ function createPinDialog(messageText, pinData, colors, resolve, reject = resolve
     
     overlay.appendChild(dialog);
     document.body.appendChild(overlay);
+    
+    // Setup keyboard navigation for the dialog
+    setupDialogKeyboardNavigation(dialog, overlay, null, () => {
+      overlay.remove();
+      resolve();
+    });
     
     // Focus on name input
     setTimeout(() => {
@@ -1389,9 +1522,9 @@ function createPinDialog(messageText, pinData, colors, resolve, reject = resolve
       border: 1px solid ${colors.inputBorder};
       border-top: none;
       border-radius: 0 0 6px 6px;
-      max-height: 150px;
+      max-height: ${UI_CONFIG.textLengths.messageTextTrimWhenLarge}px;
       overflow-y: auto;
-      z-index: 10000;
+      z-index: ${UI_CONFIG.zIndex.dropdown};
       display: none;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     `;
@@ -1550,7 +1683,7 @@ function createPinDialog(messageText, pinData, colors, resolve, reject = resolve
               tagsContainer.style.borderColor = '#ea4335';
               setTimeout(() => {
                 tagsContainer.style.borderColor = '#dadce0';
-              }, 500);
+              }, UI_CONFIG.timing.errorFeedbackDuration);
             }
           }
         } else if (e.key === 'Escape') {
@@ -1566,7 +1699,7 @@ function createPinDialog(messageText, pinData, colors, resolve, reject = resolve
             tagsContainer.style.borderColor = '#ea4335';
             setTimeout(() => {
               tagsContainer.style.borderColor = '#dadce0';
-            }, 500);
+            }, UI_CONFIG.timing.errorFeedbackDuration);
           }
         }
       }
@@ -1613,7 +1746,7 @@ function createPinDialog(messageText, pinData, colors, resolve, reject = resolve
       const name = nameInput.value.trim();
       // Add any remaining text in tag input
       const remainingTag = tagInput.value.trim();
-      if (remainingTag && currentTags.length < 3) {
+      if (remainingTag && currentTags.length < PIN_VALIDATION_LIMITS.maxTags) {
         addTag(remainingTag);
       }
       
@@ -1627,28 +1760,30 @@ function createPinDialog(messageText, pinData, colors, resolve, reject = resolve
       try {
         debugLog('Pinboard GPT: Attempting to save pin:', pin);
         
+        // Validate pin data
+        const validation = validatePin(pin);
+        if (!validation.valid) {
+          const errorMessage = validation.errors[0] || 'Invalid pin data';
+          showNotification('❌ ' + errorMessage, 'error');
+          return;
+        }
+        
         if (typeof idbAdd !== 'function') {
           debugError('Pinboard GPT: idbAdd function not available, typeof:', typeof idbAdd);
           throw new Error('Database function not available. Please refresh the page.');
         }
         
-        // Validate pin data
-        if (!pin.id || !pin.messageText) {
-          debugError('Pinboard GPT: Invalid pin data:', pin);
-          throw new Error('Invalid pin data - missing required fields');
-        }
-        
         // Check storage size to prevent quota exceeded
         const pinSize = JSON.stringify(pin).length;
         debugLog('Pinboard GPT: Pin storage size:', pinSize, 'bytes');
-        if (pinSize > 7000) { // Chrome quota is ~8KB per item, leave buffer
-          console.warn('Pinboard GPT: Pin data is large:', pinSize, 'bytes');
+        if (pinSize > UI_CONFIG.storage.maxPinSize) { // Chrome quota is ~8KB per item, leave buffer
+          debugError('Pinboard GPT: Pin data is large:', pinSize, 'bytes');
           // Trim data if too large
-          pin.messageText = pin.messageText.slice(0, 150); // Keep more of the main message
-          pin.selectionText = pin.selectionText.slice(0, 50);
+          pin.messageText = pin.messageText.slice(0, UI_CONFIG.textLengths.messageTextTrimWhenLarge); // Keep more of the main message
+          pin.selectionText = pin.selectionText.slice(0, UI_CONFIG.textLengths.selectionTextTrimWhenLarge);
           if (pin.anchors) {
-            pin.anchors.prefix = pin.anchors.prefix.slice(0, 30);
-            pin.anchors.suffix = pin.anchors.suffix.slice(0, 30);
+            pin.anchors.prefix = pin.anchors.prefix.slice(0, UI_CONFIG.textLengths.anchorTextTrim);
+            pin.anchors.suffix = pin.anchors.suffix.slice(0, UI_CONFIG.textLengths.anchorTextTrim);
             pin.anchors.full = pin.anchors.full.slice(0, 50);
           }
           debugLog('Pinboard GPT: Trimmed pin size:', JSON.stringify(pin).length, 'bytes');
@@ -1686,13 +1821,7 @@ function createPinDialog(messageText, pinData, colors, resolve, reject = resolve
       }
     });
     
-    // Handle Escape key to cancel
-    document.addEventListener('keydown', function escapeHandler(e) {
-      if (e.key === 'Escape') {
-        closeDialog();
-        document.removeEventListener('keydown', escapeHandler);
-      }
-    });
+    // Note: Escape key handling is now done by setupDialogKeyboardNavigation
   } catch (error) {
     debugError('Pinboard GPT: Error creating pin dialog:', error);
     showNotification('❌ Failed to create pin dialog: ' + error.message);
@@ -2006,7 +2135,7 @@ async function highlightPin(pin) {
   }
   
   // Wait briefly for page to stabilize
-  await new Promise(resolve => setTimeout(resolve, 500));
+  await new Promise(resolve => setTimeout(resolve, UI_CONFIG.timing.navigationWait));
   
   // Poll for messages to appear (handles slow loading)
   let messageElementsFound = getAllMessageElements(document.querySelector('main') || document.body).length;
@@ -2204,8 +2333,9 @@ async function highlightPin(pin) {
       const containerText = (container.innerText || container.textContent || '').trim();
       if (containerText.includes(searchText)) {
         // Look for meaningful semantic elements containing the search text
-        const meaningfulSelectors = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'div', 'span', 'section', 'li', 'blockquote'];
-        const candidateElements = container.querySelectorAll(meaningfulSelectors.join(', '));
+        // Optimized: use :is() to combine all selectors into a single query
+        const meaningfulSelector = ':is(h1, h2, h3, h4, h5, h6, p, div, span, section, li, blockquote)';
+        const candidateElements = container.querySelectorAll(meaningfulSelector);
         
         let bestCandidate = container; // Default to container
         let bestScore = Infinity;
@@ -2436,7 +2566,7 @@ async function highlightPin(pin) {
     }
     
     // Wait for first scroll to complete and DOM to settle
-    await new Promise(resolve => setTimeout(resolve, 150));
+    await new Promise(resolve => setTimeout(resolve, UI_CONFIG.timing.debounceDelay));
     
     // JUMP 2: Now scroll to the specific pinned element within the message (if different from container)
     // This is a smoother, shorter scroll that should be more accurate
@@ -2535,7 +2665,7 @@ async function highlightPin(pin) {
     setTimeout(() => {
       element.style.transition = originalTransition;
     }, 600);
-  }, 3000);
+  }, UI_CONFIG.timing.notificationDuration);
   
   showNotification('✅ Found pinned message!');
   return { found: true };
@@ -2694,7 +2824,7 @@ function addPinOptionToChatGPTPopup() {
           // Check for common popup container patterns
           if (!popupFound && node.querySelector) {
             // Look for buttons with "Ask" in them
-            const askButtons = node.querySelectorAll('button, [role="button"]');
+            const askButtons = node.querySelectorAll(':is(button, [role="button"])');
             for (const btn of askButtons) {
               if (btn.textContent && (btn.textContent.includes('Ask ChatGPT') || btn.textContent.includes('Ask'))) {
                 debugLog('Pinboard GPT: Found popup with Ask button');
@@ -3532,27 +3662,32 @@ function addChatPinButton() {
     });
     
     chatPinBtn.addEventListener('click', async () => {
-      const chatId = getChatId();
-      if (!chatId) {
-        showNotification('⚠️ Cannot pin this page. Please navigate to a specific chat conversation.');
-        return;
-      }
-      
-      const isPinned = await isChatPinned(chatId);
-      
-      if (isPinned) {
-        await unpinChat(chatId);
-      } else {
-        const chatTitle = getChatTitle();
-        // Use unified pin creation function for chat pins
-        const chatData = {
-          type: 'chat',
-          chatId: chatId,
-          chatTitle: chatTitle,
-          pageUrl: window.location.href,
-          pinnedAt: Date.now()
-        };
-        await createAndShowPinDialog('chat', chatData);
+      try {
+        const chatId = getChatId();
+        if (!chatId) {
+          showNotification('⚠️ Cannot pin this page. Please navigate to a specific chat conversation.');
+          return;
+        }
+        
+        const isPinned = await isChatPinned(chatId);
+        
+        if (isPinned) {
+          await unpinChat(chatId);
+        } else {
+          const chatTitle = getChatTitle();
+          // Use unified pin creation function for chat pins
+          const chatData = {
+            type: 'chat',
+            chatId: chatId,
+            chatTitle: chatTitle,
+            pageUrl: window.location.href,
+            pinnedAt: Date.now()
+          };
+          await createAndShowPinDialog('chat', chatData);
+        }
+      } catch (error) {
+        debugError('Pinboard GPT: Error in chat pin handler:', error);
+        showNotification('❌ Failed to pin chat: ' + (error?.message || 'Unknown error'), 'error');
       }
     });
     
@@ -3570,7 +3705,7 @@ function addChatPinButton() {
         updateChatPinButton();
       }
     }).observe(document, { subtree: true, childList: true });
-  }, 1500);
+  }, UI_CONFIG.timing.navigationPolling);
 }
 
 // Add a manual pin button to the page for easier access
@@ -3694,41 +3829,46 @@ function addManualPinButton() {
     }
     
     manualBtn.addEventListener('click', async () => {
-      // Get ALL messages in the conversation (not just recent 5)
-      const allMessages = getAllMessageElements(document);
-      
-      if (allMessages.length === 0) {
-        showNotification('⚠️ No messages found. Try scrolling or asking ChatGPT a question first.');
-        return;
-      }
-      
-      // Show selection dropdown for navigating to messages
-      const existingDropdown = document.querySelector('#pingpt-message-dropdown');
-      if (existingDropdown) {
-        existingDropdown.remove();
-        return;
-      }
-      
-      const dropdown = createMessageNavigationDropdown(allMessages);
-      dropdown.id = 'pingpt-message-dropdown';
-      
-      document.body.appendChild(dropdown);
-      
-      // Close dropdown when clicking outside
-      const closeOnClickOutside = (e) => {
-        if (!dropdown.contains(e.target) && e.target !== manualBtn) {
-          dropdown.remove();
-          document.removeEventListener('click', closeOnClickOutside);
+      try {
+        // Get ALL messages in the conversation (not just recent 5)
+        const allMessages = getAllMessageElements(document);
+        
+        if (allMessages.length === 0) {
+          showNotification('⚠️ No messages found. Try scrolling or asking ChatGPT a question first.');
+          return;
         }
-      };
-      
-      setTimeout(() => {
-        document.addEventListener('click', closeOnClickOutside);
-      }, 100);
+        
+        // Show selection dropdown for navigating to messages
+        const existingDropdown = document.querySelector('#pingpt-message-dropdown');
+        if (existingDropdown) {
+          existingDropdown.remove();
+          return;
+        }
+        
+        const dropdown = createMessageNavigationDropdown(allMessages);
+        dropdown.id = 'pingpt-message-dropdown';
+        
+        document.body.appendChild(dropdown);
+        
+        // Close dropdown when clicking outside
+        const closeOnClickOutside = (e) => {
+          if (!dropdown.contains(e.target) && e.target !== manualBtn) {
+            dropdown.remove();
+            document.removeEventListener('click', closeOnClickOutside);
+          }
+        };
+        
+        setTimeout(() => {
+          document.addEventListener('click', closeOnClickOutside);
+        }, 100);
+      } catch (error) {
+        debugError('Pinboard GPT: Error in manual pin button handler:', error);
+        showNotification('❌ Failed to open message selector: ' + (error?.message || 'Unknown error'), 'error');
+      }
     });
     
     document.body.appendChild(manualBtn);
-  }, 1500);
+  }, UI_CONFIG.timing.navigationPolling);
 }
 
 // Initialize

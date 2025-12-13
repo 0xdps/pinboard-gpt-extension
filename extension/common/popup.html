@@ -7,78 +7,78 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="header">
+  <div class="header" role="banner">
     <div class="header-branding">
       <img src="icons/icon-32.png" alt="Pinboard GPT" class="logo" />
       <div class="header-text">
         <h1 class="header-title">Pinboard GPT</h1>
-        <p class="header-subtitle" id="syncStatus">Free - Upgrade to Pro</p>
+        <p class="header-subtitle" id="syncStatus" aria-live="polite" aria-atomic="true">Free - Upgrade to Pro</p>
       </div>
     </div>
     <div class="header-actions">
-      <button id="upgradeBtn" class="settings-btn" data-tooltip="View Plans">✨</button>
-      <button id="coffeeBtn" class="settings-btn" data-tooltip="Buy me a coffee">☕</button>
-      <button id="settingsBtn" class="settings-btn" data-tooltip="Settings">⚙️</button>
+      <button id="upgradeBtn" class="settings-btn" data-tooltip="View Plans" aria-label="View upgrade plans">✨</button>
+      <button id="coffeeBtn" class="settings-btn" data-tooltip="Buy me a coffee" aria-label="Support the developer with a coffee">☕</button>
+      <button id="settingsBtn" class="settings-btn" data-tooltip="Settings" aria-label="Open settings menu">⚙️</button>
     </div>
   </div>
   
-  <div class="filter-tabs">
-    <button id="filterAll" class="filter-tab active">All</button>
-    <button id="filterChats" class="filter-tab">Chats</button>
-    <button id="filterMessages" class="filter-tab">Messages</button>
+  <div class="filter-tabs" role="tablist" aria-label="Pin type filters">
+    <button id="filterAll" class="filter-tab active" role="tab" aria-selected="true">All</button>
+    <button id="filterChats" class="filter-tab" role="tab" aria-selected="false">Chats</button>
+    <button id="filterMessages" class="filter-tab" role="tab" aria-selected="false">Messages</button>
   </div>
   
   <div class="search-container">
     <div class="search-input-wrapper">
-      <div class="search-icon">🔍</div>
-      <input id="search" placeholder="Search pins or tags... (⌘K)" />
+      <div class="search-icon" aria-hidden="true">🔍</div>
+      <input id="search" placeholder="Search pins or tags... (⌘K)" aria-label="Search pins by title, content, or tags" />
     </div>
   </div>
-  <div id="list"></div>
+  <div id="list" role="region" aria-label="Pins list"></div>
 
   <!-- Pin Template (hidden by default) -->
-  <div id="pinTemplate" class="pin" style="display: none;">
+  <div id="pinTemplate" class="pin" style="display: none;" role="article">
     <div class="pin-content">
-      <div class="pin-title"></div>
+      <div class="pin-title" role="heading" aria-level="2"></div>
       <div class="pin-message"></div>
-      <div class="pin-tags"></div>
+      <div class="pin-tags" aria-label="Pin tags"></div>
     </div>
-    <div class="pin-actions">
-      <button class="iconBtn editBtn" data-tooltip="Edit pin">✎</button>
-      <button class="iconBtn openBtn" data-tooltip="Open pin">→</button>
-      <button class="iconBtn infoBtn" data-tooltip="Info">ⓘ</button>
-      <button class="iconBtn deleteBtn" data-tooltip="Delete pin">✕</button>
+    <div class="pin-actions" role="toolbar" aria-label="Pin actions">
+      <button class="iconBtn editBtn" data-tooltip="Edit pin" aria-label="Edit this pin">✎</button>
+      <button class="iconBtn openBtn" data-tooltip="Open pin" aria-label="Open this pin">→</button>
+      <button class="iconBtn infoBtn" data-tooltip="Info" aria-label="View pin information">ⓘ</button>
+      <button class="iconBtn deleteBtn" data-tooltip="Delete pin" aria-label="Delete this pin">✕</button>
     </div>
   </div>
 
   <!-- Edit Pin Modal -->
   <div id="editModal" class="modal" style="display: none;">
-    <div class="modal-content">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="editModalTitle">
       <div class="modal-header">
-        <h3>Edit Pin</h3>
-        <button id="closeEditModal" class="close-btn" data-tooltip="Close">×</button>
+        <h3 id="editModalTitle">Edit Pin</h3>
+        <button id="closeEditModal" class="close-btn" data-tooltip="Close" aria-label="Close this dialog">×</button>
       </div>
       <div class="modal-body">
         <label for="editTitle">Title</label>
-        <input id="editTitle" type="text" />
+        <input id="editTitle" type="text" aria-label="Pin title" />
         <label for="editDesc">Description</label>
-        <textarea id="editDesc" rows="4"></textarea>
+        <textarea id="editDesc" rows="4" aria-label="Pin description"></textarea>
         <label for="editTags">Tags (comma separated)</label>
-        <input id="editTags" type="text" />
+        <input id="editTags" type="text" aria-label="Pin tags separated by commas" />
       </div>
       <div class="modal-actions">
-        <button id="saveEditBtn" class="btn-primary">Save</button>
-        <button id="cancelEditBtn" class="btn-secondary">Cancel</button>
+        <button id="saveEditBtn" class="btn-primary" aria-label="Save pin changes">Save</button>
+        <button id="cancelEditBtn" class="btn-secondary" aria-label="Cancel editing">Cancel</button>
       </div>
     </div>
   </div>
 
   <!-- Settings Modal -->
   <div id="settingsModal" class="modal" style="display: none;">
-    <div class="modal-content">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="settingsModalTitle">
       <div class="modal-header">
-        <h3>Settings</h3>
-        <button id="closeSettings" class="close-btn" data-tooltip="Close">×</button>
+        <h3 id="settingsModalTitle">Settings</h3>
+        <button id="closeSettings" class="close-btn" data-tooltip="Close" aria-label="Close settings">×</button>
       </div>
       
       <div class="settings-section">
@@ -91,8 +91,8 @@
               <small id="themeDesc">Switch between light and dark themes</small>
             </div>
             <label class="toggle-switch">
-              <input type="checkbox" id="themeToggle">
-              <span class="toggle-slider"></span>
+              <input type="checkbox" id="themeToggle" aria-label="Toggle dark mode" role="switch">
+              <span class="toggle-slider" aria-hidden="true"></span>
             </label>
           </div>
 
@@ -102,8 +102,8 @@
               <small id="debugDesc">Enable detailed console logging for troubleshooting (requires page reload)</small>
             </div>
             <label class="toggle-switch">
-              <input type="checkbox" id="debugToggle">
-              <span class="toggle-slider"></span>
+              <input type="checkbox" id="debugToggle" aria-label="Toggle debug mode" role="switch">
+              <span class="toggle-slider" aria-hidden="true"></span>
             </label>
           </div>
         </div>
@@ -143,12 +143,12 @@
             <p class="license-details" id="licenseDetails"></p>
           </div>
           <div class="auth-buttons" style="display: flex; gap: 10px; margin-top: 10px;">
-            <button id="syncLicenseBtn" class="data-btn" style="flex: 1;">
-              <span class="btn-icon">🔄</span>
+            <button id="syncLicenseBtn" class="data-btn" style="flex: 1;" aria-label="Sync your license from server">
+              <span class="btn-icon" aria-hidden="true">🔄</span>
               <span>Sync License</span>
             </button>
-            <button id="logoutBtn" class="data-btn" style="flex: 1;">
-              <span class="btn-icon">🚪</span>
+            <button id="logoutBtn" class="data-btn" style="flex: 1;" aria-label="Sign out of your account">
+              <span class="btn-icon" aria-hidden="true">🚪</span>
               <span>Logout</span>
             </button>
           </div>
@@ -158,16 +158,16 @@
       <div class="settings-section">
         <h4>Data Management</h4>
         <div class="data-buttons">
-          <button id="importBtn" class="data-btn">
-            <span class="btn-icon">📥</span>
+          <button id="importBtn" class="data-btn" aria-label="Import pins from a backup file">
+            <span class="btn-icon" aria-hidden="true">📥</span>
             <span>Import Pins</span>
           </button>
-          <button id="exportBtn" class="data-btn">
-            <span class="btn-icon">📤</span>
+          <button id="exportBtn" class="data-btn" aria-label="Export all pins to a backup file">
+            <span class="btn-icon" aria-hidden="true">📤</span>
             <span>Export Pins</span>
           </button>
-          <button id="deleteAllBtn" class="data-btn delete-all-btn">
-            <span class="btn-icon">🗑️</span>
+          <button id="deleteAllBtn" class="data-btn delete-all-btn" aria-label="Permanently delete all pins">
+            <span class="btn-icon" aria-hidden="true">🗑️</span>
             <span>Delete All Pins</span>
           </button>
         </div>
@@ -191,16 +191,16 @@
 
   <!-- Confirmation Modal -->
   <div id="confirmModal" class="modal" style="display: none;">
-    <div class="modal-content confirm-modal">
+    <div class="modal-content confirm-modal" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle" aria-describedby="confirmMessage">
       <div class="confirm-content">
-        <div class="confirm-icon">⚠️</div>
+        <div class="confirm-icon" aria-hidden="true">⚠️</div>
         <h3 id="confirmTitle">Confirm Action</h3>
         <p id="confirmMessage">Are you sure you want to proceed?</p>
       </div>
       <div class="confirm-actions">
-        <button id="confirmCancel" class="btn-secondary">Cancel</button>
-        <button id="confirmExport" class="btn-primary" style="display: none;">Export First</button>
-        <button id="confirmOK" class="btn-danger">Delete</button>
+        <button id="confirmCancel" class="btn-secondary" aria-label="Cancel the action">Cancel</button>
+        <button id="confirmExport" class="btn-primary" style="display: none;" aria-label="Export pins before deleting">Export First</button>
+        <button id="confirmOK" class="btn-danger" aria-label="Confirm the action">Delete</button>
       </div>
     </div>
   </div>
@@ -209,22 +209,22 @@
 
   <!-- Upgrade Modal -->
   <div id="upgradeModal" class="modal" style="display: none;">
-    <div class="modal-content upgrade-modal">
+    <div class="modal-content upgrade-modal" role="dialog" aria-modal="true" aria-labelledby="upgradeModalTitle">
       <div class="modal-header">
-        <h3>Upgrade Pinboard GPT</h3>
-        <button id="closeUpgrade" class="close-btn" data-tooltip="Close">×</button>
+        <h3 id="upgradeModalTitle">Upgrade Pinboard GPT</h3>
+        <button id="closeUpgrade" class="close-btn" data-tooltip="Close" aria-label="Close upgrade modal">×</button>
       </div>
       
       <div class="upgrade-content">
         <div class="upgrade-message">
-          <div class="upgrade-icon">✨</div>
+          <div class="upgrade-icon" aria-hidden="true">✨</div>
           <h4 id="upgradeTitle">You've reached the free limit</h4>
           <p id="upgradeDescription">Upgrade to unlock unlimited pins and powerful organization tools</p>
         </div>
         
         <div class="pricing-cards">
           <!-- Pro Plan -->
-          <div class="pricing-card" id="proCard">
+          <div class="pricing-card" id="proCard" role="region" aria-label="Pro plan">
             <div class="plan-badge">Most Popular</div>
             <h4>Pro</h4>
             <div class="plan-price">$9.99 <span>one-time</span></div>
@@ -235,12 +235,12 @@
               <li>✓ Enhanced search & filters</li>
               <li>✓ Export data (JSON/CSV)</li>
             </ul>
-            <button class="upgrade-btn btn-primary" data-plan="pro">Upgrade to Pro</button>
-            <div class="coming-soon-badge">🚀 Multi-AI in development</div>
+            <button class="upgrade-btn btn-primary" data-plan="pro" aria-label="Upgrade to Pro plan">Upgrade to Pro</button>
+            <div class="coming-soon-badge" aria-hidden="true">🚀 Multi-AI in development</div>
           </div>
           
           <!-- Premium Plan -->
-          <div class="pricing-card" id="premiumCard">
+          <div class="pricing-card" id="premiumCard" role="region" aria-label="Premium plan coming soon">
             <div class="plan-badge">Coming Soon</div>
             <h4>Premium</h4>
             <div class="plan-price">$99/year <span>or $199 lifetime</span></div>
@@ -251,7 +251,7 @@
               <li>✓ Automatic backup & restore</li>
               <li>✓ Priority support</li>
             </ul>
-            <button class="upgrade-btn btn-secondary" data-plan="premium" disabled>Coming Soon</button>
+            <button class="upgrade-btn btn-secondary" data-plan="premium" disabled aria-label="Premium plan not yet available">Coming Soon</button>
           </div>
         </div>
         
@@ -264,6 +264,7 @@
 
   <input type="file" id="importFile" style="display:none" accept="application/json" />
   <script src="debug.js"></script>
+  <script src="ui-config.js"></script>
   <script src="idb.js"></script>
   <script src="license.js"></script>
   <script src="auth.js"></script>

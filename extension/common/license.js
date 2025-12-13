@@ -51,7 +51,7 @@ async function getLicense() {
     
     return result.license || LICENSE_TYPES.FREE;
   } catch (error) {
-    console.error('Error getting license:', error);
+    debugError('Error getting license:', error);
     return LICENSE_TYPES.FREE;
   }
 }
@@ -95,7 +95,7 @@ async function hasComplementaryAccess() {
     return result.licenseData.complementary === true && 
            result.licenseData.complementaryExpiry > Date.now();
   } catch (error) {
-    console.error('Error checking complementary access:', error);
+    debugError('Error checking complementary access:', error);
     return false;
   }
 }
@@ -135,7 +135,7 @@ async function setLicense(licenseType, licenseKey = null) {
     await chrome.storage.local.set({ license: licenseData.type, licenseData });
     return { success: true, message: 'License activated successfully! You can use this key on all your devices.' };
   } catch (error) {
-    console.error('Error setting license:', error);
+    debugError('Error setting license:', error);
     return { success: false, message: 'Error activating license' };
   }
 }
@@ -156,7 +156,7 @@ async function setComplementaryAccess(licenseType, durationDays = 365, reason = 
     await chrome.storage.local.set({ license: licenseData.type, licenseData });
     return { success: true, message: `Complementary access granted until ${new Date(expiryDate).toLocaleDateString()}` };
   } catch (error) {
-    console.error('Error setting complementary access:', error);
+    debugError('Error setting complementary access:', error);
     return { success: false, message: 'Error granting access' };
   }
 }
@@ -169,7 +169,7 @@ async function canAddPin() {
     const limit = LICENSE_LIMITS[license]?.maxPins || 10;
     return pins.length < limit;
   } catch (error) {
-    console.error('Error checking pin limit:', error);
+    debugError('Error checking pin limit:', error);
     return false;
   }
 }
@@ -191,7 +191,7 @@ async function getRemainingPins() {
       current: pins.length
     };
   } catch (error) {
-    console.error('Error getting remaining pins:', error);
+    debugError('Error getting remaining pins:', error);
     return { remaining: 0, limit: 10, current: 0 };
   }
 }
@@ -203,7 +203,7 @@ async function hasFeature(feature) {
     const limits = LICENSE_LIMITS[license] || LICENSE_LIMITS[LICENSE_TYPES.FREE];
     return limits[feature] === true;
   } catch (error) {
-    console.error('Error checking feature:', error);
+    debugError('Error checking feature:', error);
     return false;
   }
 }
