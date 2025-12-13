@@ -2165,44 +2165,80 @@ async function highlightPin(pin) {
   }
   
   let element = null;
+  let messageContainer = null;
   
-  // PRIMARY METHOD: Try message index first (most reliable)
+  // STEP 1: Find the message container by index (required)
   if (pin.messageIndex !== undefined && pin.messageIndex >= 0) {
-    debugLog('[METHOD 1] Attempting to find message by index:', pin.messageIndex);
+    debugLog('[STEP 1] Finding message by index:', pin.messageIndex);
     const mainContent = document.querySelector('main') || document.body;
     const allMessages = getAllMessageElements(mainContent);
     debugLog('Total messages available:', allMessages.length);
     
     if (pin.messageIndex < allMessages.length) {
-      element = allMessages[pin.messageIndex];
-      debugLog('[METHOD 1 SUCCESS] Found element by index');
-      debugLog('Element:', element.tagName, element.className.slice(0, 50));
+      messageContainer = allMessages[pin.messageIndex];
+      element = messageContainer;
+      debugLog('[STEP 1 SUCCESS] Found message container by index');
+      debugLog('Message container:', messageContainer.tagName, messageContainer.className.slice(0, 50));
     } else {
-      debugLog('[METHOD 1 FAILED] Message index out of bounds:', pin.messageIndex, 'total:', allMessages.length);
+      debugLog('[STEP 1 FAILED] Message index out of bounds:', pin.messageIndex, 'total:', allMessages.length);
     }
   }
   
-  // SECONDARY METHOD: Try XPath if available and index failed
-  if (!element && pin.xpath) {
-    debugLog('[METHOD 2] Attempting to find message by XPath');
-    debugLog('XPath:', pin.xpath.slice(0, 100) + '...');
+  // STEP 2: Find specific element within message using XPath (with fallbacks if needed)
+  if (messageContainer && pin.xpath && pin.xpath.startsWith('./')) {
+    debugLog('[STEP 2] Finding specific element within message using relative XPath');
+    debugLog('XPath:', pin.xpath);
     try {
       const result = document.evaluate(
         pin.xpath,
-        document,
+        messageContainer,
         null,
         XPathResult.FIRST_ORDERED_NODE_TYPE,
         null
       );
       if (result.singleNodeValue) {
         element = result.singleNodeValue;
-        debugLog('[METHOD 2 SUCCESS] Found element by XPath');
+        debugLog('[STEP 2 SUCCESS] Found specific element by relative XPath');
+        debugLog('Specific element:', element.tagName, element.className.slice(0, 50));
       } else {
-        debugLog('[METHOD 2 FAILED] XPath returned no result');
+        debugLog('[STEP 2 FAILED] Relative XPath returned no result, trying fallbacks');
+        // Try fallback methods
+        if (pin.anchors) {
+          debugLog('[STEP 2 FALLBACK 1] Trying text anchors');
+          element = findElementByAnchors(pin.anchors);
+          if (element) {
+            debugLog('[STEP 2 FALLBACK 1 SUCCESS] Found element by text anchors');
+          }
+        }
+        
+        if (!element && pin.messageText) {
+          debugLog('[STEP 2 FALLBACK 2] Trying text search');
+          const searchText = (pin.selectionText || pin.messageText).slice(0, 100);
+          const msgText = (messageContainer.innerText || messageContainer.textContent || '').trim();
+          const normalizedMsgText = msgText.replace(/\s+/g, ' ');
+          const normalizedSearch = searchText.replace(/\s+/g, ' ');
+          
+          if (normalizedMsgText.includes(normalizedSearch)) {
+            element = messageContainer;
+            debugLog('[STEP 2 FALLBACK 2 SUCCESS] Found element by text search');
+          }
+        }
+        
+        // If all fallbacks failed, use the message container itself
+        if (!element) {
+          element = messageContainer;
+          debugLog('[STEP 2 FALLBACK] All methods failed, using message container');
+        }
       }
     } catch (xpathError) {
-      debugLog('[METHOD 2 ERROR] XPath evaluation failed:', xpathError.message);
+      debugLog('[STEP 2 ERROR] Relative XPath evaluation failed:', xpathError.message);
+      debugLog('Falling back to message container');
+      element = messageContainer;
     }
+  } else if (messageContainer) {
+    // No XPath provided, use message container
+    element = messageContainer;
+    debugLog('[STEP 2 SKIPPED] No XPath provided, using message container');
   }
   
   // TERTIARY METHOD: Use anchor search (text-based matching)
@@ -2573,16 +2609,12 @@ async function highlightPin(pin) {
     const topGap = 80;
     
     // JUMP 1: First scroll to the message container start
-    // This ensures we're in the right message before trying to locate the specific element
-    let messageContainer = element;
-    if (pin.messageIndex !== undefined && pin.messageIndex >= 0) {
-      // Use the message container itself for the first jump if we have the index
-      const mainContent = document.querySelector('main') || document.body;
-      const allMessages = getAllMessageElements(mainContent);
-      if (pin.messageIndex < allMessages.length) {
-        messageContainer = allMessages[pin.messageIndex];
-      }
+    // Use the messageContainer we already found earlier, or element itself as fallback
+    if (!messageContainer) {
+      messageContainer = element;
     }
+    
+    debugLog('JUMP 1: Using messageContainer:', messageContainer.tagName, messageContainer.className.slice(0, 50));
     
     // Get current positions for message container
     const messageContainerRect = messageContainer.getBoundingClientRect();
@@ -2620,6 +2652,10 @@ async function highlightPin(pin) {
     
     // JUMP 2: Now scroll to the specific pinned element within the message (if different from container)
     // This is a smoother, shorter scroll that should be more accurate
+    debugLog('JUMP 2 Check: element === messageContainer?', element === messageContainer);
+    debugLog('Element tag:', element?.tagName, 'Element class:', element?.className?.slice(0, 50));
+    debugLog('Message container tag:', messageContainer?.tagName, 'Message container class:', messageContainer?.className?.slice(0, 50));
+    
     if (element !== messageContainer) {
       const elementRect = element.getBoundingClientRect();
       const newContainerRect = scrollContainer ? scrollContainer.getBoundingClientRect() : { top: 0 };
@@ -2634,16 +2670,19 @@ async function highlightPin(pin) {
         currentScroll: newCurrentScroll,
         elementTop: elementRect.top,
         containerTop: newContainerRect.top,
+        topGap: topGap,
         targetScroll: finalScrollElem
       });
       
       // Use SMOOTH scroll for second jump (more visually pleasant, shorter distance)
       if (scrollContainer) {
+        debugLog('Using scrollContainer.scrollTo with smooth behavior');
         scrollContainer.scrollTo({
           top: finalScrollElem,
           behavior: 'smooth' // SMOOTH - more pleasant for the second jump
         });
       } else {
+        debugLog('Using window.scrollTo with smooth behavior');
         window.scrollTo({
           top: finalScrollElem,
           behavior: 'smooth' // SMOOTH - more pleasant for the second jump
@@ -2652,6 +2691,8 @@ async function highlightPin(pin) {
       
       // Wait for smooth scroll to complete
       await new Promise(resolve => setTimeout(resolve, 400));
+    } else {
+      debugLog('JUMP 2 SKIPPED: Element is same as messageContainer (full message pin)');
     }
     
   } catch (err) {
