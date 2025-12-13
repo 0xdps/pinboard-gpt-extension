@@ -33,8 +33,20 @@ function debugError(...args) {
  * Used in content scripts and extension pages
  * @param {string} message - The notification message
  * @param {number} duration - Duration to show notification in ms (default: 2000)
+ * @param {string} type - Type of notification: 'success', 'error', 'warning', 'info' (default: 'success')
  */
-function showNotification(message, duration = 2000) {
+function showNotification(message, duration = 2000, type = 'success') {
+  // Determine theme colors
+  const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const themeColors = {
+    success: { bg: '#10a37f', text: '#ffffff' },
+    error: { bg: '#d33b27', text: '#ffffff' },
+    warning: { bg: '#f57c00', text: '#ffffff' },
+    info: { bg: '#1a73e8', text: '#ffffff' }
+  };
+  
+  const colors = themeColors[type] || themeColors.success;
+  
   const notif = document.createElement('div');
   notif.textContent = message;
   notif.style.cssText = `
@@ -42,14 +54,17 @@ function showNotification(message, duration = 2000) {
     top: 20px;
     right: 20px;
     z-index: 9999;
-    background: #10a37f;
-    color: white;
+    background: ${colors.bg};
+    color: ${colors.text};
     padding: 12px 20px;
     border-radius: 8px;
     font-size: 14px;
     font-weight: 600;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     animation: slideIn 0.3s ease;
+    font-family: system-ui, -apple-system, sans-serif;
+    max-width: 400px;
+    word-wrap: break-word;
   `;
   
   document.body.appendChild(notif);

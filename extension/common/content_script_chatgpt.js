@@ -93,7 +93,7 @@ async function checkPinLimitAndNotify() {
     const licenseType = typeof license === 'string' ? license : (license?.type || LICENSE_TYPES.FREE);
     
     if (licenseType === LICENSE_TYPES.FREE || licenseType.toLowerCase() === 'free') {
-      showUpgradeNotification();
+      await showUpgradeNotification();
     } else {
       showNotification('⚠️ Pin limit reached');
     }
@@ -295,16 +295,28 @@ function createPinButtonForMessage(messageContainer) {
       
       // Handle image load errors
       img.onerror = () => {
-        // Fallback to text icon
-        pinButton.textContent = '📌';
-        pinButton.style.fontSize = '14px';
+        // Fallback: create icon element
+        pinButton.textContent = '';
+        const fallbackIcon = document.createElement('img');
+        fallbackIcon.src = chrome.runtime.getURL('icons/icon-24.png');
+        fallbackIcon.width = 24;
+        fallbackIcon.height = 24;
+        fallbackIcon.style.display = 'block';
+        fallbackIcon.alt = 'Pin';
+        pinButton.appendChild(fallbackIcon);
       };
       
       pinButton.appendChild(img);
     } catch (error) {
-      // Fallback to text icon
-      pinButton.textContent = '📌';
-      pinButton.style.fontSize = '14px';
+      // Fallback: create icon element
+      pinButton.textContent = '';
+      const fallbackIcon = document.createElement('img');
+      fallbackIcon.src = chrome.runtime.getURL('icons/icon-24.png');
+      fallbackIcon.width = 24;
+      fallbackIcon.height = 24;
+      fallbackIcon.style.display = 'block';
+      fallbackIcon.alt = 'Pin';
+      pinButton.appendChild(fallbackIcon);
     }
     
     // Apply optimized styles
@@ -1799,7 +1811,10 @@ function highlightTextInElement(element, searchText) {
 
 
 // Show upgrade notification with call-to-action
-function showUpgradeNotification() {
+async function showUpgradeNotification() {
+  // Get theme colors
+  const colors = await getThemeColors();
+  
   const notif = document.createElement('div');
   notif.style.cssText = `
     position: fixed;
@@ -1807,8 +1822,8 @@ function showUpgradeNotification() {
     left: 50%;
     transform: translate(-50%, -50%);
     z-index: 100001;
-    background: white;
-    color: #202124;
+    background: ${colors.dialogBg};
+    color: ${colors.dialogText};
     padding: 24px;
     border-radius: 12px;
     font-size: 14px;
@@ -1819,15 +1834,15 @@ function showUpgradeNotification() {
   `;
   
   notif.innerHTML = `
-    <div style="font-size: 48px; margin-bottom: 16px;">📌</div>
-    <h3 style="margin: 0 0 12px 0; font-size: 20px; font-weight: 600;">Free Limit Reached</h3>
-    <p style="margin: 0 0 20px 0; color: #5f6368; line-height: 1.5;">
+    <div style="margin-bottom: 16px;"><img src="${chrome.runtime.getURL('icons/icon-48.png')}" style="width: 48px; height: 48px;" alt="Pinboard GPT"></div>
+    <h3 style="margin: 0 0 12px 0; font-size: 20px; font-weight: 600; color: ${colors.headingText};">Free Limit Reached</h3>
+    <p style="margin: 0 0 20px 0; color: ${colors.labelText}; line-height: 1.5;">
       You've used all 10 free pins. Upgrade to Pro for unlimited pins, tags, and export features.
     </p>
     <div style="display: flex; gap: 12px; justify-content: center;">
       <button id="upgrade-btn" style="
-        background: #10a37f;
-        color: white;
+        background: ${colors.saveBg};
+        color: ${colors.saveText};
         border: none;
         padding: 10px 24px;
         border-radius: 8px;
@@ -1837,9 +1852,9 @@ function showUpgradeNotification() {
         transition: background 0.2s;
       ">Upgrade to Pro</button>
       <button id="close-upgrade-btn" style="
-        background: #f8f9fa;
-        color: #5f6368;
-        border: 1px solid #dadce0;
+        background: ${colors.cancelBg};
+        color: ${colors.cancelText};
+        border: 1px solid ${colors.cancelBorder};
         padding: 10px 24px;
         border-radius: 8px;
         font-size: 14px;
@@ -1858,7 +1873,7 @@ function showUpgradeNotification() {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: ${colors.overlay};
     z-index: 100000;
     backdrop-filter: blur(4px);
   `;
@@ -1871,17 +1886,17 @@ function showUpgradeNotification() {
   const closeBtn = notif.querySelector('#close-upgrade-btn');
   
   upgradeBtn.addEventListener('mouseenter', () => {
-    upgradeBtn.style.background = '#0d8a6a';
+    upgradeBtn.style.background = colors.saveHover;
   });
   upgradeBtn.addEventListener('mouseleave', () => {
-    upgradeBtn.style.background = '#10a37f';
+    upgradeBtn.style.background = colors.saveBg;
   });
   
   closeBtn.addEventListener('mouseenter', () => {
-    closeBtn.style.background = '#e8eaed';
+    closeBtn.style.background = colors.cancelHover;
   });
   closeBtn.addEventListener('mouseleave', () => {
-    closeBtn.style.background = '#f8f9fa';
+    closeBtn.style.background = colors.cancelBg;
   });
   
   // Handle upgrade button
@@ -3354,7 +3369,7 @@ async function isChatPinned(chatId) {
 async function unpinChat(chatId) {
   if (!chatId) return;
   await idbDelete(`chat_${chatId}`);
-  showNotification('📌 Chat unpinned');
+  showNotification('✅ Chat unpinned');
   updateChatPinButton();
 }
 

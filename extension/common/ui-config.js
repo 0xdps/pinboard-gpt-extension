@@ -36,6 +36,76 @@ const UI_CONFIG = {
     backdropFilter: 'blur(4px)'
   },
 
+  // Toast Notification Styling
+  toast: {
+    duration: 2000,
+    padding: '12px 20px',
+    borderRadius: '8px',
+    fontSize: '14px',
+    fontWeight: '600',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+    slideInDuration: '0.3s',
+    fadeOutDuration: '0.3s'
+  },
+
+  // Modal/Dialog Colors (Light Mode)
+  lightMode: {
+    dialogBg: '#ffffff',
+    dialogText: '#202124',
+    headingText: '#202124',
+    labelText: '#5f6368',
+    inputBg: '#ffffff',
+    inputBorder: '#dadce0',
+    inputText: '#202124',
+    inputPlaceholder: '#9aa0a6',
+    previewBg: '#f8f9fa',
+    previewBorder: '#e8eaed',
+    previewText: '#202124',
+    buttonPrimary: '#10a37f',
+    buttonPrimaryHover: '#0d8a6a',
+    buttonSecondary: '#f8f9fa',
+    buttonSecondaryText: '#5f6368',
+    buttonSecondaryBorder: '#dadce0',
+    buttonSecondaryHover: '#e8eaed',
+    backdropBg: 'rgba(0, 0, 0, 0.5)',
+    tagBg: '#e8f0fe',
+    tagText: '#1a73e8',
+    tagBorder: '#aecbfa',
+    successColor: '#10a37f',
+    errorColor: '#d33b27',
+    warningColor: '#f57c00',
+    infoColor: '#1a73e8'
+  },
+
+  // Modal/Dialog Colors (Dark Mode)
+  darkMode: {
+    dialogBg: '#2d2d2d',
+    dialogText: '#e4e4e4',
+    headingText: '#ffffff',
+    labelText: '#b8b8b8',
+    inputBg: '#1a1a1a',
+    inputBorder: '#404040',
+    inputText: '#e4e4e4',
+    inputPlaceholder: '#808080',
+    previewBg: '#1a1a1a',
+    previewBorder: '#404040',
+    previewText: '#e4e4e4',
+    buttonPrimary: '#10a37f',
+    buttonPrimaryHover: '#0d8a6a',
+    buttonSecondary: '#404040',
+    buttonSecondaryText: '#e4e4e4',
+    buttonSecondaryBorder: '#505050',
+    buttonSecondaryHover: '#505050',
+    backdropBg: 'rgba(0, 0, 0, 0.7)',
+    tagBg: '#1a3d5f',
+    tagText: '#64b5f6',
+    tagBorder: '#1565c0',
+    successColor: '#10a37f',
+    errorColor: '#ef4444',
+    warningColor: '#f59e0b',
+    infoColor: '#3b82f6'
+  }
+
   // Colors (Light Mode)
   colors: {
     light: {
