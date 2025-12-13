@@ -103,19 +103,34 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function initializeTheme() {
     try {
       const { theme } = await storageAPI.local.get(['theme']);
-      // Default to dark mode if no theme is set
-      const isDark = theme !== 'light';
+      
+      // If theme is 'auto', try to detect from ChatGPT's parent window
+      let isDark = theme === 'dark' || theme === undefined;
+      
+      if (theme === 'auto') {
+        // Try to detect ChatGPT's dark mode from the parent window (if popup is docked)
+        try {
+          const chromeWindow = chrome.extension.getBackgroundPage?.();
+          if (chromeWindow && window.opener) {
+            isDark = window.opener.document.documentElement.classList.contains('dark');
+          }
+        } catch (e) {
+          // Fallback to dark mode if detection fails
+          isDark = true;
+        }
+      }
+      
       themeToggle.checked = isDark;
       document.body.classList.toggle('dark-mode', isDark);
       updateThemeText(isDark);
       
       // Save default theme if not set
       if (theme === undefined) {
-        await storageAPI.local.set({ theme: 'dark' });
+        await storageAPI.local.set({ theme: 'auto' });
       }
     } catch (err) {
       debugError('Error loading theme:', err);
-      // Default to dark mode on error
+      // Default to dark mode on error (matches ChatGPT default)
       themeToggle.checked = true;
       document.body.classList.add('dark-mode');
       updateThemeText(true);

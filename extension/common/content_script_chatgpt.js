@@ -206,62 +206,80 @@ function setupDialogKeyboardNavigation(dialog, overlay, focusableElements, close
 
 // Get theme colors based on dark mode setting
 async function getThemeColors() {
-  let isDarkMode = false;
+  // Detect dark mode from ChatGPT's actual DOM
+  const isDarkMode = document.documentElement.classList.contains('dark') ||
+                     document.body.classList.contains('dark');
+  
+  // Get actual ChatGPT colors from computed styles
+  let bgColor = '#ffffff';
+  let textColor = '#202124';
+  
   try {
-    const result = await chrome.storage.local.get(['theme']);
-    isDarkMode = result.theme === 'dark';
+    const mainElement = document.querySelector('main') || document.body;
+    const computedStyle = window.getComputedStyle(mainElement);
+    bgColor = computedStyle.backgroundColor || bgColor;
+    textColor = computedStyle.color || textColor;
   } catch (err) {
-    debugLog('Could not load theme setting:', err);
+    debugLog('Could not get computed styles:', err);
   }
 
+  // ChatGPT color palette (official)
   return isDarkMode ? {
-    overlay: 'rgba(0, 0, 0, 0.7)',
-    dialogBg: '#2d2d2d',
-    dialogText: '#e4e4e4',
+    // Dark mode - matches ChatGPT's actual dark theme
+    overlay: 'rgba(0, 0, 0, 0.5)',
+    dialogBg: '#212121',
+    dialogText: '#ececec',
     headingText: '#ffffff',
-    labelText: '#b8b8b8',
+    labelText: '#a0a0a0',
     previewBg: '#1a1a1a',
-    previewBorder: '#404040',
-    previewText: '#b8b8b8',
+    previewBorder: '#353535',
+    previewText: '#a0a0a0',
     inputBg: '#1a1a1a',
-    inputBorder: '#404040',
-    inputText: '#e4e4e4',
-    inputPlaceholder: '#808080',
+    inputBorder: '#353535',
+    inputText: '#ececec',
+    inputPlaceholder: '#707070',
     tagBg: '#1a3d5f',
     tagText: '#5da5da',
     cancelBg: '#1a1a1a',
-    cancelBorder: '#404040',
-    cancelText: '#b8b8b8',
-    cancelHover: '#2d2d2d',
+    cancelBorder: '#353535',
+    cancelText: '#a0a0a0',
+    cancelHover: '#2a2a2a',
     saveBg: '#10a37f',
     saveText: '#ffffff',
     saveHover: '#0d8a6a',
     focusBorder: '#10a37f',
-    helpText: '#808080'
+    helpText: '#707070',
+    borderRadius: '12px',
+    shadow: 'rgba(0, 0, 0, 0.3)',
+    hoverBg: '#2a2a2a'
   } : {
-    overlay: 'rgba(0, 0, 0, 0.5)',
+    // Light mode - matches ChatGPT's actual light theme
+    overlay: 'rgba(0, 0, 0, 0.4)',
     dialogBg: '#ffffff',
-    dialogText: '#202124',
-    headingText: '#202124',
-    labelText: '#5f6368',
-    previewBg: '#f8f9fa',
-    previewBorder: '#e8eaed',
-    previewText: '#5f6368',
+    dialogText: '#0d0d0d',
+    headingText: '#0d0d0d',
+    labelText: '#565656',
+    previewBg: '#f7f7f8',
+    previewBorder: '#d1d5db',
+    previewText: '#565656',
     inputBg: '#ffffff',
-    inputBorder: '#dadce0',
-    inputText: '#202124',
-    inputPlaceholder: '#80868b',
+    inputBorder: '#d1d5db',
+    inputText: '#0d0d0d',
+    inputPlaceholder: '#8e8e8e',
     tagBg: '#e8f0fe',
     tagText: '#1a73e8',
-    cancelBg: '#ffffff',
-    cancelBorder: '#dadce0',
-    cancelText: '#5f6368',
-    cancelHover: '#f8f9fa',
+    cancelBg: '#f7f7f8',
+    cancelBorder: '#d1d5db',
+    cancelText: '#565656',
+    cancelHover: '#f7f7f8',
     saveBg: '#10a37f',
     saveText: '#ffffff',
     saveHover: '#0d8a6a',
     focusBorder: '#10a37f',
-    helpText: '#80868b'
+    helpText: '#8e8e8e',
+    borderRadius: '12px',
+    shadow: 'rgba(0, 0, 0, 0.1)',
+    hoverBg: '#f7f7f8'
   };
 }
 
@@ -3504,36 +3522,6 @@ function createMessageNavigationDropdown(messages) {
     
     dropdown.appendChild(option);
   });
-  
-  // Cancel option
-  const cancelOption = document.createElement('div');
-  cancelOption.style.cssText = `
-    padding: 12px 16px;
-    cursor: pointer;
-    font-size: 13px;
-    color: #5f6368;
-    text-align: center;
-    border-top: 1px solid #e8eaed;
-    background: #f8f9fa;
-    border-radius: 0 0 8px 8px;
-    position: sticky;
-    bottom: 0;
-  `;
-  cancelOption.textContent = 'Cancel';
-  
-  cancelOption.addEventListener('mouseenter', () => {
-    cancelOption.style.background = '#e8eaed';
-  });
-  
-  cancelOption.addEventListener('mouseleave', () => {
-    cancelOption.style.background = '#f8f9fa';
-  });
-  
-  cancelOption.addEventListener('click', () => {
-    dropdown.remove();
-  });
-  
-  dropdown.appendChild(cancelOption);
   
   // Scroll to show the last message by default
   setTimeout(() => {

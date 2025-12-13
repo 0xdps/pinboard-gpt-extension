@@ -50,13 +50,24 @@ function debugError(...args) {
  * @param {string} type - Type of notification: 'success', 'error', 'warning', 'info' (default: 'success')
  */
 function showNotification(message, duration = 2000, type = 'success') {
-  // Determine theme colors
-  const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  // Detect ChatGPT's dark mode
+  const isDarkMode = document.documentElement.classList.contains('dark') ||
+                     document.body.classList.contains('dark');
+  
+  // Theme colors that match ChatGPT's palette
   const themeColors = {
-    success: { bg: '#10a37f', text: '#ffffff' },
-    error: { bg: '#d33b27', text: '#ffffff' },
-    warning: { bg: '#f57c00', text: '#ffffff' },
-    info: { bg: '#1a73e8', text: '#ffffff' }
+    success: isDarkMode 
+      ? { bg: '#10a37f', text: '#ffffff', border: '#0d8a6a' }
+      : { bg: '#10a37f', text: '#ffffff', border: '#0d8a6a' },
+    error: isDarkMode 
+      ? { bg: '#d33b27', text: '#ffffff', border: '#b03020' }
+      : { bg: '#d33b27', text: '#ffffff', border: '#b03020' },
+    warning: isDarkMode 
+      ? { bg: '#f57c00', text: '#ffffff', border: '#d46b00' }
+      : { bg: '#f57c00', text: '#ffffff', border: '#d46b00' },
+    info: isDarkMode 
+      ? { bg: '#1a73e8', text: '#ffffff', border: '#1557b0' }
+      : { bg: '#1a73e8', text: '#ffffff', border: '#1557b0' }
   };
   
   const colors = themeColors[type] || themeColors.success;
@@ -71,14 +82,15 @@ function showNotification(message, duration = 2000, type = 'success') {
     background: ${colors.bg};
     color: ${colors.text};
     padding: 12px 20px;
-    border-radius: 8px;
+    border-radius: 12px;
     font-size: 14px;
-    font-weight: 600;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    font-weight: 500;
+    box-shadow: 0 8px 24px ${isDarkMode ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.1)'};
     animation: slideIn 0.3s ease;
-    font-family: system-ui, -apple-system, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
     max-width: 400px;
     word-wrap: break-word;
+    border: 1px solid ${colors.border};
   `;
   
   document.body.appendChild(notif);
