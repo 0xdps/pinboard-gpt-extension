@@ -2,6 +2,19 @@
 
 // LICENSE_TYPES and LICENSE_LIMITS imported from license.js (loaded before this script)
 
+console.log('[Pinboard GPT] Content script initializing...');
+
+// Check if extension context is still valid
+function isExtensionContextValid() {
+  try {
+    const isValid = !!(chrome?.runtime?.getURL);
+    return isValid;
+  } catch (error) {
+    // Silent fail - context is invalid
+    return false;
+  }
+}
+
 async function getLicense() {
   try {
     const result = await chrome.storage.local.get(['license']);
@@ -381,21 +394,34 @@ function createPinButtonForMessage(messageContainer) {
   try {
     // Early validation checks
     if (!messageContainer || messageContainer.nodeType !== 1) {
+      console.log('[Pinboard GPT] Invalid message container');
+      return null;
+    }
+    
+    // Check if extension context is still valid
+    if (!isExtensionContextValid()) {
+      // This is expected when popup is accessed or extension is reloading
+      // Silent return - no need to log
       return null;
     }
     
     // Check if button already exists (more efficient check)
     if (messageContainer.querySelector('.pingpt-pin-button')) {
+      console.log('[Pinboard GPT] Pin button already exists on this message');
       return null;
     }
+    
+    console.log('[Pinboard GPT] Creating pin button for message');
     
     // Validate extension context  
     const runtime = chrome.runtime;
     
     if (!runtime?.getURL) {
-      debugError('Extension context not available');
+      console.error('[Pinboard GPT] Extension context not available - chrome.runtime.getURL is missing');
       return null;
     }
+    
+    console.log('[Pinboard GPT] Extension context valid, proceeding with button creation');
     
     // Create button with optimized approach
     const pinButton = document.createElement('button');
@@ -413,30 +439,26 @@ function createPinButtonForMessage(messageContainer) {
       img.alt = '';
       img.setAttribute('aria-hidden', 'true');
       
+      console.log('[Pinboard GPT] Icon source set to:', img.src);
+      
       // Handle image load errors
       img.onerror = () => {
-        // Fallback: create icon element
-        pinButton.textContent = '';
-        const fallbackIcon = document.createElement('img');
-        fallbackIcon.src = chrome.runtime.getURL('icons/icon-24.png');
-        fallbackIcon.width = 24;
-        fallbackIcon.height = 24;
-        fallbackIcon.style.display = 'block';
-        fallbackIcon.alt = 'Pin';
-        pinButton.appendChild(fallbackIcon);
+        console.warn('[Pinboard GPT] Icon failed to load, using emoji fallback');
+        // Fallback to text icon if image fails
+        pinButton.textContent = '📌';
+        pinButton.style.fontSize = '16px';
+      };
+      
+      img.onload = () => {
+        console.log('[Pinboard GPT] Icon loaded successfully');
       };
       
       pinButton.appendChild(img);
     } catch (error) {
-      // Fallback: create icon element
-      pinButton.textContent = '';
-      const fallbackIcon = document.createElement('img');
-      fallbackIcon.src = chrome.runtime.getURL('icons/icon-24.png');
-      fallbackIcon.width = 24;
-      fallbackIcon.height = 24;
-      fallbackIcon.style.display = 'block';
-      fallbackIcon.alt = 'Pin';
-      pinButton.appendChild(fallbackIcon);
+      console.error('[Pinboard GPT] Error creating icon element:', error.message, error);
+      // Fallback: use text emoji
+      pinButton.textContent = '📌';
+      pinButton.style.fontSize = '16px';
     }
     
     // Apply optimized styles
@@ -481,7 +503,19 @@ function createPinButtonForMessage(messageContainer) {
       e.stopPropagation();
       e.preventDefault();
       
+      console.log('[Pinboard GPT] Pin button clicked');
+      
+      // Check extension context before processing
+      if (!isExtensionContextValid()) {
+        console.error('[Pinboard GPT] Extension context invalidated at click time');
+        console.warn('[Pinboard GPT] chrome.runtime is:', typeof chrome?.runtime);
+        alert('Extension context lost. Please refresh the page.');
+        return;
+      }
+      
       try {
+        console.log('[Pinboard GPT] Processing pin click with valid context');
+        
         // Visual feedback
         pinButton.style.transform = 'scale(0.95)';
         setTimeout(() => {
@@ -489,7 +523,9 @@ function createPinButtonForMessage(messageContainer) {
         }, UI_CONFIG.timing.debounceDelay);
         
         // Check license before allowing pin creation
+        console.log('[Pinboard GPT] Checking pin limit...');
         if (!(await checkPinLimitAndNotify())) {
+          console.log('[Pinboard GPT] Pin limit reached, cannot create pin');
           return;
         }
         
@@ -509,18 +545,24 @@ function createPinButtonForMessage(messageContainer) {
           selectionText: null
         };
         
+        console.log('[Pinboard GPT] Pin data created:', pinData);
+        
         // Use unified pin creation function
         await createAndShowPinDialog('hover', pinData);
+        console.log('[Pinboard GPT] Pin dialog shown successfully');
       } catch (error) {
+        console.error('[Pinboard GPT] Error opening pin dialog:', error.message, error);
         debugError('Error opening pin dialog:', error);
       }
     });
     
     // Optimize container positioning
     try {
+      console.log('[Pinboard GPT] Setting up button container');
       const computedPosition = getComputedStyle(messageContainer).position;
       if (computedPosition === 'static') {
         messageContainer.style.position = 'relative';
+        console.log('[Pinboard GPT] Changed container position from static to relative');
       }
       
       // Show button on message hover with better performance
@@ -531,15 +573,23 @@ function createPinButtonForMessage(messageContainer) {
       messageContainer.addEventListener('mouseleave', hideButton, { passive: true });
       
       messageContainer.appendChild(pinButton);
+      console.log('[Pinboard GPT] Pin button appended to message container');
       
     } catch (error) {
+      console.error('[Pinboard GPT] Error setting up button container:', error.message, error);
       debugError('Error setting up button container:', error);
       return null;
     }
     
+    console.log('[Pinboard GPT] Pin button creation completed successfully');
     return pinButton;
     
   } catch (error) {
+    console.error('[Pinboard GPT] FATAL Error creating pin button:');
+    console.error('[Pinboard GPT] Error message:', error.message);
+    console.error('[Pinboard GPT] Error name:', error.name);
+    console.error('[Pinboard GPT] Error stack:', error.stack);
+    console.error('[Pinboard GPT] Full error object:', error);
     debugError('Error creating pin button:', error);
     return null;
   }
@@ -598,50 +648,70 @@ function initializePinButtons() {
   
   // Add buttons to existing messages
   function addButtonsToExistingMessages() {
-    const messages = findAllMessages();
-    messages.forEach(msg => {
-      const text = (msg.innerText || '').trim();
-      // Only add button to messages with meaningful content
-      if (text.length >= 10) {
-        createPinButtonForMessage(msg);
-      }
-    });
+    try {
+      console.log('[Pinboard GPT] addButtonsToExistingMessages called');
+      const messages = findAllMessages();
+      console.log('[Pinboard GPT] Found', messages.length, 'existing messages');
+      
+      messages.forEach((msg, index) => {
+        const text = (msg.innerText || '').trim();
+        // Only add button to messages with meaningful content
+        if (text.length >= 10) {
+          console.log('[Pinboard GPT] Creating button for message', index);
+          createPinButtonForMessage(msg);
+        }
+      });
+      console.log('[Pinboard GPT] addButtonsToExistingMessages completed');
+    } catch (error) {
+      console.error('[Pinboard GPT] Error in addButtonsToExistingMessages:', error.message, error);
+    }
   }
   
   // Initial setup
+  console.log('[Pinboard GPT] Starting initial setup');
   addButtonsToExistingMessages();
   
   // Observe for new messages
+  console.log('[Pinboard GPT] Setting up mutation observer');
   const observer = new MutationObserver((mutations) => {
-    let shouldUpdate = false;
-    
-    mutations.forEach(mutation => {
-      mutation.addedNodes.forEach(node => {
-        if (node.nodeType === 1) { // Element node
-          // Check if the node itself is a message
-          if (node.getAttribute && node.getAttribute('data-message-author-role')) {
-            const text = (node.innerText || '').trim();
-            if (text.length >= 10) {
-              createPinButtonForMessage(node);
-              shouldUpdate = true;
-            }
-          }
-          // Check if the node contains messages
-          else if (node.querySelectorAll) {
-            const newMessages = getAllMessageElements(node);
-            newMessages.forEach(msg => {
-              const text = (msg.innerText || '').trim();
-              if (text.length >= 10 && !msg.querySelector('.pingpt-pin-button')) {
-                createPinButtonForMessage(msg);
+    try {
+      let shouldUpdate = false;
+      
+      mutations.forEach(mutation => {
+        mutation.addedNodes.forEach(node => {
+          if (node.nodeType === 1) { // Element node
+            // Check if the node itself is a message
+            if (node.getAttribute && node.getAttribute('data-message-author-role')) {
+              const text = (node.innerText || '').trim();
+              if (text.length >= 10) {
+                console.log('[Pinboard GPT] New message detected, creating button');
+                createPinButtonForMessage(node);
                 shouldUpdate = true;
               }
-            });
+            }
+            // Check if the node contains messages
+            else if (node.querySelectorAll) {
+              const newMessages = getAllMessageElements(node);
+              if (newMessages.length > 0) {
+                console.log('[Pinboard GPT] Found', newMessages.length, 'new messages in added nodes');
+              }
+              newMessages.forEach(msg => {
+                const text = (msg.innerText || '').trim();
+                if (text.length >= 10 && !msg.querySelector('.pingpt-pin-button')) {
+                  createPinButtonForMessage(msg);
+                  shouldUpdate = true;
+                }
+              });
+            }
           }
-        }
+        });
       });
-    });
-    
-    if (shouldUpdate) {
+      
+      if (shouldUpdate) {
+        console.log('[Pinboard GPT] Messages updated, refresh complete');
+      }
+    } catch (error) {
+      console.error('[Pinboard GPT] Error in mutation observer:', error.message, error);
     }
   });
   
@@ -652,6 +722,9 @@ function initializePinButtons() {
       childList: true,
       subtree: true
     });
+    console.log('[Pinboard GPT] Mutation observer started on main content');
+  } else {
+    console.warn('[Pinboard GPT] Main content element not found');
   }
   
   // Re-scan periodically for any missed messages

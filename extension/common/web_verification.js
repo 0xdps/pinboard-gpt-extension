@@ -4,6 +4,13 @@
 (function() {
     'use strict';
     
+    // Debug logging helper (only logs in development)
+    const debugLog = (message, data) => {
+        if (typeof console !== 'undefined') {
+            console.log(`[Pinboard] ${message}`, data || '');
+        }
+    };
+    
     // Only run on our domains
     const allowedDomains = ['pinboard-gpt.dps.codes', 'localhost'];
     const currentDomain = window.location.hostname;

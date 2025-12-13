@@ -42,7 +42,7 @@ function setupModalKeyboardNavigation(modal) {
     if (e.key === 'Escape') {
       e.preventDefault();
       // Trigger the close button click
-      const closeBtn = modal.querySelector('.close-btn, #closeEditModal, #closeSettings, #closeUpgrade');
+      const closeBtn = modal.querySelector('.modal-close, #closeEditModal, #closeSettings, #closeUpgrade');
       if (closeBtn) {
         closeBtn.click();
       }
@@ -70,7 +70,7 @@ async function initializePopupDebug() {
 document.addEventListener('DOMContentLoaded', async () => {
   const listEl = document.getElementById('list');
   const search = document.getElementById('search');
-  const searchContainer = document.querySelector('.search-container');
+  const searchContainer = document.querySelector('.search-box');
   const exportBtn = document.getElementById('exportBtn');
   const importBtn = document.getElementById('importBtn');
   const importFile = document.getElementById('importFile');
@@ -230,11 +230,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   loadVersion();
 
   // Settings Modal Handlers
-  settingsBtn.onclick = async () => {
-    try {
-      await updateAuthDisplay();
-      await updateLicenseDisplay();
-      settingsModal.style.display = 'flex';
+  if (settingsBtn) {
+    settingsBtn.onclick = async () => {
+      try {
+        await updateAuthDisplay();
+        await updateLicenseDisplay();
+        settingsModal.style.display = 'flex';
       // Setup keyboard navigation for the modal
       setupModalKeyboardNavigation(settingsModal);
     } catch (error) {
@@ -242,11 +243,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       showNotification('❌ Failed to open settings', 'error');
     }
   };
+  }
 
   // Coffee Button Handler
-  coffeeBtn.onclick = () => {
-    tabsAPI.create({ url: 'https://www.buymeacoffee.com/0xdps' });
-  };
+  if (coffeeBtn) {
+    coffeeBtn.onclick = () => {
+      tabsAPI.create({ url: 'https://www.buymeacoffee.com/0xdps' });
+    };
+  }
 
   // Auth Modal Elements
   const authModal = document.getElementById('authModal');
@@ -408,16 +412,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     settingsModal.style.display = 'none';
   };
 
-  // Close modal when clicking outside
-  settingsModal.onclick = (e) => {
-    if (e.target === settingsModal) {
+  // Close modal when clicking on overlay
+  const settingsOverlay = settingsModal.querySelector('.modal-overlay');
+  if (settingsOverlay) {
+    settingsOverlay.addEventListener('click', () => {
       settingsModal.style.display = 'none';
-    }
-  };
+    });
+  }
 
   // Close modal with Escape key
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && settingsModal.style.display === 'flex') {
+    if (e.key === 'Escape' && settingsModal.style.display !== 'none') {
       settingsModal.style.display = 'none';
     }
   });
@@ -520,6 +525,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const cancelBtn = document.getElementById('confirmCancel');
       const exportBtn = document.getElementById('confirmExport');
       const okBtn = document.getElementById('confirmOK');
+      const overlay = modal.querySelector('.modal-overlay');
       
       titleEl.textContent = title;
       messageEl.textContent = message;
@@ -537,6 +543,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         cancelBtn.removeEventListener('click', handleCancel);
         exportBtn.removeEventListener('click', handleExport);
         okBtn.removeEventListener('click', handleOK);
+        if (overlay) {
+          overlay.removeEventListener('click', handleCancel);
+        }
       }
       
       function handleCancel() {
@@ -557,6 +566,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       cancelBtn.addEventListener('click', handleCancel);
       exportBtn.addEventListener('click', handleExport);
       okBtn.addEventListener('click', handleOK);
+      if (overlay) {
+        overlay.addEventListener('click', handleCancel);
+      }
     });
   }
 
@@ -780,12 +792,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Get elements to populate
     const titleEl = pinElement.querySelector('.pin-title');
-    const messageEl = pinElement.querySelector('.pin-message');
+    const previewEl = pinElement.querySelector('.pin-preview');
     const tagsEl = pinElement.querySelector('.pin-tags');
-    const openBtn = pinElement.querySelector('.openBtn');
-    const editBtn = pinElement.querySelector('.editBtn');
-    const deleteBtn = pinElement.querySelector('.deleteBtn');
-    const infoBtn = pinElement.querySelector('.infoBtn');
+    const openBtn = pinElement.querySelector('.open-btn');
+    const editBtn = pinElement.querySelector('.edit-btn');
+    const deleteBtn = pinElement.querySelector('.delete-btn');
+    const infoBtn = pinElement.querySelector('.info-btn');
     
     // Handle different pin types
     let title, messagePreview;
@@ -812,8 +824,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       titleEl.style.display = 'none';
     }
     
-    // Set message with better formatting
-    messageEl.textContent = messagePreview;
+    // Set preview with better formatting
+    if (previewEl) {
+      previewEl.textContent = messagePreview;
+    }
     
     // Set tags with improved design
     if (pin.tags?.length) {
@@ -825,25 +839,18 @@ document.addEventListener('DOMContentLoaded', async () => {
       // Create tag elements safely
       pin.tags.slice(0, 5).forEach(tag => { // Limit to 5 tags for UI
         const tagSpan = document.createElement('span');
-        tagSpan.className = 'tag-link';
+        tagSpan.className = 'pin-tag';
         tagSpan.setAttribute('data-tag', tag);
         tagSpan.textContent = tag;
         tagSpan.title = `Search for "${tag}"`;
+        tagSpan.style.cursor = 'pointer';
+        tagSpan.addEventListener('click', (e) => {
+          e.stopPropagation();
+          search.value = tag;
+          search.dispatchEvent(new Event('input', { bubbles: true }));
+        });
         tagsEl.appendChild(tagSpan);
       });
-      
-      // Add "more tags" indicator if there are more than 5
-      if (pin.tags.length > 5) {
-        const moreSpan = document.createElement('span');
-        moreSpan.className = 'tag-link';
-        moreSpan.textContent = `+${pin.tags.length - 5} more`;
-        moreSpan.style.opacity = '0.7';
-        moreSpan.style.cursor = 'default';
-        moreSpan.title = pin.tags.slice(5).join(', ');
-        tagsEl.appendChild(moreSpan);
-      }
-      
-      tagsEl.style.display = 'flex';
     } else {
       tagsEl.style.display = 'none';
     }
@@ -923,6 +930,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const titleInput = document.getElementById('editTitle');
     const descInput = document.getElementById('editDesc');
     const tagsInput = document.getElementById('editTags');
+    const editOverlay = editModal.querySelector('.modal-overlay');
 
     let currentEditingId = null;
     let removeKeyboardHandler = null;
@@ -937,6 +945,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     closeBtn.addEventListener('click', close);
     cancelBtn.addEventListener('click', close);
+    if (editOverlay) {
+      editOverlay.addEventListener('click', close);
+    }
 
     saveBtn.addEventListener('click', async () => {
       if (!currentEditingId) return;
@@ -1120,7 +1131,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // Add event listeners for tag links
-    document.querySelectorAll('.tag-link').forEach(tagEl => {
+    document.querySelectorAll('.pin-tag').forEach(tagEl => {
       tagEl.onclick = (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -1137,10 +1148,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Function to update clear button visibility
   function updateClearButton() {
-    if (search.value.trim()) {
-      searchContainer.classList.add('has-content');
-    } else {
-      searchContainer.classList.remove('has-content');
+    if (searchContainer) {
+      if (search.value.trim()) {
+        searchContainer.classList.add('has-content');
+      } else {
+        searchContainer.classList.remove('has-content');
+      }
     }
   }
 
@@ -1175,7 +1188,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
       
       // Insert after search container
-      searchContainer.insertAdjacentElement('afterend', counter);
+      if (searchContainer) {
+        searchContainer.insertAdjacentElement('afterend', counter);
+      } else {
+        listEl.insertAdjacentElement('beforebegin', counter);
+      }
     }
   }
 
@@ -1385,19 +1402,22 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // Upgrade Modal Handlers
-  upgradeBtn.onclick = () => {
-    tabsAPI.create({ url: 'https://pinboard-gpt.dps.codes/pricing.html' });
-  };
+  if (upgradeBtn) {
+    upgradeBtn.onclick = () => {
+      tabsAPI.create({ url: 'https://pinboard-gpt.dps.codes/pricing.html' });
+    };
+  }
 
   closeUpgrade.onclick = () => {
     upgradeModal.style.display = 'none';
   };
 
-  upgradeModal.onclick = (e) => {
-    if (e.target === upgradeModal) {
+  const upgradeOverlay = upgradeModal.querySelector('.modal-overlay');
+  if (upgradeOverlay) {
+    upgradeOverlay.addEventListener('click', () => {
       upgradeModal.style.display = 'none';
-    }
-  };
+    });
+  }
 
   upgradeButtons.forEach(btn => {
     btn.onclick = async () => {
