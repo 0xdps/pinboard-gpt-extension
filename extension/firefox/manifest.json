@@ -7,7 +7,6 @@
     "storage",
     "tabs",
     "alarms",
-    "identity",
     "https://chatgpt.com/*",
     "https://chat.openai.com/*",
     "https://pinboard-gpt.dps.codes/*"
@@ -28,7 +27,7 @@
   "content_scripts": [
     {
       "matches": ["https://chatgpt.com/*", "https://chat.openai.com/*"],
-      "js": ["ui-config.js", "debug.js", "dom-cache.js", "license.js", "idb.js", "content_script_chatgpt.js"],
+      "js": ["ui-config.js", "debug.js", "perf-monitor.js", "error-handler.js", "accessibility.js", "dom-cache.js", "license.js", "license-cache.js", "idb.js", "keyboard-shortcuts.js", "content_script_chatgpt.js"],
       "run_at": "document_idle"
     },
     {

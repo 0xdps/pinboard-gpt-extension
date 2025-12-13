@@ -1,3 +1,9 @@
+// Timing constants (subset of UI_CONFIG for background script)
+const BG_TIMING = {
+  TAB_LOAD_TIMEOUT: 30000,      // 30s timeout for tab load
+  CONTENT_SCRIPT_WAIT: 3000      // 3s wait for content script to be ready
+};
+
 // Configure uninstall URL (will be set at startup and on install)
 // NOTE: This implements an offline, client-side signature verification flow.
 // It avoids sending the install token to an external server. HOWEVER this
@@ -220,7 +226,7 @@ async function handleOpenAndHighlight(pin, sendResponse, forceNewTab = false) {
         debugLog('📤 [BG] ⚠️ Tab load timeout after 30s');
         tabsAPI.onUpdated.removeListener(onTabUpdate);
         sendResponse({ success: true, highlighted: false, error: 'Tab load timeout' });
-      }, 30000);
+      }, BG_TIMING.TAB_LOAD_TIMEOUT);
       
       // Wait for tab to load with the new URL, then send highlight message
       const onTabUpdate = (tabId, changeInfo, tab) => {
@@ -245,7 +251,7 @@ async function handleOpenAndHighlight(pin, sendResponse, forceNewTab = false) {
                 sendResponse({ success: true, highlighted: response?.found || false });
               }
             });
-          }, 3000);
+          }, BG_TIMING.CONTENT_SCRIPT_WAIT);
         }
       };
       
@@ -269,7 +275,7 @@ async function handleOpenAndHighlight(pin, sendResponse, forceNewTab = false) {
         debugLog('📤 [BG] ⚠️ Tab load timeout after 30s');
         tabsAPI.onUpdated.removeListener(onTabUpdate);
         sendResponse({ success: true, highlighted: false, error: 'Tab load timeout' });
-      }, 30000);
+      }, BG_TIMING.TAB_LOAD_TIMEOUT);
       
       // Wait for tab to load, then send highlight message
       const onTabUpdate = (tabId, changeInfo, tab) => {
@@ -294,7 +300,7 @@ async function handleOpenAndHighlight(pin, sendResponse, forceNewTab = false) {
                 sendResponse({ success: true, highlighted: response?.found || false });
               }
             });
-          }, 3000);
+          }, BG_TIMING.CONTENT_SCRIPT_WAIT);
         }
       };
       

@@ -7,7 +7,7 @@
     // Debug logging helper (only logs in development)
     const debugLog = (message, data) => {
         if (typeof console !== 'undefined') {
-            console.log(`[Pinboard] ${message}`, data || '');
+            debugLog(`${message}`, data || '');
         }
     };
     

@@ -2,7 +2,40 @@
 
 // LICENSE_TYPES and LICENSE_LIMITS imported from license.js (loaded before this script)
 
-console.log('[Pinboard GPT] Content script initializing...');
+debugLog('Content script initializing...');
+
+// Track all observers for proper cleanup
+const OBSERVERS = {
+  pinButtons: null,
+  jumpButton: null,
+  manualButton: null,
+  chatPopup: null
+};
+
+// Cleanup function to disconnect all observers
+function cleanupObservers() {
+  Object.keys(OBSERVERS).forEach(key => {
+    if (OBSERVERS[key]) {
+      try {
+        OBSERVERS[key].disconnect();
+        debugLog(`Disconnected observer: ${key}`);
+      } catch (err) {
+        debugError(`Error disconnecting observer ${key}:`, err);
+      }
+      OBSERVERS[key] = null;
+    }
+  });
+  
+  // Also cleanup DOMCache observer
+  if (typeof DOMCache !== 'undefined' && DOMCache.clear) {
+    DOMCache.clear();
+  }
+}
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', () => {
+  cleanupObservers();
+});
 
 // Check if extension context is still valid
 function isExtensionContextValid() {
@@ -193,7 +226,7 @@ function setupDialogKeyboardNavigation(dialog, overlay, focusableElements, close
   // Focus first element on dialog open
   setTimeout(() => {
     firstFocusable.focus();
-  }, 100);
+  }, UI_CONFIG.timing.navigationPollInterval);
   
   // Handle Tab key for focus trap
   dialog.addEventListener('keydown', (e) => {
@@ -409,7 +442,7 @@ function createPinButtonForMessage(messageContainer) {
   try {
     // Early validation checks
     if (!messageContainer || messageContainer.nodeType !== 1) {
-      console.log('[Pinboard GPT] Invalid message container');
+      debugLog('Invalid message container');
       return null;
     }
     
@@ -422,11 +455,11 @@ function createPinButtonForMessage(messageContainer) {
     
     // Check if button already exists (more efficient check)
     if (messageContainer.querySelector('.pingpt-pin-button')) {
-      console.log('[Pinboard GPT] Pin button already exists on this message');
+      debugLog('Pin button already exists on this message');
       return null;
     }
     
-    console.log('[Pinboard GPT] Creating pin button for message');
+    debugLog('Creating pin button for message');
     
     // Get extension runtime for icon URL
     const runtime = chrome.runtime;
@@ -452,23 +485,23 @@ function createPinButtonForMessage(messageContainer) {
       img.alt = '';
       img.setAttribute('aria-hidden', 'true');
       
-      console.log('[Pinboard GPT] Icon source set to:', img.src);
+      debugLog('Icon source set to:', img.src);
       
       // Handle image load errors
       img.onerror = () => {
-        console.warn('[Pinboard GPT] Icon failed to load, using emoji fallback');
+        debugLog('Icon failed to load, using emoji fallback');
         // Fallback to text icon if image fails
         pinButton.textContent = '📌';
         pinButton.style.fontSize = '16px';
       };
       
       img.onload = () => {
-        console.log('[Pinboard GPT] Icon loaded successfully');
+        debugLog('Icon loaded successfully');
       };
       
       pinButton.appendChild(img);
     } catch (error) {
-      console.error('[Pinboard GPT] Error creating icon element:', error.message, error);
+      debugError('Error creating icon element:', error.message, error);
       // Fallback: use text emoji
       pinButton.textContent = '📌';
       pinButton.style.fontSize = '16px';
@@ -516,18 +549,18 @@ function createPinButtonForMessage(messageContainer) {
       e.stopPropagation();
       e.preventDefault();
       
-      console.log('[Pinboard GPT] Pin button clicked');
+      debugLog('Pin button clicked');
       
       // Check extension context before processing
       if (!isExtensionContextValid()) {
-        console.log('[Pinboard GPT] Extension context invalidated, silently ignoring click');
+        debugLog('Extension context invalidated, silently ignoring click');
         // Don't show alert - just silently ignore the click
         // This is normal when extension is reloading
         return;
       }
       
       try {
-        console.log('[Pinboard GPT] Processing pin click with valid context');
+        debugLog('Processing pin click with valid context');
         
         // Visual feedback
         pinButton.style.transform = 'scale(0.95)';
@@ -536,9 +569,9 @@ function createPinButtonForMessage(messageContainer) {
         }, UI_CONFIG.timing.debounceDelay);
         
         // Check license before allowing pin creation
-        console.log('[Pinboard GPT] Checking pin limit...');
+        debugLog('Checking pin limit...');
         if (!(await checkPinLimitAndNotify())) {
-          console.log('[Pinboard GPT] Pin limit reached, cannot create pin');
+          debugLog('Pin limit reached, cannot create pin');
           return;
         }
         
@@ -558,24 +591,24 @@ function createPinButtonForMessage(messageContainer) {
           selectionText: null
         };
         
-        console.log('[Pinboard GPT] Pin data created:', pinData);
+        debugLog('Pin data created:', pinData);
         
         // Use unified pin creation function
         await createAndShowPinDialog('hover', pinData);
-        console.log('[Pinboard GPT] Pin dialog shown successfully');
+        debugLog('Pin dialog shown successfully');
       } catch (error) {
-        console.error('[Pinboard GPT] Error opening pin dialog:', error.message, error);
+        debugError('Error opening pin dialog:', error.message, error);
         debugError('Error opening pin dialog:', error);
       }
     });
     
     // Optimize container positioning
     try {
-      console.log('[Pinboard GPT] Setting up button container');
+      debugLog('Setting up button container');
       const computedPosition = getComputedStyle(messageContainer).position;
       if (computedPosition === 'static') {
         messageContainer.style.position = 'relative';
-        console.log('[Pinboard GPT] Changed container position from static to relative');
+        debugLog('Changed container position from static to relative');
       }
       
       // Show button on message hover with better performance
@@ -586,23 +619,23 @@ function createPinButtonForMessage(messageContainer) {
       messageContainer.addEventListener('mouseleave', hideButton, { passive: true });
       
       messageContainer.appendChild(pinButton);
-      console.log('[Pinboard GPT] Pin button appended to message container');
+      debugLog('Pin button appended to message container');
       
     } catch (error) {
-      console.error('[Pinboard GPT] Error setting up button container:', error.message, error);
+      debugError('Error setting up button container:', error.message, error);
       debugError('Error setting up button container:', error);
       return null;
     }
     
-    console.log('[Pinboard GPT] Pin button creation completed successfully');
+    debugLog('Pin button creation completed successfully');
     return pinButton;
     
   } catch (error) {
-    console.error('[Pinboard GPT] FATAL Error creating pin button:');
-    console.error('[Pinboard GPT] Error message:', error.message);
-    console.error('[Pinboard GPT] Error name:', error.name);
-    console.error('[Pinboard GPT] Error stack:', error.stack);
-    console.error('[Pinboard GPT] Full error object:', error);
+    debugError('FATAL Error creating pin button:');
+    debugError('Error message:', error.message);
+    debugError('Error name:', error.name);
+    debugError('Error stack:', error.stack);
+    debugError('Full error object:', error);
     debugError('Error creating pin button:', error);
     return null;
   }
@@ -662,31 +695,31 @@ function initializePinButtons() {
   // Add buttons to existing messages
   function addButtonsToExistingMessages() {
     try {
-      console.log('[Pinboard GPT] addButtonsToExistingMessages called');
+      debugLog('addButtonsToExistingMessages called');
       const messages = findAllMessages();
-      console.log('[Pinboard GPT] Found', messages.length, 'existing messages');
+      debugLog('Found', messages.length, 'existing messages');
       
       messages.forEach((msg, index) => {
         const text = (msg.innerText || '').trim();
         // Only add button to messages with meaningful content
         if (text.length >= 10) {
-          console.log('[Pinboard GPT] Creating button for message', index);
+          debugLog('Creating button for message', index);
           createPinButtonForMessage(msg);
         }
       });
-      console.log('[Pinboard GPT] addButtonsToExistingMessages completed');
+      debugLog('addButtonsToExistingMessages completed');
     } catch (error) {
-      console.error('[Pinboard GPT] Error in addButtonsToExistingMessages:', error.message, error);
+      debugError('Error in addButtonsToExistingMessages:', error.message, error);
     }
   }
   
   // Initial setup
-  console.log('[Pinboard GPT] Starting initial setup');
+  debugLog('Starting initial setup');
   addButtonsToExistingMessages();
   
   // Observe for new messages
-  console.log('[Pinboard GPT] Setting up mutation observer');
-  const observer = new MutationObserver((mutations) => {
+  debugLog('Setting up mutation observer');
+  OBSERVERS.pinButtons = new MutationObserver((mutations) => {
     try {
       let shouldUpdate = false;
       
@@ -697,7 +730,7 @@ function initializePinButtons() {
             if (node.getAttribute && node.getAttribute('data-message-author-role')) {
               const text = (node.innerText || '').trim();
               if (text.length >= 10) {
-                console.log('[Pinboard GPT] New message detected, creating button');
+                debugLog('New message detected, creating button');
                 createPinButtonForMessage(node);
                 shouldUpdate = true;
               }
@@ -706,7 +739,7 @@ function initializePinButtons() {
             else if (node.querySelectorAll) {
               const newMessages = getAllMessageElements(node);
               if (newMessages.length > 0) {
-                console.log('[Pinboard GPT] Found', newMessages.length, 'new messages in added nodes');
+                debugLog('Found', newMessages.length, 'new messages in added nodes');
               }
               newMessages.forEach(msg => {
                 const text = (msg.innerText || '').trim();
@@ -721,23 +754,23 @@ function initializePinButtons() {
       });
       
       if (shouldUpdate) {
-        console.log('[Pinboard GPT] Messages updated, refresh complete');
+        debugLog('Messages updated, refresh complete');
       }
     } catch (error) {
-      console.error('[Pinboard GPT] Error in mutation observer:', error.message, error);
+      debugError('Error in mutation observer:', error.message, error);
     }
   });
   
   // Observe the main content area
   const mainContent = document.querySelector('main');
   if (mainContent) {
-    observer.observe(mainContent, {
+    OBSERVERS.pinButtons.observe(mainContent, {
       childList: true,
       subtree: true
     });
-    console.log('[Pinboard GPT] Mutation observer started on main content');
+    debugLog('Mutation observer started on main content');
   } else {
-    console.warn('[Pinboard GPT] Main content element not found');
+    debugLog('Main content element not found');
   }
   
   // Re-scan periodically for any missed messages
@@ -1375,7 +1408,7 @@ function createPinDialog(messageText, pinData, colors, resolve, reject = resolve
     setTimeout(() => {
       const nameInput = document.getElementById('pin-name');
       if (nameInput) nameInput.focus();
-    }, 100);
+    }, UI_CONFIG.timing.navigationPollInterval);
     
     // Add hover effects
     const cancelBtn = dialog.querySelector('#pin-cancel');
@@ -1853,6 +1886,11 @@ function createPinDialog(messageText, pinData, colors, resolve, reject = resolve
     
     // Handle save
     saveBtn.addEventListener('click', async () => {
+      const perfId = PERF_MONITOR.start('savePin', { 
+        hasTags: currentTags.length > 0,
+        tagCount: currentTags.length 
+      });
+
       const nameInput = document.getElementById('pin-name');
       
       const name = nameInput.value.trim();
@@ -1877,11 +1915,13 @@ function createPinDialog(messageText, pinData, colors, resolve, reject = resolve
         if (!validation.valid) {
           const errorMessage = validation.errors[0] || 'Invalid pin data';
           showNotification('❌ ' + errorMessage, 'error');
+          PERF_MONITOR.end(perfId, { success: false, reason: 'validation_failed' });
           return;
         }
         
         if (typeof idbAdd !== 'function') {
           debugError('idbAdd function not available, typeof:', typeof idbAdd);
+          PERF_MONITOR.end(perfId, { success: false, reason: 'idb_unavailable' });
           throw new Error('Database function not available. Please refresh the page.');
         }
         
@@ -1903,12 +1943,20 @@ function createPinDialog(messageText, pinData, colors, resolve, reject = resolve
         
         await idbAdd(pin);
         debugLog('Pin saved successfully');
+        PERF_MONITOR.end(perfId, { success: true, pinSize: JSON.stringify(pin).length });
+        
+        // Announce to screen readers
+        if (typeof Accessibility !== 'undefined') {
+          Accessibility.announcePinCreated(pin.name);
+        }
+        
         overlay.remove();
         showNotification('✅ Message pinned successfully!');
         resolve();
       } catch (err) {
         debugError('Error saving pin:', err);
         debugError('Pin data that failed:', pin);
+        PERF_MONITOR.end(perfId, { success: false, error: err.message });
         
         // Provide user-friendly error messages
         let errorMessage = err.message;
@@ -2316,7 +2364,7 @@ async function highlightPin(pin) {
   
   while (messageElementsFound === 0 && pollAttempts < maxPollAttempts) {
     debugLog('No messages found yet, polling... attempt', pollAttempts + 1);
-    await new Promise(resolve => setTimeout(resolve, 200));
+    await new Promise(resolve => setTimeout(resolve, UI_CONFIG.timing.transitionDuration));
     messageElementsFound = getAllMessageElements(document.querySelector('main') || document.body).length;
     pollAttempts++;
   }
@@ -2853,7 +2901,7 @@ async function highlightPin(pin) {
       }
       
       // Wait for smooth scroll to complete
-      await new Promise(resolve => setTimeout(resolve, 400));
+      await new Promise(resolve => setTimeout(resolve, UI_CONFIG.timing.navigationWait / 2));
     } else {
       debugLog('JUMP 2 SKIPPED: Element is same as messageContainer (full message pin)');
     }
@@ -2865,7 +2913,7 @@ async function highlightPin(pin) {
   }
   
   // Wait briefly for DOM to settle
-  await new Promise(resolve => setTimeout(resolve, 100));
+  await new Promise(resolve => setTimeout(resolve, UI_CONFIG.timing.navigationPollInterval));
   
   // Final check: verify element position after scroll
   const postScrollRect = element.getBoundingClientRect();
@@ -3052,7 +3100,7 @@ function findSpecificElementByText(searchText, messageContainer) {
 // Add pin option to ChatGPT's native selection popup
 function addPinOptionToChatGPTPopup() {
   // Watch for ChatGPT's selection popup to appear
-  const observer = new MutationObserver((mutations) => {
+  OBSERVERS.chatPopup = new MutationObserver((mutations) => {
     mutations.forEach((mutation) => {
       mutation.addedNodes.forEach((node) => {
         if (node.nodeType === Node.ELEMENT_NODE) {
@@ -3102,7 +3150,7 @@ function addPinOptionToChatGPTPopup() {
     });
   });
   
-  observer.observe(document.body, {
+  OBSERVERS.chatPopup.observe(document.body, {
     childList: true,
     subtree: true
   });
@@ -3757,11 +3805,12 @@ function getChatId() {
 
 // Get first user message from chat
 function getFirstUserMessage() {
-  const mainContent = document.querySelector('main') || document.body;
-  const messages = mainContent.querySelectorAll('[data-message-author-role="user"]');
+  // Use DOMCache to get messages efficiently
+  const allMessages = DOMCache.getMessages();
+  const userMessages = allMessages.filter(msg => msg.getAttribute('data-message-author-role') === 'user');
   
-  if (messages.length > 0) {
-    const firstMessage = messages[0];
+  if (userMessages.length > 0) {
+    const firstMessage = userMessages[0];
     const text = (firstMessage.innerText || firstMessage.textContent || '').trim();
     // Return first 200 chars
     return text.length > 200 ? text.slice(0, 200) + '...' : text;
@@ -4020,13 +4069,14 @@ function addChatPinButton() {
     
     // Update when URL changes (for SPA navigation)
     let lastUrl = location.href;
-    new MutationObserver(() => {
+    OBSERVERS.jumpButton = new MutationObserver(() => {
       const url = location.href;
       if (url !== lastUrl) {
         lastUrl = url;
         updateChatPinButton();
       }
-    }).observe(document, { subtree: true, childList: true });
+    });
+    OBSERVERS.jumpButton.observe(document, { subtree: true, childList: true });
   }, UI_CONFIG.timing.navigationPolling);
 }
 
@@ -4144,10 +4194,10 @@ function addManualPinButton() {
     updateButtonVisibility();
     
     // Observe DOM changes to show/hide button
-    const observer = new MutationObserver(updateButtonVisibility);
+    OBSERVERS.manualButton = new MutationObserver(updateButtonVisibility);
     const mainContent = document.querySelector('main') || document.body;
     if (mainContent) {
-      observer.observe(mainContent, { childList: true, subtree: true });
+      OBSERVERS.manualButton.observe(mainContent, { childList: true, subtree: true });
     }
     
     manualBtn.addEventListener('click', async () => {

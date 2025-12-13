@@ -1,9 +1,10 @@
 /**
- * Chrome Storage API wrapper
- * Uses chrome.storage.local for free users, chrome.storage.sync for Pro/Pro+ users
- * Chrome extension specific - no cross-browser compatibility
+ * Storage API wrapper (browser-agnostic)
+ * Uses storage.local for free users, storage.sync for Pro/Pro+ users
+ * Works with both Chrome and Firefox
  */
 
+const storageAPI = typeof browser !== 'undefined' ? browser.storage : chrome.storage;
 const STORAGE_KEY = 'pins';
 const SETTINGS_KEY = 'settings';
 
@@ -26,10 +27,10 @@ function isExtensionContextValid() {
 // Get current license
 async function getLicense() {
   try {
-    const result = await chrome.storage.local.get(['license']);
+    const result = await storageAPI.local.get(['license']);
     return result.license || LICENSE_TYPES.FREE;
   } catch (error) {
-    console.error('Error getting license:', error);
+    debugError('Error getting license:', error);
     return LICENSE_TYPES.FREE;
   }
 }
@@ -37,11 +38,11 @@ async function getLicense() {
 // Determine which storage to use based on license
 async function getStorage() {
   const license = await getLicense();
-  // Pro and Premium get chrome.storage.sync, Free uses chrome.storage.local
+  // Pro and Premium get storageAPI.sync, Free uses storageAPI.local
   if (license === LICENSE_TYPES.PRO || license === LICENSE_TYPES.PREMIUM) {
-    return chrome.storage.sync;
+    return storageAPI.sync;
   }
-  return chrome.storage.local;
+  return storageAPI.local;
 }
 
 async function idbAdd(pin) {
@@ -134,7 +135,7 @@ async function idbGet(id) {
 
 // Settings management using browser.storage.local (for non-synced preferences)
 async function getSettings() {
-  const result = await chrome.storage.local.get([SETTINGS_KEY]);
+  const result = await storageAPI.local.get([SETTINGS_KEY]);
   return result[SETTINGS_KEY] || {
     theme: 'dark'
   };
@@ -143,37 +144,37 @@ async function getSettings() {
 async function updateSettings(newSettings) {
   const currentSettings = await getSettings();
   const updatedSettings = { ...currentSettings, ...newSettings };
-  await chrome.storage.local.set({ [SETTINGS_KEY]: updatedSettings });
+  await storageAPI.local.set({ [SETTINGS_KEY]: updatedSettings });
   return updatedSettings;
 }
 
 // Settings storage functions
 async function getSetting(key) {
   if (!isExtensionContextValid()) {
-    console.warn('Extension context invalid, returning undefined for setting:', key);
+    debugLog('Extension context invalid, returning undefined for setting:', key);
     return undefined;
   }
   
   try {
-    const result = await chrome.storage.local.get([key]);
+    const result = await storageAPI.local.get([key]);
     return result[key];
   } catch (error) {
-    console.error('Error getting setting:', key, error);
+    debugError('Error getting setting:', key, error);
     return undefined;
   }
 }
 
 async function setSetting(key, value) {
   if (!isExtensionContextValid()) {
-    console.warn('Extension context invalid, cannot save setting:', key);
+    debugLog('Extension context invalid, cannot save setting:', key);
     return undefined;
   }
   
   try {
-    await chrome.storage.local.set({ [key]: value });
+    await storageAPI.local.set({ [key]: value });
     return value;
   } catch (error) {
-    console.error('Error setting:', key, value, error);
+    debugError('Error setting:', key, value, error);
     return undefined;
   }
 }
@@ -184,10 +185,10 @@ async function getSettings(keys = []) {
   }
   
   try {
-    const result = await chrome.storage.local.get(keys);
+    const result = await storageAPI.local.get(keys);
     return result;
   } catch (error) {
-    console.error('Error getting settings:', keys, error);
+    debugError('Error getting settings:', keys, error);
     throw error;
   }
 }

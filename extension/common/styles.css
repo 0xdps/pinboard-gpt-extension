@@ -1,6 +1,31 @@
 /* Pinboard GPT - ChatGPT-inspired simple styling */
 
 :root {
+  /* Spacing system */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 24px;
+  --spacing-2xl: 32px;
+  
+  /* Border radius system */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-full: 9999px;
+  
+  /* Animation durations */
+  --duration-fast: 150ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
+  
+  /* Transitions */
+  --transition-fast: all var(--duration-fast) ease;
+  --transition-normal: all var(--duration-normal) ease;
+  --transition-slow: all var(--duration-slow) ease;
+  
   /* Colors matching ChatGPT */
   --text-primary: #0d0d0d;
   --text-secondary: #565656;

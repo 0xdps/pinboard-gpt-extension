@@ -255,6 +255,16 @@ const UI_CONFIG = {
     retryInitialDelay: 1000,        // Initial delay for retry in milliseconds (1 second)
     retryBackoffMultiplier: 2,      // Multiply delay by this for exponential backoff
     retryMaxDelay: 16000            // Maximum delay between retries (16 seconds = 1s*2^4)
+  },
+
+  // Performance Monitoring Configuration
+  performance: {
+    enabled: false,                 // Enable performance tracking (set via debug mode)
+    slowOperationThreshold: 1000,   // Log operations slower than this (ms)
+    trackPinCreation: true,         // Track pin creation performance
+    trackStorageOps: true,          // Track storage operations
+    trackDOMQueries: true,          // Track DOM query performance
+    trackAPIcalls: true             // Track API call performance
   }
 };
 

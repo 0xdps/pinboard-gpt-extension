@@ -98,7 +98,7 @@ function showNotification(message, duration = 2000, type = 'success') {
   setTimeout(() => {
     notif.style.opacity = '0';
     notif.style.transition = 'opacity 0.3s';
-    setTimeout(() => notif.remove(), 300);
+    setTimeout(() => notif.remove(), UI_CONFIG.timing.notificationRemoveDelay);
   }, duration);
 }
 

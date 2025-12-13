@@ -2,7 +2,6 @@
 const storageAPI = typeof browser !== 'undefined' ? browser.storage : chrome.storage;
 const tabsAPI = typeof browser !== 'undefined' ? browser.tabs : chrome.tabs;
 const runtimeAPI = typeof browser !== 'undefined' ? browser.runtime : chrome.runtime;
-const identityAPI = typeof chrome !== 'undefined' && chrome.identity ? chrome.identity : null;
 
 // Modal/Dialog keyboard navigation helper
 function setupModalKeyboardNavigation(modal) {
@@ -720,7 +719,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           showNotification(`Exported ${pins.length} pins successfully. You can now safely delete all pins.`, 'success');
           
           // Ask again after export
-          setTimeout(() => deleteAllPins(), 1000);
+          setTimeout(() => deleteAllPins(), UI_CONFIG.timing.windowCloseDelay);
         } catch (err) {
           debugError('Export failed:', err);
           showNotification('Export failed. Please try again.', 'error');
@@ -767,7 +766,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Auto remove after 3 seconds
     setTimeout(() => {
       notification.style.animation = 'slideOut 0.3s ease';
-      setTimeout(() => notification.remove(), 300);
+      setTimeout(() => notification.remove(), UI_CONFIG.timing.notificationRemoveDelay);
       }, UI_CONFIG.timing.notificationDuration);
   }
 
