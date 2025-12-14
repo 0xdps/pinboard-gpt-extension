@@ -247,7 +247,35 @@ const UI_CONFIG = {
     dark: {
       boxShadow: '0 8px 24px rgba(0,0,0,0.3)'
     }
-  },  arrowColor: 'rgba(30, 41, 59, 0.95)'
+  },
+
+  // Validation and error states
+  validation: {
+    fixed: {
+      errorBorder: '#ea4335',    // Google red for errors
+      defaultBorder: '#dadce0'   // Neutral gray for default state
+    }
+  },
+
+  // Highlight colors for various UI states
+  highlight: {
+    fixed: {
+      pinBackground: 'rgba(255, 107, 53, 0.03)',      // Subtle orange tint for pinned messages
+      pinShadow: 'rgba(255, 107, 53, 0.1)',           // Soft shadow glow for pins
+      suggestionBg: '#e8f0fe',                         // Tag suggestion highlight background
+      suggestionText: '#1a73e8',                       // Tag suggestion highlight text
+      textSelection: 'rgba(255, 235, 59, 0.4)'        // Yellow highlight for selected text
+    }
+  },
+
+  // Border radius system for consistent rounded corners
+  borderRadius: {
+    fixed: {
+      small: '3px',      // Text highlights, minimal rounding
+      medium: '4px',     // Small elements
+      normal: '6px',     // Inputs, tags, form elements
+      large: '8px',      // Buttons, containers, dropdowns
+      xlarge: '12px'     // Dialogs, modals
     }
   },
 

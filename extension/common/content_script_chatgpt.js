@@ -915,7 +915,7 @@ function showChatPinDialog(chatData) {
         width: 100%;
         padding: 8px 12px;
         border: 1px solid ${colors.inputBorder};
-        border-radius: 6px;
+        border-radius: ${UI_CONFIG.get('borderRadius.normal')};
         font-size: 14px;
         font-family: inherit;
         background: ${colors.inputBg};
@@ -946,7 +946,7 @@ function showChatPinDialog(chatData) {
         width: 100%;
         padding: 8px 12px;
         border: 1px solid ${colors.inputBorder};
-        border-radius: 6px;
+        border-radius: ${UI_CONFIG.get('borderRadius.normal')};
         font-size: 14px;
         font-family: inherit;
         background: ${colors.inputBg};
@@ -982,7 +982,7 @@ function showChatPinDialog(chatData) {
         gap: 8px;
         padding: 8px;
         border: 1px solid ${colors.inputBorder};
-        border-radius: 6px;
+        border-radius: ${UI_CONFIG.get('borderRadius.normal')};
         background: ${colors.inputBg};
       `;
 
@@ -1008,7 +1008,7 @@ function showChatPinDialog(chatData) {
             gap: 6px;
             padding: 4px 8px;
             background: ${colors.tagBg};
-            border-radius: 4px;
+            border-radius: ${UI_CONFIG.get('borderRadius.medium')};
             font-size: 12px;
           `;
           tagEl.innerHTML = `${tag} <span style="cursor: pointer; font-weight: bold;">×</span>`;
@@ -1062,7 +1062,7 @@ function showChatPinDialog(chatData) {
         background: ${colors.cancelBg};
         color: ${colors.cancelText};
         border: none;
-        border-radius: 6px;
+        border-radius: ${UI_CONFIG.get('borderRadius.normal')};
         cursor: pointer;
         transition: background 0.2s;
       `;
@@ -1078,7 +1078,7 @@ function showChatPinDialog(chatData) {
         background: ${colors.saveBg};
         color: ${colors.saveText};
         border: none;
-        border-radius: 6px;
+        border-radius: ${UI_CONFIG.get('borderRadius.normal')};
         cursor: pointer;
         transition: background 0.2s;
       `;
@@ -1221,7 +1221,7 @@ function createPinDialog(messageText, pinData, colors, resolve, reject = resolve
     previewDiv.style.cssText = `
       background: ${colors.previewBg};
       border: 1px solid ${colors.previewBorder};
-      border-radius: 6px;
+      border-radius: ${UI_CONFIG.get('borderRadius.normal')};
       padding: 12px;
       max-height: ${UI_CONFIG.dialog.previewMaxHeight};
       overflow-y: auto;
@@ -1254,7 +1254,7 @@ function createPinDialog(messageText, pinData, colors, resolve, reject = resolve
       width: 100%;
       padding: 10px 12px;
       border: 1px solid ${colors.inputBorder};
-      border-radius: 6px;
+      border-radius: ${UI_CONFIG.get('borderRadius.normal')};
       font-size: 14px;
       color: ${colors.inputText};
       background: ${colors.inputBg};
@@ -1282,7 +1282,7 @@ function createPinDialog(messageText, pinData, colors, resolve, reject = resolve
     tagsContainerEl.style.cssText = `
       min-height: 40px;
       border: 1px solid ${colors.inputBorder};
-      border-radius: 6px;
+      border-radius: ${UI_CONFIG.get('borderRadius.normal')};
       padding: 8px;
       background: ${colors.inputBg};
       margin-bottom: 8px;
@@ -1311,7 +1311,7 @@ function createPinDialog(messageText, pinData, colors, resolve, reject = resolve
       color: ${colors.inputText};
       background: transparent;
       font-family: system-ui, -apple-system, sans-serif;
-      border-radius: 6px;
+      border-radius: ${UI_CONFIG.get('borderRadius.normal')};
     `;
     
     tagsContainerEl.appendChild(tagInputEl);
@@ -1336,7 +1336,7 @@ function createPinDialog(messageText, pinData, colors, resolve, reject = resolve
     cancelBtnEl.style.cssText = `
       padding: 10px 20px;
       border: 1px solid ${colors.cancelBorder};
-      border-radius: 6px;
+      border-radius: ${UI_CONFIG.get('borderRadius.normal')};
       background: ${colors.cancelBg};
       color: ${colors.cancelText};
       font-size: 14px;
@@ -1352,7 +1352,7 @@ function createPinDialog(messageText, pinData, colors, resolve, reject = resolve
     saveBtnEl.style.cssText = `
       padding: 10px 20px;
       border: none;
-      border-radius: 6px;
+      border-radius: ${UI_CONFIG.get('borderRadius.normal')};
       background: ${colors.saveBg};
       color: ${colors.saveText};
       font-size: 14px;
@@ -1429,7 +1429,7 @@ function createPinDialog(messageText, pinData, colors, resolve, reject = resolve
         background: ${colors.tagBg};
         color: ${colors.tagText};
         padding: 4px 8px;
-        border-radius: 6px;
+        border-radius: ${UI_CONFIG.get('borderRadius.normal')};
         font-size: 12px;
         font-weight: 500;
         gap: 4px;
@@ -1759,8 +1759,8 @@ function createPinDialog(messageText, pinData, colors, resolve, reject = resolve
       const suggestions = suggestionDropdown.querySelectorAll('.tag-suggestion');
       suggestions.forEach((el, index) => {
         if (index === selectedSuggestionIndex) {
-          el.style.backgroundColor = colors.primary || '#e8f0fe';
-          el.style.color = colors.primaryText || '#1a73e8';
+          el.style.backgroundColor = colors.primary || UI_CONFIG.get('highlight.suggestionBg');
+          el.style.color = colors.primaryText || UI_CONFIG.get('highlight.suggestionText');
         } else {
           el.style.backgroundColor = 'transparent';
           el.style.color = colors.inputText;
@@ -1798,9 +1798,9 @@ function createPinDialog(messageText, pinData, colors, resolve, reject = resolve
             const value = tagInput.value.trim();
             if (!addTag(value)) {
               // Flash border red if couldn't add tag
-              tagsContainer.style.borderColor = '#ea4335';
+              tagsContainer.style.borderColor = UI_CONFIG.get('validation.errorBorder');
               setTimeout(() => {
-                tagsContainer.style.borderColor = '#dadce0';
+                tagsContainer.style.borderColor = UI_CONFIG.get('validation.defaultBorder');
               }, UI_CONFIG.timing.errorFeedbackDuration);
             }
           }
@@ -1814,7 +1814,7 @@ function createPinDialog(messageText, pinData, colors, resolve, reject = resolve
         if (value && currentTags.length < 3) {
           if (!addTag(value)) {
             // Flash border red if couldn't add tag
-            tagsContainer.style.borderColor = '#ea4335';
+            tagsContainer.style.borderColor = UI_CONFIG.get('validation.errorBorder');
             setTimeout(() => {
               tagsContainer.style.borderColor = '#dadce0';
             }, UI_CONFIG.timing.errorFeedbackDuration);
@@ -2050,10 +2050,10 @@ function highlightTextInElement(element, searchText) {
     style.id = 'gpt-pinboard-highlight-styles';
     style.textContent = `
       .${highlightClass} {
-        background: rgba(255, 235, 59, 0.4) !important;
+        background: ${UI_CONFIG.get('highlight.textSelection')} !important;
         color: inherit !important;
         padding: 2px 4px !important;
-        border-radius: 3px !important;
+        border-radius: ${UI_CONFIG.get('borderRadius.small')} !important;
         font-weight: 600 !important;
       }
     `;
@@ -2908,9 +2908,9 @@ async function highlightPin(pin) {
   
   // Use a very subtle highlight that's easy on the eyes - no border, no margin/padding
   element.style.transition = 'all 0.4s ease';
-  element.style.background = 'rgba(255, 107, 53, 0.03)'; // Much more subtle orange tint
-  element.style.boxShadow = '0 1px 6px rgba(255, 107, 53, 0.1)'; // Very soft shadow glow
-  element.style.borderRadius = '8px';
+  element.style.background = UI_CONFIG.get('highlight.pinBackground'); // Much more subtle orange tint
+  element.style.boxShadow = `0 1px 6px ${UI_CONFIG.get('highlight.pinShadow')}`; // Very soft shadow glow
+  element.style.borderRadius = UI_CONFIG.get('borderRadius.large');
   
   // Ensure the element doesn't expand too wide
   if (!originalMaxWidth) {
