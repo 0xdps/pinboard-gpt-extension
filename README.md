@@ -1,6 +1,6 @@
 # Pinboard GPT — Pin the Messages That Matter
 
-> Ever had a perfect ChatGPT answer, buried deep in a long chat? You remember what it said, maybe even which chat it was in — but scrolling through hundreds of messages to find it again is a nightmare. Pinboard GPT fixes that.
+> Save and organize ChatGPT responses. Pin individual messages or entire conversations, add tags, and find them instantly.
 
 [![Chrome Web Store](https://img.shields.io/badge/Chrome-Web%20Store-blue)](https://chromewebstore.google.com/detail/pingpt-%E2%80%94-chatgpt-message/hdhoaialemjelcfjjmjkkhkffiggbnap)
 [![Firefox Add-ons](https://img.shields.io/badge/Firefox-Add--ons-orange)](https://addons.mozilla.org/en-US/firefox/addon/gpt-pinboard/)
@@ -25,33 +25,31 @@
 
 ### Current (ChatGPT Support)
 
-- **Pin individual messages** - Save specific ChatGPT responses that matter
-- **Pin entire chats** - Bookmark complete conversations for later reference
-- **📋 Chat Outline navigation** - See your entire conversation structure and jump to any message instantly
-- **🏷️ Smart tagging system** - 200+ preset tags across 17 categories (development, testing, design, AI/ML, etc.) or create custom tags
-- **🔍 Fuzzy search** - Type abbreviations like "tst" to find "test-case", "unit-test", "e2e-test" instantly
-- **🎯 Tag organization** - Add up to 3 tags per pin for focused, searchable organization
-- **📦 Filter tabs** - Switch between all pins, chat pins, or message pins
-- **⚡ Jump back** - Instantly return to the original conversation
-- **💾 Smart delete protection** - Export-first confirmation prevents accidental data loss
-- **🐛 Debug logging system** - Comprehensive troubleshooting with persistent debug toggle
-- **🎨 Streamlined settings** - Consolidated interface with modern visual design
-- **💾 Storage & Sync** - Free users keep data local (up to 10 pins). Pro enables Chrome Sync across devices. Premium offers optional cloud sync for cross-browser syncing and larger storage.
-- **🌙 Dark mode support** - Automatic theme detection with seamless integration
+- **Pin individual messages** - Save specific responses
+- **Pin entire chats** - Bookmark complete conversations
+- **📋 Chat Outline** - View conversation structure and jump to any message
+- **🏷️ Tag system** - 200+ preset tags across 17 categories or create custom tags
+- **🔍 Fuzzy search** - Type abbreviations like "tst" to find "test-case"
+- **🎯 Tag organization** - Add up to 3 tags per pin
+- **📦 Filter tabs** - View all pins, chat pins, or message pins
+- **⚡ Jump back** - Return to the original conversation
+- **💾 Export/Import** - Backup and restore your pins
+- **🐛 Debug logging** - Troubleshooting with persistent debug toggle
+- **⚙️ Settings** - Consolidated interface
+- **💾 Storage & Sync** - Free: local storage (10 pins). Pro: Chrome/Firefox Sync. Premium: cloud sync.
+- **🌙 Dark mode** - Automatic theme detection
 
 ### 🚀 Coming Soon - Multi-Platform Support
 
-We're expanding beyond ChatGPT to support all major AI assistants:
+Expanding to support all major AI assistants:
 
-- **🤖 Claude** (Anthropic) - Pin conversations from Claude.ai
-- **💎 Gemini** (Google) - Organize your Gemini chats
-- **⚡ Grok** (xAI) - Save important Grok discussions
-- **🔍 DeepSeek** - Manage DeepSeek AI conversations
-- **And more!** - Let us know which AI platforms you'd like to see supported
+- **🤖 Claude** (Anthropic)
+- **💎 Gemini** (Google)
+- **⚡ Grok** (xAI)
+- **🔍 DeepSeek**
+- **And more!**
 
-> 📢 **Vote for your favorite AI platform** in our [GitHub Discussions](https://github.com/0xdps/gpt-pinboard-extension/discussions)!
-
-No accounts. No sync drama. Just fast access to what you actually need.
+> 📢 **Vote for your favorite** in our [GitHub Discussions](https://github.com/0xdps/gpt-pinboard-extension/discussions)!
 
 ## 🚀 Quick Start
 
