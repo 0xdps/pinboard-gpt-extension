@@ -1,5 +1,5 @@
 // Browser API compatibility wrapper
-const storageAPI = typeof browser !== 'undefined' ? browser.storage : chrome.storage;
+// storageAPI is already declared in idb.js which loads before this script
 const tabsAPI = typeof browser !== 'undefined' ? browser.tabs : chrome.tabs;
 const runtimeAPI = typeof browser !== 'undefined' ? browser.runtime : chrome.runtime;
 
@@ -136,29 +136,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const tabs = await tabsAPI.query({ active: true, currentWindow: true });
       const isOnChatGPT = tabs && tabs[0] && tabs[0].url && tabs[0].url.includes('chatgpt.com');
       
-      // Load saved values from storage
-      const stored = await storageAPI.local.get(['chatgpt-accent-color', 'chatgpt-accent-hover', 'chatgpt-accent-light', 'chatgpt-theme']);
-      
-      // Apply stored values if available
-      if (stored['chatgpt-accent-color']) {
-        // Batch CSS updates to reduce reflows
-        const updates = [
-          ['--accent', stored['chatgpt-accent-color']],
-          ['--accent-hover', stored['chatgpt-accent-hover']],
-          ['--accent-light', stored['chatgpt-accent-light']]
-        ];
-        
-        // Apply all at once using requestAnimationFrame for smooth updates
-        requestAnimationFrame(() => {
-          updates.forEach(([prop, value]) => {
-            document.documentElement.style.setProperty(prop, value);
-          });
-        });
-        
-        debugLog('Applied stored accent color:', stored['chatgpt-accent-color']);
-      }
-      
-      // Only try to detect fresh values if on ChatGPT tab
+      // If on ChatGPT, always fetch fresh values
       if (isOnChatGPT) {
         // Send message to content script to get accent color and theme
         const response = await new Promise((resolve) => {
@@ -198,6 +176,28 @@ document.addEventListener('DOMContentLoaded', async () => {
           // Return the detected theme
           return response.theme;
         }
+      }
+      
+      // Not on ChatGPT - load stored values if available
+      const stored = await storageAPI.local.get(['chatgpt-accent-color', 'chatgpt-accent-hover', 'chatgpt-accent-light', 'chatgpt-theme']);
+      
+      // Apply stored values if available
+      if (stored['chatgpt-accent-color']) {
+        // Batch CSS updates to reduce reflows
+        const updates = [
+          ['--accent', stored['chatgpt-accent-color']],
+          ['--accent-hover', stored['chatgpt-accent-hover']],
+          ['--accent-light', stored['chatgpt-accent-light']]
+        ];
+        
+        // Apply all at once using requestAnimationFrame for smooth updates
+        requestAnimationFrame(() => {
+          updates.forEach(([prop, value]) => {
+            document.documentElement.style.setProperty(prop, value);
+          });
+        });
+        
+        debugLog('Applied stored accent color:', stored['chatgpt-accent-color']);
       }
       
       // Return stored theme if available

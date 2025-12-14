@@ -7,7 +7,7 @@
     // Debug logging helper (only logs in development)
     const debugLog = (message, data) => {
         if (typeof console !== 'undefined') {
-            debugLog(`${message}`, data || '');
+            console.log(`[Pinboard GPT Verification] ${message}`, data || '');
         }
     };
     

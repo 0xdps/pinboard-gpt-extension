@@ -11,7 +11,7 @@ const LICENSE_LIMITS = {
   [LICENSE_TYPES.FREE]: {
     maxPins: 10,
     tags: true,
-    export: false,
+    export: true,
     sync: false
   },
   [LICENSE_TYPES.PRO]: {

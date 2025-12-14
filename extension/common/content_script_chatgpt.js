@@ -637,7 +637,7 @@ function findMessageContainer(element) {
 
 // Helper to get main content area consistently
 function getMainContent() {
-  return getMainContent();
+  return document;
 }
 
 // Robust helper to find all message elements across ChatGPT DOM variations
@@ -3439,8 +3439,8 @@ try {
       // Handle accent color detection request from popup
       if (msg.action === 'get-accent-color') {
         try {
-          // Read ChatGPT's theme accent color from CSS custom properties
-          let accentColor = UI_CONFIG.get('colors.textSecondary'); // fallback grey
+          // Default grey when no custom accent is set
+          let accentColor = '#6b7280';
           
           // Get the root element to read CSS variables
           const rootStyles = window.getComputedStyle(document.documentElement);
@@ -3484,6 +3484,7 @@ try {
             if (submitBg) {
               accentColor = submitBg.startsWith('rgb') ? rgbToHex(submitBg) : submitBg;
             }
+            // If neither exists, keep default grey #6b7280
           }
           
           // Generate hover and light variants
@@ -3498,7 +3499,7 @@ try {
           });
         } catch (err) {
           debugError('Error detecting accent color:', err);
-          sendResponse({ accentColor: '#19c37d' });
+          sendResponse({ accentColor: '#6b7280' }); // Grey fallback
         }
         return true;
       }
