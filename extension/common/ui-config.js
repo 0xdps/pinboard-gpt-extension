@@ -222,7 +222,9 @@ const UI_CONFIG = {
       background: 'rgba(30, 41, 59, 0.95)',
       color: 'white',
       shadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
-    
+      arrowColor: 'rgba(30, 41, 59, 0.95)'
+    }
+  },
 
   // Theme-aware Notification Styling
   notification: {
@@ -591,4 +593,5 @@ function formatNetworkErrorMessage(error, statusCode) {
 
 // Export for use in modules
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { UI_CONFIG, retryWithBackoff, withTimeout, isRetryableError, formatNetworkErrorMessage };}
+  module.exports = { UI_CONFIG, retryWithBackoff, withTimeout, isRetryableError, formatNetworkErrorMessage };
+}

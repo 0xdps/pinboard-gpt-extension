@@ -35,6 +35,10 @@ function cleanupObservers() {
 // Cleanup on page unload
 window.addEventListener('beforeunload', () => {
   cleanupObservers();
+  // Cleanup all tracked event listeners
+  if (typeof EventRegistry !== 'undefined') {
+    EventRegistry.cleanupAll();
+  }
 });
 
 // Check if extension context is still valid
@@ -1853,40 +1857,43 @@ function createPinDialog(messageText, pinData, colors, resolve, reject = resolve
       showSuggestions(value);
     }, 150); // 150ms delay
     
-    tagInput.addEventListener('input', (e) => {
+    EventRegistry.add(tagInput, 'input', (e) => {
       debouncedShowSuggestions(e.target.value);
-    });
+    }, { scope: 'pin-dialog' });
 
     // Hide suggestions when clicking outside
-    document.addEventListener('click', (e) => {
+    EventRegistry.add(document, 'click', (e) => {
       if (!tagsContainer.contains(e.target)) {
         suggestionDropdown.style.display = 'none';
         selectedSuggestionIndex = -1;
       }
-    });
+    }, { scope: 'pin-dialog' });
     
     // Focus border handling for tags container
-    tagInput.addEventListener('focus', () => {
+    EventRegistry.add(tagInput, 'focus', () => {
       tagsContainer.style.borderColor = '#ff6b35';
-    });
+    }, { scope: 'pin-dialog' });
     
-    tagInput.addEventListener('blur', () => {
+    EventRegistry.add(tagInput, 'blur', () => {
       tagsContainer.style.borderColor = '#dadce0';
-    });
+    }, { scope: 'pin-dialog' });
     
     // Handle cancel
     const closeDialog = () => {
+      // Cleanup all dialog event listeners
+      EventRegistry.cleanup('pin-dialog');
       overlay.remove();
       resolve();
     };
     
-    cancelBtn.addEventListener('click', closeDialog);
-    overlay.addEventListener('click', (e) => {
+    // Use EventRegistry for all dialog event listeners
+    EventRegistry.add(cancelBtn, 'click', closeDialog, { scope: 'pin-dialog' });
+    EventRegistry.add(overlay, 'click', (e) => {
       if (e.target === overlay) closeDialog();
-    });
+    }, { scope: 'pin-dialog' });
     
     // Handle save
-    saveBtn.addEventListener('click', async () => {
+    EventRegistry.add(saveBtn, 'click', async () => {
       const perfId = PERF_MONITOR.start('savePin', { 
         hasTags: currentTags.length > 0,
         tagCount: currentTags.length 
