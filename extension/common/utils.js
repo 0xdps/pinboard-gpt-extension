@@ -95,6 +95,17 @@ function sanitizeHTML(str) {
   return div.innerHTML;
 }
 
+/**
+ * Normalize text for consistent matching
+ * Trims whitespace and normalizes internal spacing
+ * @param {string} text - Text to normalize
+ * @returns {string} Normalized text
+ */
+function normalizeText(text) {
+  if (!text) return '';
+  return text.trim().replace(/\s+/g, ' ');
+}
+
 // ============================================================================
 // Validation Utilities
 // ============================================================================
@@ -295,6 +306,7 @@ if (typeof module !== 'undefined' && module.exports) {
     truncateString,
     generateUniqueId,
     sanitizeHTML,
+    normalizeText,
     // Validation
     isValidEmail,
     isValidUrl,

@@ -182,6 +182,66 @@ if (typeof window !== 'undefined') {
   window.KeyboardShortcuts = {
     init: initKeyboardShortcuts,
     cleanup: cleanupKeyboardShortcuts,
-    shortcuts: SHORTCUTS
+    shortcuts: SHORTCUTS,
+    setupModalKeyboardNavigation: setupModalKeyboardNavigation
+  };
+}
+
+/**
+ * Setup keyboard navigation for modals/dialogs
+ * Implements focus trap and ESC to close
+ * @param {HTMLElement} modal - The modal element
+ * @param {string} closeButtonSelector - Selector for close button (optional)
+ * @returns {Function} Cleanup function to remove listeners
+ */
+function setupModalKeyboardNavigation(modal, closeButtonSelector = '.modal-close, #closeEditModal, #closeSettings, #closeUpgrade') {
+  const focusableSelectors = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+  const allFocusable = Array.from(modal.querySelectorAll(focusableSelectors))
+    .filter(el => !el.hasAttribute('disabled'));
+  
+  if (allFocusable.length === 0) return () => {};
+  
+  const firstFocusable = allFocusable[0];
+  const lastFocusable = allFocusable[allFocusable.length - 1];
+  
+  // Focus first element on modal open
+  setTimeout(() => {
+    firstFocusable.focus();
+  }, 50);
+  
+  // Handle Tab key for focus trap
+  const handleKeyDown = (e) => {
+    if (e.key === 'Tab') {
+      if (e.shiftKey) {
+        // Shift+Tab - go backward
+        if (document.activeElement === firstFocusable) {
+          e.preventDefault();
+          lastFocusable.focus();
+        }
+      } else {
+        // Tab - go forward
+        if (document.activeElement === lastFocusable) {
+          e.preventDefault();
+          firstFocusable.focus();
+        }
+      }
+    }
+    
+    // Escape key to close
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      // Trigger the close button click
+      const closeBtn = modal.querySelector(closeButtonSelector);
+      if (closeBtn) {
+        closeBtn.click();
+      }
+    }
+  };
+  
+  modal.addEventListener('keydown', handleKeyDown);
+  
+  // Return function to remove listeners when modal closes
+  return () => {
+    modal.removeEventListener('keydown', handleKeyDown);
   };
 }

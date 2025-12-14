@@ -631,11 +631,15 @@ function findMessageContainer(element) {
   return null;
 }
 
+// Helper to get main content area consistently
+function getMainContent() {
+  return getMainContent();
+}
+
 // Robust helper to find all message elements across ChatGPT DOM variations
 // Get the index of a message element within all messages
 function getMessageIndex(messageElement) {
-  const mainContent = document.querySelector('main') || document.body;
-  const allMessages = getAllMessageElements(mainContent);
+  const allMessages = getAllMessageElements(getMainContent());
   
   // Find the index of this element
   for (let i = 0; i < allMessages.length; i++) {
@@ -738,7 +742,7 @@ function initializePinButtons() {
   });
   
   // Observe the main content area
-  const mainContent = document.querySelector('main');
+  const mainContent = getMainContent();
   if (mainContent) {
     OBSERVERS.pinButtons.observe(mainContent, {
       childList: true,
@@ -1656,37 +1660,57 @@ function createPinDialog(messageText, pinData, colors, resolve, reject = resolve
     let selectedSuggestionIndex = -1;
     let availableSuggestions = [];
 
-    // Fuzzy match scoring function
+    // Optimized fuzzy match scoring function
     function fuzzyMatch(str, pattern) {
+      if (!str || !pattern) return 0;
+      
       const patternLower = pattern.toLowerCase();
       const strLower = str.toLowerCase();
+      const patternLen = patternLower.length;
+      const strLen = strLower.length;
+      
+      // Quick rejections for performance
+      if (patternLen > strLen) return 0;
+      if (patternLen === strLen) return strLower === patternLower ? 1000 : 0;
       
       // Exact match gets highest score
       if (strLower === patternLower) return 1000;
       
       // Starts with pattern gets high score
-      if (strLower.startsWith(patternLower)) return 500;
+      if (strLower.startsWith(patternLower)) return 500 + (100 - patternLen); // Bonus for shorter pattern
       
-      // Contains pattern as substring gets medium score
-      if (strLower.includes(patternLower)) return 250;
+      // Contains pattern as substring gets medium score  
+      const substringIndex = strLower.indexOf(patternLower);
+      if (substringIndex !== -1) {
+        // Bonus if at word boundary
+        const atWordStart = substringIndex === 0 || /[\s-_]/.test(strLower[substringIndex - 1]);
+        return 250 + (atWordStart ? 50 : 0) + (100 - substringIndex); // Bonus for earlier match
+      }
       
-      // Fuzzy character matching
+      // Fuzzy character matching (last resort)
       let patternIdx = 0;
       let score = 0;
       let consecutiveMatches = 0;
+      let lastMatchIdx = -1;
       
-      for (let i = 0; i < strLower.length && patternIdx < patternLower.length; i++) {
+      for (let i = 0; i < strLen && patternIdx < patternLen; i++) {
         if (strLower[i] === patternLower[patternIdx]) {
-          score += 1 + consecutiveMatches * 5; // Bonus for consecutive matches
-          consecutiveMatches++;
+          // Bonus for consecutive matches
+          const isConsecutive = i === lastMatchIdx + 1;
+          if (isConsecutive) {
+            consecutiveMatches++;
+            score += 5 + consecutiveMatches * 2; // Increasing bonus for consecutive runs
+          } else {
+            consecutiveMatches = 0;
+            score += 1;
+          }
+          lastMatchIdx = i;
           patternIdx++;
-        } else {
-          consecutiveMatches = 0;
         }
       }
       
       // All pattern characters must be found in order
-      return patternIdx === patternLower.length ? score : 0;
+      return patternIdx === patternLen ? score : 0;
     }
 
     // Show suggestions based on input
@@ -1754,9 +1778,9 @@ function createPinDialog(messageText, pinData, colors, resolve, reject = resolve
       debugLog('Message dialog dropdown parent:', suggestionDropdown.parentNode);
     }
 
-    // Update suggestion highlight
+    // Update suggestion highlight (optimized with cached query)
     function updateSuggestionHighlight() {
-      const suggestions = suggestionDropdown.querySelectorAll('.tag-suggestion');
+      const suggestions = Array.from(suggestionDropdown.children).filter(el => el.classList.contains('tag-suggestion'));
       suggestions.forEach((el, index) => {
         if (index === selectedSuggestionIndex) {
           el.style.backgroundColor = colors.primary || UI_CONFIG.get('highlight.suggestionBg');
@@ -1823,10 +1847,14 @@ function createPinDialog(messageText, pinData, colors, resolve, reject = resolve
       }
     });
 
-    // Show suggestions on input
+    // Show suggestions on input with debouncing for better performance
+    const debouncedShowSuggestions = debounce((value) => {
+      debugLog('Message dialog debounced input, value:', value);
+      showSuggestions(value);
+    }, 150); // 150ms delay
+    
     tagInput.addEventListener('input', (e) => {
-      debugLog('Message dialog input event fired, value:', e.target.value);
-      showSuggestions(e.target.value);
+      debouncedShowSuggestions(e.target.value);
     });
 
     // Hide suggestions when clicking outside
@@ -2259,15 +2287,13 @@ function findByTextAnchors(anchors) {
   });
   
   // Try to find in main content area first
-  const mainContent = document.querySelector('main') || document.body;
+  const mainContent = getMainContent();
   // ONLY search actual message containers - be very specific
   const allElements = getAllMessageElements(mainContent);
 
   debugLog('Found', allElements.length, 'message elements to search (robust selector)');
   
-  // Normalize text for better matching
-  const normalizeText = (text) => text.trim().replace(/\s+/g, ' ');
-  
+  // Use utility function for text normalization
   for (let i = 0; i < allElements.length; i++) {
     const el = allElements[i];
     const text = normalizeText(el.innerText || el.textContent || '');
@@ -2330,7 +2356,7 @@ async function highlightPin(pin) {
   
   // Poll for messages to appear (handles slow loading)
   debugLog('Checking for message elements...');
-  let messageElementsFound = getAllMessageElements(document.querySelector('main') || document.body).length;
+  let messageElementsFound = getAllMessageElements(getMainContent()).length;
   debugLog('Message elements found:', messageElementsFound);
   let pollAttempts = 0;
   const maxPollAttempts = 5; // ~1 second total with 200ms intervals
@@ -2338,7 +2364,7 @@ async function highlightPin(pin) {
   while (messageElementsFound === 0 && pollAttempts < maxPollAttempts) {
     debugLog('No messages found yet, polling... attempt', pollAttempts + 1);
     await new Promise(resolve => setTimeout(resolve, UI_CONFIG.timing.transitionDuration));
-    messageElementsFound = getAllMessageElements(document.querySelector('main') || document.body).length;
+    messageElementsFound = getAllMessageElements(getMainContent()).length;
     pollAttempts++;
   }
   
@@ -2354,7 +2380,7 @@ async function highlightPin(pin) {
   // STEP 1: Find the message container by index (required)
   if (pin.messageIndex !== undefined && pin.messageIndex >= 0) {
     debugLog('[STEP 1] Finding message by index:', pin.messageIndex);
-    const mainContent = document.querySelector('main') || document.body;
+    const mainContent = getMainContent();
     const allMessages = getAllMessageElements(mainContent);
     debugLog('Total messages available:', allMessages.length);
     
@@ -2442,7 +2468,7 @@ async function highlightPin(pin) {
     const searchText = (pin.selectionText || pin.messageText).slice(0, 100);
     debugLog('Searching for text:', searchText.slice(0, 50) + '...');
     
-    const mainContent = document.querySelector('main') || document.body;
+    const mainContent = getMainContent();
     const allMessages = getAllMessageElements(mainContent);
     
     let bestMatch = null;
@@ -2489,7 +2515,7 @@ async function highlightPin(pin) {
     
     if (pin.messageIndex !== undefined && pin.messageIndex >= 0 && pin.xpath.startsWith('./')) {
       // This is a relative XPath and we have the message index
-      const mainContent = document.querySelector('main') || document.body;
+      const mainContent = getMainContent();
       const allMessages = getAllMessageElements(mainContent);
       if (pin.messageIndex < allMessages.length) {
         const messageByIndex = allMessages[pin.messageIndex];
@@ -2586,7 +2612,7 @@ async function highlightPin(pin) {
       debugLog('Searching for selection:', searchText);
     }
     
-    const mainContent = document.querySelector('main') || document.body;
+    const mainContent = getMainContent();
     // Look specifically for message containers, not large wrapper divs
     const messageContainers = getAllMessageElements(mainContent);
     
@@ -2996,7 +3022,7 @@ function getMessageContainerFromSelection() {
 
 // Find message container by searching for text content
 function findMessageContainerByText(searchText) {
-  const mainContent = document.querySelector('main') || document.body;
+  const mainContent = getMainContent();
   const allElements = getAllMessageElements(mainContent);
   
   debugLog('Searching through', allElements.length, 'message containers for text:', searchText);
@@ -3352,7 +3378,7 @@ function addPinButtonToPopup(popupContainer) {
       debugLog('Pin type:', pinType);
       debugLog('Target element tag:', targetElement.tagName);
       debugLog('Stored message index:', pin.messageIndex);
-      const allMsgs = getAllMessageElements(document.querySelector('main') || document.body);
+      const allMsgs = getAllMessageElements(getMainContent());
       debugLog('Total messages in chat:', allMsgs.length);
       if (pin.messageIndex >= 0 && pin.messageIndex < allMsgs.length) {
         debugLog('Message at index', pin.messageIndex, 'text preview:', allMsgs[pin.messageIndex].innerText?.slice(0, 50) || '');
@@ -3495,7 +3521,7 @@ try {
 
 // Get recent messages for the floating pin button
 function getRecentMessages(limit = 5) {
-  const mainContent = document.querySelector('main') || document.body;
+  const mainContent = getMainContent();
   const messages = getAllMessageElements(mainContent);
   
   return Array.from(messages)
@@ -4167,7 +4193,7 @@ function addManualPinButton() {
     
     // Observe DOM changes to show/hide button
     OBSERVERS.manualButton = new MutationObserver(updateButtonVisibility);
-    const mainContent = document.querySelector('main') || document.body;
+    const mainContent = getMainContent();
     if (mainContent) {
       OBSERVERS.manualButton.observe(mainContent, { childList: true, subtree: true });
     }
