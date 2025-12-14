@@ -76,6 +76,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   const debugText = document.getElementById('debugText');
   const debugToggle = document.getElementById('debugToggle');
   
+  // Virtual scrolling instance
+  let virtualScroller = null;
+  const VIRTUAL_SCROLL_THRESHOLD = 50; // Use virtual scrolling for 50+ pins
+  
   // Filter tabs
   const filterAll = document.getElementById('filterAll');
   const filterChats = document.getElementById('filterChats');
@@ -1164,13 +1168,43 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
     
-    // Render pins using DocumentFragment for better performance
-    const fragment = document.createDocumentFragment();
-    filtered.forEach(p => {
-      const el = renderPin(p);
-      fragment.appendChild(el);
-    });
-    listEl.appendChild(fragment);
+    // Render pins - use virtual scrolling for large lists
+    if (filtered.length >= VIRTUAL_SCROLL_THRESHOLD) {
+      debugLog(`Using virtual scrolling for ${filtered.length} pins`);
+      
+      // Destroy existing virtual scroller if any
+      if (virtualScroller) {
+        virtualScroller.destroy();
+      }
+      
+      // Clear list
+      while (listEl.firstChild) {
+        listEl.removeChild(listEl.firstChild);
+      }
+      
+      // Create virtual scroller
+      virtualScroller = new VirtualScroll({
+        container: listEl,
+        items: filtered,
+        renderItem: (pin) => renderPin(pin),
+        itemHeight: 120, // Average pin height
+        bufferSize: 5
+      });
+    } else {
+      // Standard rendering for smaller lists
+      if (virtualScroller) {
+        virtualScroller.destroy();
+        virtualScroller = null;
+      }
+      
+      // Render pins using DocumentFragment for better performance
+      const fragment = document.createDocumentFragment();
+      filtered.forEach(p => {
+        const el = renderPin(p);
+        fragment.appendChild(el);
+      });
+      listEl.appendChild(fragment);
+    }
 
     // Add event listeners for tag links
     document.querySelectorAll('.pin-tag').forEach(tagEl => {
