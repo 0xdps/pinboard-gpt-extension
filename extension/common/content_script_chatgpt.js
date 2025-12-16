@@ -1871,7 +1871,7 @@ function createPinDialog(messageText, pinData, colors, resolve, reject = resolve
     
     // Focus border handling for tags container
     EventRegistry.add(tagInput, 'focus', () => {
-      tagsContainer.style.borderColor = '#ff6b35';
+      // Border color handled by theme
     }, { scope: 'pin-dialog' });
     
     EventRegistry.add(tagInput, 'blur', () => {
@@ -4142,13 +4142,13 @@ function addManualPinButton() {
     
     manualBtn.title = '';
     
-    // Use orange accent color for chat outline button
+    // Use grey color for chat outline button
     manualBtn.style.cssText = `
       position: fixed;
       bottom: 100px;
       right: 20px;
       z-index: 10000;
-      background: #ff6b35;
+      background: #6b7280;
       color: white;
       border: none;
       border-radius: 50%;

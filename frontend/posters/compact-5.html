@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poster 5</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .poster {
+            text-align: center;
+            color: white;
+        }
+
+        .headline {
+            font-size: 2.5rem;
+            font-weight: 900;
+            line-height: 1.1;
+            letter-spacing: -1px;
+            margin-bottom: 1rem;
+        }
+
+        .highlight {
+            background: linear-gradient(135deg, #ff6b35, #f59e0b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .features {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .feature {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .cta {
+            display: inline-block;
+            background: linear-gradient(135deg, #ff6b35, #f59e0b);
+            padding: 12px 32px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 900;
+            margin-top: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="poster">
+        <h1 class="headline">
+            Start saving<br><span class="highlight">today</span>
+        </h1>
+        <div class="features">
+            <span class="feature">🆓 Free</span>
+            <span class="feature">⚡ Fast</span>
+            <span class="feature">🔒 Private</span>
+        </div>
+        <div class="cta">Install Now</div>
+    </div>
+</body>
+</html>

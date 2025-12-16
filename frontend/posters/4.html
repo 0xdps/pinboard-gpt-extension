@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pinboard GPT - Poster 4</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            width: 1280px;
+            height: 800px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .poster {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            display: flex;
+            padding: 80px;
+        }
+
+        .left {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding-right: 60px;
+        }
+
+        .number {
+            font-size: 48px;
+            font-weight: 900;
+            color: white;
+            margin-bottom: 24px;
+        }
+
+        .headline {
+            font-size: 72px;
+            font-weight: 900;
+            color: white;
+            line-height: 1.1;
+            letter-spacing: -2px;
+            margin-bottom: 32px;
+        }
+
+        .description {
+            font-size: 24px;
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.5;
+        }
+
+        .right {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mockup {
+            background: white;
+            border-radius: 16px;
+            padding: 28px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .search-bar {
+            background: #f1f5f9;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 14px 18px;
+            margin-bottom: 20px;
+            font-size: 15px;
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        .pin-item {
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 18px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .pin-item:hover {
+            background: #f1f5f9;
+            transform: translateX(4px);
+        }
+
+        .pin-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 10px;
+        }
+
+        .pin-tags {
+            display: flex;
+            gap: 6px;
+        }
+
+        .mini-tag {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .footer {
+            position: absolute;
+            bottom: 40px;
+            left: 80px;
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="poster">
+        <div class="left">
+            <div class="number">03</div>
+            <h1 class="headline">
+                Search &<br>Find Fast
+            </h1>
+            <p class="description">
+                Search by name, content, or tags. Fuzzy search finds "tst" when you meant "test".
+            </p>
+        </div>
+
+        <div class="right">
+            <div class="mockup">
+                <div class="search-bar">Search pins...</div>
+                
+                <div class="pin-item">
+                    <div class="pin-title">React optimization tips</div>
+                    <div class="pin-tags">
+                        <span class="mini-tag">react</span>
+                        <span class="mini-tag">performance</span>
+                    </div>
+                </div>
+
+                <div class="pin-item">
+                    <div class="pin-title">Python async guide</div>
+                    <div class="pin-tags">
+                        <span class="mini-tag">python</span>
+                        <span class="mini-tag">async</span>
+                    </div>
+                </div>
+
+                <div class="pin-item">
+                    <div class="pin-title">Docker best practices</div>
+                    <div class="pin-tags">
+                        <span class="mini-tag">docker</span>
+                        <span class="mini-tag">devops</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">pinboard-gpt.dps.codes</div>
+    </div>
+</body>
+</html>

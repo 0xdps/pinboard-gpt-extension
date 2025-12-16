@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poster 3</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .poster {
+            text-align: center;
+            color: white;
+        }
+
+        .number {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+        }
+
+        .headline {
+            font-size: 2.5rem;
+            font-weight: 900;
+            line-height: 1.1;
+            letter-spacing: -1px;
+            margin-bottom: 1rem;
+        }
+
+        .description {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        .tags {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .tag.selected {
+            background: white;
+            color: #8b5cf6;
+            border-color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="poster">
+        <div class="number">02</div>
+        <h1 class="headline">Organize<br>with Tags</h1>
+        <p class="description">
+            200+ presets or create your own
+        </p>
+        <div class="tags">
+            <span class="tag selected">💻 Code</span>
+            <span class="tag selected">🐍 Python</span>
+            <span class="tag">⚛️ React</span>
+        </div>
+    </div>
+</body>
+</html>
