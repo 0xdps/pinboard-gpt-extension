@@ -3,6 +3,7 @@
     let currentSlide = 1;
     const totalSlides = 5;
     let slideshowInterval;
+    let isTransitioning = false;
     
     const posterFrame = document.getElementById('posterFrame');
     const dotIndicators = document.querySelectorAll('.dot-indicator');
@@ -18,35 +19,55 @@
     
     let currentModalSlide = 1;
     
-    // Update slideshow poster
+    // Update slideshow poster with fade animation
     function updateSlide(slideNumber) {
-        currentSlide = slideNumber;
-        posterFrame.src = `./posters/compact-${slideNumber}.html`;
+        if (isTransitioning) return;
+        isTransitioning = true;
         
-        // Update dot indicators
-        dotIndicators.forEach((dot, index) => {
-            if (index + 1 === slideNumber) {
-                dot.classList.add('active');
-            } else {
-                dot.classList.remove('active');
-            }
-        });
+        currentSlide = slideNumber;
+        
+        // Fade out
+        posterFrame.style.opacity = '0';
+        
+        setTimeout(() => {
+            posterFrame.src = `./posters/compact-${slideNumber}.html`;
+            
+            // Update dot indicators
+            dotIndicators.forEach((dot, index) => {
+                if (index + 1 === slideNumber) {
+                    dot.classList.add('active');
+                } else {
+                    dot.classList.remove('active');
+                }
+            });
+            
+            // Fade in
+            setTimeout(() => {
+                posterFrame.style.opacity = '1';
+                isTransitioning = false;
+            }, 100);
+        }, 300);
     }
     
     // Auto advance slideshow
     function startSlideshow() {
+        stopSlideshow(); // Clear any existing interval
         slideshowInterval = setInterval(() => {
-            currentSlide = currentSlide >= totalSlides ? 1 : currentSlide + 1;
-            updateSlide(currentSlide);
-        }, 4000); // Change slide every 4 seconds
+            const nextSlide = currentSlide >= totalSlides ? 1 : currentSlide + 1;
+            updateSlide(nextSlide);
+        }, 5000); // Change slide every 5 seconds
     }
     
     // Stop slideshow
     function stopSlideshow() {
         if (slideshowInterval) {
             clearInterval(slideshowInterval);
+            slideshowInterval = null;
         }
     }
+    
+    // Add transition style to iframe
+    posterFrame.style.transition = 'opacity 0.3s ease-in-out';
     
     // Dot indicators click
     dotIndicators.forEach((dot, index) => {
@@ -130,6 +151,8 @@
     startSlideshow();
     
     // Pause slideshow when user hovers over it
-    posterSlideshow.addEventListener('mouseenter', stopSlideshow);
-    posterSlideshow.addEventListener('mouseleave', startSlideshow);
+    if (posterSlideshow) {
+        posterSlideshow.addEventListener('mouseenter', stopSlideshow);
+        posterSlideshow.addEventListener('mouseleave', startSlideshow);
+    }
 })();
