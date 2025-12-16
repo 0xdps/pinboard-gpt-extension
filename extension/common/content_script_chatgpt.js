@@ -2249,7 +2249,7 @@ async function showUpgradeNotification() {
   
   // Handle upgrade button
   upgradeBtn.addEventListener('click', () => {
-    window.open('https://pinboard-gpt.dps.codes/pricing.html?plan=pro', '_blank');
+    window.open('https://pinboardgpt.app/pricing.html?plan=pro', '_blank');
     backdrop.remove();
     notif.remove();
   });

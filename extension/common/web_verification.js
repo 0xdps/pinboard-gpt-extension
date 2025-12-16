@@ -12,7 +12,7 @@
     };
     
     // Only run on our domains
-    const allowedDomains = ['pinboard-gpt.dps.codes', 'localhost'];
+    const allowedDomains = ['pinboardgpt.app', 'localhost'];
     const currentDomain = window.location.hostname;
     
     if (!allowedDomains.some(domain => currentDomain.includes(domain))) {

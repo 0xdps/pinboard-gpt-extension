@@ -23,127 +23,141 @@
             width: 100%;
             height: 100%;
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
             padding: 80px;
-            text-align: center;
+        }
+
+        .left {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding-right: 60px;
         }
 
         .headline {
-            font-size: 96px;
+            font-size: 72px;
             font-weight: 900;
             color: white;
             line-height: 1.1;
-            letter-spacing: -3px;
-            margin-bottom: 40px;
-        }
-
-        .highlight {
-            background: linear-gradient(135deg, #ff6b35, #f59e0b);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .features {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 40px;
-            margin-bottom: 60px;
-            max-width: 1000px;
-        }
-
-        .feature {
-            text-align: center;
-        }
-
-        .feature-icon {
-            font-size: 56px;
-            margin-bottom: 16px;
-        }
-
-        .feature-label {
-            font-size: 18px;
-            font-weight: 700;
-            color: white;
-        }
-
-        .cta {
-            background: linear-gradient(135deg, #ff6b35, #f59e0b);
-            color: white;
-            padding: 24px 60px;
-            border-radius: 16px;
-            font-size: 32px;
-            font-weight: 900;
-            box-shadow: 0 12px 40px rgba(255, 107, 53, 0.4);
+            letter-spacing: -2px;
             margin-bottom: 32px;
-            display: inline-block;
         }
 
-        .website {
+        .description {
             font-size: 24px;
-            color: #64748b;
-            font-weight: 700;
+            color: #94a3b8;
+            line-height: 1.5;
         }
 
-        .website span {
-            color: #ff6b35;
-        }
-
-        .badges {
+        .right {
+            flex: 1;
             display: flex;
-            gap: 20px;
-            margin-top: 40px;
+            align-items: center;
             justify-content: center;
         }
 
-        .badge {
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 30px;
-            font-size: 16px;
+        .mockup {
+            background: white;
+            border-radius: 16px;
+            padding: 28px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .mockup-header {
+            font-size: 18px;
             font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .outline-item {
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        .outline-item:hover {
+            background: #f1f5f9;
+            transform: translateX(4px);
+            border-left-color: #1e293b;
+        }
+
+        .outline-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .outline-text {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .footer {
+            position: absolute;
+            bottom: 40px;
+            left: 80px;
+            font-size: 18px;
+            color: #64748b;
+            font-weight: 600;
         }
     </style>
 </head>
 <body>
     <div class="poster">
-        <h1 class="headline">
-            Start saving your<br><span class="highlight">best answers</span>
-        </h1>
+        <div class="left">
+            <h1 class="headline">
+                Chat<br>Outline
+            </h1>
+            <p class="description">
+                Navigate long conversations with ease. View all messages and jump to any point with one click.
+            </p>
+        </div>
 
-        <div class="features">
-            <div class="feature">
-                <div class="feature-icon">🆓</div>
-                <div class="feature-label">Free 10 Pins</div>
-            </div>
-            <div class="feature">
-                <div class="feature-icon">⚡</div>
-                <div class="feature-label">Lightning Fast</div>
-            </div>
-            <div class="feature">
-                <div class="feature-icon">🔒</div>
-                <div class="feature-label">Privacy First</div>
-            </div>
-            <div class="feature">
-                <div class="feature-icon">🌐</div>
-                <div class="feature-label">Chrome & Firefox</div>
+        <div class="right">
+            <div class="mockup">
+                <div class="mockup-header">📋 Conversation Outline</div>
+                
+                <div class="outline-item">
+                    <div class="outline-label">User</div>
+                    <div class="outline-text">How do I optimize React performance?</div>
+                </div>
+
+                <div class="outline-item">
+                    <div class="outline-label">Assistant</div>
+                    <div class="outline-text">Here are 5 key strategies...</div>
+                </div>
+
+                <div class="outline-item">
+                    <div class="outline-label">User</div>
+                    <div class="outline-text">What about lazy loading?</div>
+                </div>
+
+                <div class="outline-item">
+                    <div class="outline-label">Assistant</div>
+                    <div class="outline-text">Lazy loading is essential for...</div>
+                </div>
+
+                <div class="outline-item">
+                    <div class="outline-label">User</div>
+                    <div class="outline-text">Can you show me an example?</div>
+                </div>
             </div>
         </div>
 
-        <div class="cta">Install Now</div>
-
-        <div class="website">
-            <span>pinboard-gpt.dps.codes</span>
-        </div>
-
-        <div class="badges">
-            <div class="badge">200+ Smart Tags</div>
-            <div class="badge">17 Categories</div>
-            <div class="badge">Fuzzy Search</div>
-        </div>
+        <div class="footer">pinboardgpt.app</div>
     </div>
 </body>
 </html>

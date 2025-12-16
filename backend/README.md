@@ -51,7 +51,7 @@ turso db tokens create pinboard-gpt
 3. Enable Google+ API
 4. Create OAuth 2.0 credentials (Web application)
 5. Add authorized origins:
-   - https://api.pinboard-gpt.dps.codes
+   - https://api.pinboardgpt.app
    - http://localhost:3000 (for development)
 6. Copy the Client ID
 

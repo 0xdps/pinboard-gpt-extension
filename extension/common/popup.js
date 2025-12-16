@@ -324,7 +324,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (googleSignInBtn) {
     googleSignInBtn.onclick = () => {
       // Open the web-based authentication page
-      tabsAPI.create({ url: 'https://pinboard-gpt.dps.codes/auth/login' });
+      tabsAPI.create({ url: 'https://pinboardgpt.app/auth/login' });
       
       // Show a message
       showNotification('Please sign in on the opened page. Your access will sync automatically.', 'info');
@@ -446,7 +446,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (upgradeToPremiumLink) {
       upgradeToPremiumLink.onclick = (e) => {
         e.preventDefault();
-        tabsAPI.create({ url: 'https://pinboard-gpt.dps.codes/pricing.html?plan=premium' });
+        tabsAPI.create({ url: 'https://pinboardgpt.app/pricing.html?plan=premium' });
       };
     }
   }
@@ -1421,7 +1421,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.addEventListener('click', (e) => {
     if (e.target.id === 'helpLink') {
       e.preventDefault();
-      tabsAPI.create({ url: 'https://pinboard-gpt.dps.codes/support.html' });
+      tabsAPI.create({ url: 'https://pinboardgpt.app/support.html' });
     }
   });
 
@@ -1473,7 +1473,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Upgrade Modal Handlers
   if (upgradeBtn) {
     upgradeBtn.onclick = () => {
-      tabsAPI.create({ url: 'https://pinboard-gpt.dps.codes/pricing.html' });
+      tabsAPI.create({ url: 'https://pinboardgpt.app/pricing.html' });
     };
   }
 
@@ -1494,10 +1494,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       
       if (plan === 'pro') {
         // Open payment link for Pro
-        tabsAPI.create({ url: 'https://pinboard-gpt.dps.codes/upgrade?plan=pro' });
+        tabsAPI.create({ url: 'https://pinboardgpt.app/upgrade?plan=pro' });
       } else if (plan === 'premium') {
         // Open payment link for Premium
-        tabsAPI.create({ url: 'https://pinboard-gpt.dps.codes/upgrade?plan=premium' });
+        tabsAPI.create({ url: 'https://pinboardgpt.app/upgrade?plan=premium' });
       }
       
       upgradeModal.style.display = 'none';
@@ -1507,7 +1507,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Show upgrade modal function (now opens pricing page in tab)
   async function showUpgradeModal() {
     const license = await getLicense();
-    let url = 'https://pinboard-gpt.dps.codes/pricing.html';
+    let url = 'https://pinboardgpt.app/pricing.html';
     
     // Add plan parameter based on current license
     if (license === LICENSE_TYPES.FREE) {
@@ -1523,7 +1523,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   exportBtn.onclick = async () => {
     const hasExport = await hasFeature('export');
     if (!hasExport) {
-      tabsAPI.create({ url: 'https://pinboard-gpt.dps.codes/pricing.html?plan=pro' });
+      tabsAPI.create({ url: 'https://pinboardgpt.app/pricing.html?plan=pro' });
       return;
     }
     

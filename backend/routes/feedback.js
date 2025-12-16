@@ -104,7 +104,7 @@ app.post('/', async (c) => {
 
     // Validate referrer
     const expectedReferrers = [
-      'https://pinboard-gpt.dps.codes/goodbye.html',
+      'https://pinboardgpt.app/goodbye.html',
       'http://localhost:8080/goodbye.html'
     ];
     

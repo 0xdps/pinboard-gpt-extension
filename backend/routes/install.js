@@ -5,7 +5,7 @@ const app = new Hono();
 // Store URLs
 const CHROME_STORE_URL = 'https://chromewebstore.google.com/detail/pingpt-%E2%80%94-chatgpt-message/hdhoaialemjelcfjjmjkkhkffiggbnap';
 const FIREFOX_STORE_URL = 'https://addons.mozilla.org/en-US/firefox/addon/gpt-pinboard/';
-const HOME_PAGE_URL = 'https://pinboard-gpt.dps.codes';
+const HOME_PAGE_URL = 'https://pinboardgpt.app';
 
 // Install endpoint - redirects to appropriate store
 app.get('/', (c) => {

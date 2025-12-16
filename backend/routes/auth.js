@@ -9,7 +9,7 @@ const app = new Hono();
 const googleClient = new OAuth2Client(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
-  'https://pinboard-gpt.dps.codes/auth/callback'
+  'https://pinboardgpt.app/auth/callback'
 );
 
 // Generate a license key

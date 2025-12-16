@@ -20,62 +20,79 @@
         }
 
         .poster {
-            text-align: center;
             color: white;
         }
 
         .headline {
-            font-size: 2.5rem;
+            font-size: 1.8rem;
             font-weight: 900;
             line-height: 1.1;
             letter-spacing: -1px;
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
         }
 
-        .highlight {
-            background: linear-gradient(135deg, #ff6b35, #f59e0b);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .outline-mockup {
+            background: white;
+            border-radius: 12px;
+            padding: 18px;
+            max-width: 400px;
+            margin: 0 auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
         }
 
-        .features {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-            margin-top: 1.5rem;
-            flex-wrap: wrap;
-        }
-
-        .feature {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 8px 14px;
-            border-radius: 20px;
-            font-size: 13px;
+        .mockup-header {
+            font-size: 14px;
             font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 14px;
         }
 
-        .cta {
-            display: inline-block;
-            background: linear-gradient(135deg, #ff6b35, #f59e0b);
-            padding: 12px 32px;
-            border-radius: 10px;
-            font-size: 18px;
-            font-weight: 900;
-            margin-top: 1.5rem;
+        .outline-item {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-left: 3px solid #1e293b;
+        }
+
+        .outline-label {
+            font-size: 9px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            margin-bottom: 3px;
+        }
+
+        .outline-text {
+            font-size: 12px;
+            font-weight: 600;
+            color: #1e293b;
         }
     </style>
 </head>
 <body>
     <div class="poster">
-        <h1 class="headline">
-            Start saving<br><span class="highlight">today</span>
-        </h1>
-        <div class="features">
-            <span class="feature">🆓 Free</span>
-            <span class="feature">⚡ Fast</span>
-            <span class="feature">🔒 Private</span>
+        <h1 class="headline">Chat Outline</h1>
+        
+        <div class="outline-mockup">
+            <div class="mockup-header">📋 Navigate conversations</div>
+            
+            <div class="outline-item">
+                <div class="outline-label">User</div>
+                <div class="outline-text">How do I optimize React?</div>
+            </div>
+
+            <div class="outline-item">
+                <div class="outline-label">Assistant</div>
+                <div class="outline-text">Here are 5 key strategies...</div>
+            </div>
+
+            <div class="outline-item">
+                <div class="outline-label">User</div>
+                <div class="outline-text">What about lazy loading?</div>
+            </div>
         </div>
-        <div class="cta">Install Now</div>
     </div>
 </body>
 </html>

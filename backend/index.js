@@ -29,8 +29,8 @@ app.use('/*', cors({
 	origin: [
 		'chrome-extension://*',
 		'moz-extension://*',
-		'https://pinboard-gpt.dps.codes',
-		'https://api.pinboard-gpt.dps.codes',
+		'https://pinboardgpt.app',
+		'https://api.pinboardgpt.app',
 		'http://localhost:3000',
 		'http://localhost:8080'
 	],

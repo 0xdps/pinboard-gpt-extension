@@ -20,62 +20,102 @@
         }
 
         .poster {
-            text-align: center;
             color: white;
-        }
-
-        .number {
-            font-size: 2rem;
-            font-weight: 900;
-            background: linear-gradient(135deg, #ff6b35, #f59e0b);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 1rem;
         }
 
         .headline {
-            font-size: 2.5rem;
+            font-size: 1.8rem;
             font-weight: 900;
             line-height: 1.1;
             letter-spacing: -1px;
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
         }
 
-        .description {
-            font-size: 1rem;
-            color: #94a3b8;
-            font-weight: 600;
+        .chat-message {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 16px;
+            position: relative;
+            max-width: 500px;
+            margin: 0 auto;
         }
 
-        .pin-demo {
-            display: inline-flex;
+        .message-header {
+            display: flex;
             align-items: center;
-            gap: 8px;
-            background: linear-gradient(135deg, #ff6b35, #f59e0b);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 8px;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #10a37f, #1a7f64);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .username {
             font-size: 14px;
             font-weight: 700;
-            margin-top: 1rem;
+            color: #94a3b8;
+        }
+
+        .message-text {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+
+        .pin-button {
+            position: absolute;
+            bottom: 12px;
+            right: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: linear-gradient(135deg, #ff6b35, #f59e0b);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.4);
+            animation: pulse 2s infinite;
         }
 
         .pin-icon {
-            width: 14px;
-            height: 14px;
+            width: 12px;
+            height: 12px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
     </style>
 </head>
 <body>
     <div class="poster">
-        <div class="number">01</div>
-        <h1 class="headline">Hover & Pin</h1>
-        <p class="description">
-            Click the pin button on any message
-        </p>
-        <div class="pin-demo">
-            <img src="../images/favicon-16x16.png" alt="Pin" class="pin-icon">
-            <span>Pin</span>
+        <h1 class="headline">Hover & Pin Messages</h1>
+        
+        <div class="chat-message">
+            <div class="message-header">
+                <div class="avatar">AI</div>
+                <span class="username">ChatGPT</span>
+            </div>
+            <div class="message-text">
+                Here's how to optimize your React app performance using lazy loading...
+            </div>
+            <div class="pin-button">
+                <img src="../images/favicon-16x16.png" alt="Pin" class="pin-icon">
+                <span>Pin</span>
+            </div>
         </div>
     </div>
 </body>

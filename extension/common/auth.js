@@ -1,7 +1,7 @@
 // Authentication and API integration for Pinboard GPT
 // Handles user login, license validation, and cloud sync
 
-const API_BASE_URL = 'https://pinboard-gpt.dps.codes/api';
+const API_BASE_URL = 'https://pinboardgpt.app/api';
 
 // Auth state management
 async function getAuthToken() {

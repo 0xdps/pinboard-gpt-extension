@@ -6,7 +6,7 @@
 [![Firefox Add-ons](https://img.shields.io/badge/Firefox-Add--ons-orange)](https://addons.mozilla.org/en-US/firefox/addon/gpt-pinboard/)
 [![Version](https://img.shields.io/badge/version-2.1.2-green)](CHANGELOG.md)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
-[![Website](https://img.shields.io/badge/Website-Live-green)](https://pinboard-gpt.dps.codes)
+[![Website](https://img.shields.io/badge/Website-Live-green)](https://pinboardgpt.app)
 [![Supports](https://img.shields.io/badge/Supports-ChatGPT-10a37f)](https://chatgpt.com)
 [![Coming Soon](https://img.shields.io/badge/Coming%20Soon-Claude%20%7C%20Gemini%20%7C%20Grok-purple)](https://github.com/0xdps/gpt-pinboard-extension/discussions)
 
@@ -118,7 +118,7 @@ If you want to use Google authentication features, you'll need to configure OAut
 
 ## 🌐 Website & Deployment
 
-Visit our official website: **[pinboard-gpt.dps.codes](https://pinboard-gpt.dps.codes)**
+Visit our official website: **[pinboardgpt.app](https://pinboardgpt.app)**
 
 The website includes:
 - Interactive feature showcase with browser detection

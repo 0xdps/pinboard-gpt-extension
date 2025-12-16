@@ -20,64 +20,106 @@
         }
 
         .poster {
-            text-align: center;
             color: white;
         }
 
-        .number {
-            font-size: 2rem;
-            font-weight: 900;
-            margin-bottom: 1rem;
-        }
-
         .headline {
-            font-size: 2.5rem;
+            font-size: 1.8rem;
             font-weight: 900;
             line-height: 1.1;
             letter-spacing: -1px;
-            margin-bottom: 1rem;
-        }
-
-        .description {
-            font-size: 1rem;
-            font-weight: 600;
             margin-bottom: 1.5rem;
+            text-align: center;
         }
 
-        .tags {
-            display: flex;
-            gap: 8px;
-            justify-content: center;
-            flex-wrap: wrap;
+        .modal-mockup {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            max-width: 500px;
+            margin: 0 auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 16px;
+        }
+
+        .tag-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 16px;
         }
 
         .tag {
-            background: rgba(255, 255, 255, 0.2);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            padding: 6px 12px;
+            background: #f1f5f9;
+            border: 2px solid #e2e8f0;
+            padding: 10px;
             border-radius: 8px;
-            font-size: 13px;
+            text-align: center;
+            font-size: 11px;
             font-weight: 700;
+            color: #1e293b;
+            cursor: pointer;
+            transition: all 0.2s;
         }
 
         .tag.selected {
-            background: white;
-            color: #8b5cf6;
-            border-color: white;
+            background: linear-gradient(135deg, #8b5cf6, #6366f1);
+            border-color: #8b5cf6;
+            color: white;
+        }
+
+        .tag-emoji {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+
+        .tag-count {
+            font-size: 10px;
+            color: #64748b;
+            text-align: center;
+            margin-top: 8px;
         }
     </style>
 </head>
 <body>
     <div class="poster">
-        <div class="number">02</div>
-        <h1 class="headline">Organize<br>with Tags</h1>
-        <p class="description">
-            200+ presets or create your own
-        </p>
-        <div class="tags">
-            <span class="tag selected">💻 Code</span>
-            <span class="tag selected">🐍 Python</span>
-            <span class="tag">⚛️ React</span>
+        <h1 class="headline">Organize with Tags</h1>
+        
+        <div class="modal-mockup">
+            <div class="modal-header">Add tags (200+ presets)</div>
+            <div class="tag-grid">
+                <div class="tag selected">
+                    <div class="tag-emoji">💻</div>
+                    <div>Code</div>
+                </div>
+                <div class="tag selected">
+                    <div class="tag-emoji">🐍</div>
+                    <div>Python</div>
+                </div>
+                <div class="tag">
+                    <div class="tag-emoji">⚛️</div>
+                    <div>React</div>
+                </div>
+                <div class="tag">
+                    <div class="tag-emoji">🎨</div>
+                    <div>Design</div>
+                </div>
+                <div class="tag selected">
+                    <div class="tag-emoji">📝</div>
+                    <div>Tutorial</div>
+                </div>
+                <div class="tag">
+                    <div class="tag-emoji">🚀</div>
+                    <div>DevOps</div>
+                </div>
+            </div>
+            <div class="tag-count">3 tags selected</div>
         </div>
     </div>
 </body>

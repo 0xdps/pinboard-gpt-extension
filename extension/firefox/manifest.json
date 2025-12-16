@@ -9,7 +9,7 @@
     "alarms",
     "https://chatgpt.com/*",
     "https://chat.openai.com/*",
-    "https://pinboard-gpt.dps.codes/*"
+    "https://pinboardgpt.app/*"
   ],
   "browser_action": {
     "default_popup": "popup.html",
@@ -31,7 +31,7 @@
       "run_at": "document_idle"
     },
     {
-      "matches": ["https://pinboard-gpt.dps.codes/*"],
+      "matches": ["https://pinboardgpt.app/*"],
       "js": ["web_verification.js"],
       "run_at": "document_end"
     }
@@ -50,7 +50,7 @@
     "48": "icons/icon-48.png",
     "128": "icons/icon-128.png"
   },
-  "homepage_url": "https://pinboard-gpt.dps.codes",
+  "homepage_url": "https://pinboardgpt.app",
   "applications": {
     "gecko": {
       "id": "pingpt@dps.codes"

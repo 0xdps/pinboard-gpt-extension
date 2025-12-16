@@ -1,5 +1,5 @@
 # Robots.txt for Pinboard GPT Website
-# https://pinboard-gpt.dps.codes/robots.txt
+# https://pinboardgpt.app/robots.txt
 
 # Allow all web crawlers to access the site, except sensitive pages
 User-agent: *
@@ -8,7 +8,7 @@ Disallow: /goodbye.html
 Disallow: /test-*.html
 
 # Sitemap location
-Sitemap: https://pinboard-gpt.dps.codes/sitemap.xml
+Sitemap: https://pinboardgpt.app/sitemap.xml
 
 # Specific rules for major search engines
 User-agent: Googlebot
@@ -81,5 +81,5 @@ Allow: *.pdf
 Crawl-delay: 1
 
 # Additional sitemaps (if we add more in the future)
-# Sitemap: https://pinboard-gpt.dps.codes/sitemap-images.xml
-# Sitemap: https://pinboard-gpt.dps.codes/sitemap-news.xml
+# Sitemap: https://pinboardgpt.app/sitemap-images.xml
+# Sitemap: https://pinboardgpt.app/sitemap-news.xml
