@@ -21,6 +21,28 @@
 
         .poster {
             color: white;
+            text-align: center;
+        }
+
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: white;
+            padding: 8px 16px;
+            border-radius: 25px;
+            margin-bottom: 1rem;
+        }
+
+        .brand-icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        .brand-name {
+            font-size: 14px;
+            font-weight: 800;
+            color: #1e293b;
         }
 
         .headline {
@@ -73,6 +95,10 @@
 </head>
 <body>
     <div class="poster">
+        <div class="brand">
+            <img src="../images/favicon-32x32.png" alt="Pinboard GPT" class="brand-icon">
+            <span class="brand-name">Pinboard GPT</span>
+        </div>
         <h1 class="headline">Chat Outline</h1>
         
         <div class="outline-mockup">

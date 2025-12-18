@@ -26,12 +26,39 @@
             padding: 80px;
         }
 
+        .poster {
+            position: relative;
+        }
+
         .left {
             flex: 1;
             display: flex;
             flex-direction: column;
             justify-content: center;
             padding-right: 60px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: white;
+            padding: 12px 24px;
+            border-radius: 40px;
+            margin-bottom: 32px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            width: fit-content;
+        }
+
+        .brand-icon {
+            width: 24px;
+            height: 24px;
+        }
+
+        .brand-name {
+            font-size: 18px;
+            font-weight: 800;
+            color: #1e293b;
         }
 
         .headline {
@@ -110,7 +137,7 @@
             bottom: 40px;
             left: 80px;
             font-size: 18px;
-            color: #64748b;
+            color: #94a3b8;
             font-weight: 600;
         }
     </style>
@@ -118,6 +145,10 @@
 <body>
     <div class="poster">
         <div class="left">
+            <div class="brand">
+                <img src="../images/favicon-32x32.png" alt="Pinboard GPT" class="brand-icon">
+                <span class="brand-name">Pinboard GPT</span>
+            </div>
             <h1 class="headline">
                 Chat<br>Outline
             </h1>
