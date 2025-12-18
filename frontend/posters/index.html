@@ -31,6 +31,14 @@
             gap: 10px;
         }
 
+        .poster-wrapper {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
         .poster-frame {
             width: 1280px;
             height: 800px;
@@ -44,14 +52,80 @@
             width: 1280px;
             height: 800px;
             border: none;
-            transform: scale(1);
-            transform-origin: center center;
+        }
+
+        /* Overlay controls inside poster frame */
+        .poster-indicator {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 700;
+            z-index: 100;
+        }
+
+        .fullscreen-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            border: none;
+            color: white;
+            padding: 10px 18px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .fullscreen-btn:hover {
+            background: rgba(0, 0, 0, 0.9);
+        }
+
+        .progress-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            z-index: 100;
+            border-radius: 16px 16px 0 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b35, #f59e0b);
+            transition: width 0.3s ease;
+        }
+
+        .controls-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 1280px;
+            padding: 0 20px;
+        }
+
+        .keyboard-hint {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 14px;
+            font-weight: 600;
         }
 
         .nav-buttons {
             display: flex;
             gap: 16px;
-            z-index: 100;
         }
 
         .nav-btn {
@@ -85,121 +159,44 @@
             transform: scale(1);
         }
 
-        .progress-bar {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.1);
-            z-index: 100;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #ff6b35, #f59e0b);
-            transition: width 0.3s ease;
-        }
-
-        .poster-indicator {
-            position: absolute;
-            top: 30px;
-            right: 30px;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(10px);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 30px;
-            font-size: 16px;
-            font-weight: 700;
-            z-index: 100;
-        }
-
-        .keyboard-hint {
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 14px;
-            font-weight: 600;
-            z-index: 100;
-        }
-
-        .controls-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            width: 1280px;
-        }
-
-        /* Fullscreen button */
-        .fullscreen-btn {
-            position: absolute;
-            top: 30px;
-            left: 30px;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(10px);
-            border: none;
-            color: white;
-            padding: 12px 20px;
-            border-radius: 30px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 700;
-            transition: all 0.3s ease;
-            z-index: 100;
-        }
-
-        .fullscreen-btn:hover {
-            background: rgba(0, 0, 0, 0.9);
-        }
-
         /* Responsive scaling */
         @media (max-width: 1400px) {
-            .poster-frame {
+            .poster-wrapper {
                 transform: scale(0.85);
             }
         }
 
         @media (max-width: 1200px) {
-            .poster-frame {
+            .poster-wrapper {
                 transform: scale(0.7);
             }
         }
 
         @media (max-width: 900px) {
-            .poster-frame {
+            .poster-wrapper {
                 transform: scale(0.5);
-            }
-            
-            .nav-buttons {
-                bottom: 20px;
-            }
-            
-            .nav-btn {
-                width: 50px;
-                height: 50px;
-                font-size: 20px;
             }
         }
     </style>
 </head>
 <body>
     <div class="viewer-container">
-        <div class="progress-bar">
-            <div class="progress-fill" id="progressFill"></div>
-        </div>
+        <div class="poster-wrapper">
+            <div class="poster-frame">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <button class="fullscreen-btn" id="fullscreenBtn">⛶ Fullscreen</button>
+                <div class="poster-indicator" id="posterIndicator">1 / 5</div>
+                <iframe id="posterFrame" src="1.html"></iframe>
+            </div>
 
-        <button class="fullscreen-btn" id="fullscreenBtn">⛶ Fullscreen</button>
-        
-        <div class="poster-indicator" id="posterIndicator">1 / 5</div>
-
-        <div class="poster-frame">
-            <iframe id="posterFrame" src="1.html"></iframe>
-        </div>
-
-        <div class="controls-row">
-            <div class="keyboard-hint">Use arrow keys or buttons to navigate</div>
-            <div class="nav-buttons">
-                <button class="nav-btn" id="prevBtn" title="Previous (←)">◀</button>
-                <button class="nav-btn" id="nextBtn" title="Next (→)">▶</button>
+            <div class="controls-row">
+                <div class="keyboard-hint">Use arrow keys or buttons to navigate</div>
+                <div class="nav-buttons">
+                    <button class="nav-btn" id="prevBtn" title="Previous (←)">◀</button>
+                    <button class="nav-btn" id="nextBtn" title="Next (→)">▶</button>
+                </div>
             </div>
         </div>
     </div>
