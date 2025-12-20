@@ -13,6 +13,30 @@ const runtimeAPI = typeof browser !== 'undefined' ? browser.runtime : chrome.run
 const isFirefox = typeof browser !== 'undefined' && typeof browser.runtime !== 'undefined';
 
 // ============================================================================
+// Extension Context Validation
+// ============================================================================
+
+/**
+ * Check if extension context is still valid
+ * Context becomes invalid when extension is updated/reloaded while page is open
+ * @returns {boolean} True if context is valid
+ */
+function isExtensionContextValid() {
+  try {
+    // Check multiple indicators of valid extension context
+    // chrome.runtime.id is the most reliable indicator
+    if (!chrome || !chrome.runtime) return false;
+    
+    // Try to access runtime.id - this will throw if context is invalid
+    const id = chrome.runtime.id;
+    return !!id;
+  } catch (error) {
+    // Silent fail - context is invalid
+    return false;
+  }
+}
+
+// ============================================================================
 // DOM Utilities
 // ============================================================================
 

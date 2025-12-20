@@ -2,9 +2,11 @@
  * Storage API wrapper (browser-agnostic)
  * Uses storage.local for free users, storage.sync for Pro/Pro+ users
  * Works with both Chrome and Firefox
+ * 
+ * Note: storageAPI and isExtensionContextValid are defined in utils.js which is loaded before this file
+ * Note: getLicense() is defined in license.js which is loaded before this file
  */
 
-const storageAPI = typeof browser !== 'undefined' ? browser.storage : chrome.storage;
 const STORAGE_KEY = 'pins';
 const SETTINGS_KEY = 'settings';
 
@@ -13,27 +15,6 @@ const SETTINGS_KEY = 'settings';
 // Chrome sync quota limits (for reference)
 const SYNC_QUOTA_BYTES = 102400; // 100KB total
 const SYNC_MAX_ITEMS = 512;
-
-// Check if extension context is still valid
-function isExtensionContextValid() {
-  try {
-    // Check if chrome.runtime.id exists (undefined means context invalidated)
-    return chrome && chrome.runtime && chrome.runtime.id !== undefined;
-  } catch (e) {
-    return false;
-  }
-}
-
-// Get current license
-async function getLicense() {
-  try {
-    const result = await storageAPI.local.get(['license']);
-    return result.license || LICENSE_TYPES.FREE;
-  } catch (error) {
-    debugError('Error getting license:', error);
-    return LICENSE_TYPES.FREE;
-  }
-}
 
 // Determine which storage to use based on license
 async function getStorage() {

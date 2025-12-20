@@ -52,11 +52,76 @@ function debugError(...args) {
 function showNotification(message, duration = 2000, type = 'success') {
   // Get notification colors from UI_CONFIG
   const typePrefix = type.charAt(0).toUpperCase() + type.slice(1); // success -> Success
-  const colors = {
+  let colors = {
     bg: UI_CONFIG.get(`notification.${type}Bg`),
     text: UI_CONFIG.get(`notification.${type}Text`),
     border: UI_CONFIG.get(`notification.${type}Border`)
   };
+  
+  // For success notifications, try to use ChatGPT's accent color with grey fallback
+  if (type === 'success') {
+    // Get default colors from UI_CONFIG
+    const DEFAULT_CHATGPT_COLORS = UI_CONFIG.get('colors.fixed.chatGPTDefaultColors');
+    const GREY_ACCENT = UI_CONFIG.get('colors.fixed.greyAccent');
+    const GREY_ACCENT_HOVER = UI_CONFIG.get('colors.fixed.greyAccentHover');
+    
+    try {
+      const rootStyles = window.getComputedStyle(document.documentElement);
+      let accentColor = rootStyles.getPropertyValue('--theme-entity-accent').trim();
+      
+      // Convert rgb() to hex if needed
+      if (accentColor && accentColor.startsWith('rgb')) {
+        const match = accentColor.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+        if (match) {
+          const r = parseInt(match[1]);
+          const g = parseInt(match[2]);
+          const b = parseInt(match[3]);
+          accentColor = '#' + [r, g, b].map(x => {
+            const hex = x.toString(16);
+            return hex.length === 1 ? '0' + hex : hex;
+          }).join('');
+        }
+      }
+      
+      // Check if it's a default color or not found - use grey
+      const isDefaultColor = !accentColor || DEFAULT_CHATGPT_COLORS.some(
+        defaultColor => accentColor.toLowerCase() === defaultColor.toLowerCase()
+      );
+      
+      if (isDefaultColor) {
+        colors = {
+          bg: GREY_ACCENT,
+          text: '#ffffff',
+          border: GREY_ACCENT_HOVER
+        };
+      } else {
+        // User has a custom accent color - use it
+        // Generate darker border color
+        const borderColor = accentColor.replace('#', '');
+        const num = parseInt(borderColor, 16);
+        const r = Math.max(0, (num >> 16) - 30);
+        const g = Math.max(0, ((num >> 8) & 0x00FF) - 30);
+        const b = Math.max(0, (num & 0x0000FF) - 30);
+        const darkerBorder = '#' + [r, g, b].map(x => {
+          const hex = x.toString(16);
+          return hex.length === 1 ? '0' + hex : hex;
+        }).join('');
+        
+        colors = {
+          bg: accentColor,
+          text: '#ffffff',
+          border: darkerBorder
+        };
+      }
+    } catch (e) {
+      // Use grey on error
+      colors = {
+        bg: UI_CONFIG.get('colors.fixed.greyAccent'),
+        text: '#ffffff',
+        border: UI_CONFIG.get('colors.fixed.greyAccentHover')
+      };
+    }
+  }
   
   const notif = document.createElement('div');
   notif.textContent = message;

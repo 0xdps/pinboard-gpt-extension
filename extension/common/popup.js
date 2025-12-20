@@ -1,7 +1,5 @@
 // Browser API compatibility wrapper
-// storageAPI is already declared in idb.js which loads before this script
-const tabsAPI = typeof browser !== 'undefined' ? browser.tabs : chrome.tabs;
-const runtimeAPI = typeof browser !== 'undefined' ? browser.runtime : chrome.runtime;
+// storageAPI, tabsAPI, runtimeAPI, and isExtensionContextValid are defined in utils.js which loads before this script
 
 // Modal/Dialog keyboard navigation helper
 function setupModalKeyboardNavigation(modal) {
@@ -1251,6 +1249,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         color: var(--text-tertiary);
         border-bottom: 1px solid var(--border-color);
         background: var(--bg-secondary);
+        display: none;
       `;
       
       if (query) {

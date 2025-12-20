@@ -66,6 +66,7 @@ body.dark-mode {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  user-select: none;
 }
 
 html, body {
@@ -86,12 +87,16 @@ body {
   overflow: hidden;
 }
 
+.cursor-pointer {
+  cursor: pointer;
+}
+
 /* ===== HEADER ===== */
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 16px 14px 16px;
+  padding: 10px 12px;
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
   background: var(--bg-primary);
@@ -122,6 +127,7 @@ body {
   color: var(--text-primary);
   letter-spacing: -0.4px;
   margin: 0;
+  margin-left: -10px;
 }
 
 .header-subtitle {

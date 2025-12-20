@@ -33,8 +33,15 @@ const LICENSE_LIMITS = {
 };
 
 // Get current license
+// Note: isExtensionContextValid is defined in utils.js which loads before this file
 async function getLicense() {
   try {
+    // Check if extension context is valid before accessing storage
+    if (!isExtensionContextValid()) {
+      debugLog('Extension context invalid, returning FREE license');
+      return LICENSE_TYPES.FREE;
+    }
+    
     const result = await chrome.storage.local.get(['license', 'licenseData']);
     
     // Check if complementary access has expired
@@ -49,7 +56,16 @@ async function getLicense() {
       }
     }
     
-    return result.license || LICENSE_TYPES.FREE;
+    const license = result.license;
+    
+    // Handle both string format ("pro") and object format ({type: "pro"})
+    if (typeof license === 'string') {
+      return license;
+    } else if (license?.type) {
+      return license.type;
+    }
+    
+    return LICENSE_TYPES.FREE;
   } catch (error) {
     debugError('Error getting license:', error);
     return LICENSE_TYPES.FREE;
@@ -161,40 +177,8 @@ async function setComplementaryAccess(licenseType, durationDays = 365, reason = 
   }
 }
 
-// Check if user can add more pins
-async function canAddPin() {
-  try {
-    const license = await getLicense();
-    const pins = await getPins();
-    const limit = LICENSE_LIMITS[license]?.maxPins || 10;
-    return pins.length < limit;
-  } catch (error) {
-    debugError('Error checking pin limit:', error);
-    return false;
-  }
-}
-
-// Get remaining pins count
-async function getRemainingPins() {
-  try {
-    const license = await getLicense();
-    const pins = await getPins();
-    const limit = LICENSE_LIMITS[license]?.maxPins || 10;
-    
-    if (limit === Infinity) {
-      return { remaining: Infinity, limit: Infinity, current: pins.length };
-    }
-    
-    return {
-      remaining: Math.max(0, limit - pins.length),
-      limit,
-      current: pins.length
-    };
-  } catch (error) {
-    debugError('Error getting remaining pins:', error);
-    return { remaining: 0, limit: 10, current: 0 };
-  }
-}
+// Note: canAddPin() and getRemainingPins() are defined in content_script_chatgpt.js
+// because they need idbGetAll() which is defined in idb.js (loaded after this file)
 
 // Check if feature is available for current license
 async function hasFeature(feature) {

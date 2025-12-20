@@ -65,7 +65,25 @@ const UI_CONFIG = {
       // Brand colors (same across themes)
       accent: '#ff6b35',
       accentHover: '#d65a2b',
-      white: '#ffffff'
+      white: '#ffffff',
+      
+      // Grey fallback for accent (when ChatGPT uses default colors)
+      greyAccent: '#6b7280',
+      greyAccentHover: '#4b5563',
+      greyAccentLight: '#6b728026',
+      
+      // ChatGPT's default accent colors to ignore (use grey instead)
+      // These are the default colors ChatGPT uses when "Default" is selected
+      chatGPTDefaultColors: [
+        '#339cff', // ChatGPT default blue (primary default)
+        '#10a37f', // OpenAI green/teal
+        '#0d7377', // Teal variant
+        '#2563eb', // Blue
+        '#3b82f6', // Blue variant
+        '#0ea5e9', // Sky blue
+        '#10b981', // Emerald
+        '#059669'  // Green
+      ]
     },
     light: {
       // Primary
@@ -230,9 +248,10 @@ const UI_CONFIG = {
   notification: {
     fixed: {
       // Notification colors (same across all themes)
-      successBg: '#ff6b35',
+      // Success uses grey as default (will be overridden by ChatGPT accent if available)
+      successBg: '#6b7280',
       successText: '#ffffff',
-      successBorder: '#d65a2b',
+      successBorder: '#4b5563',
       errorBg: '#d33b27',
       errorText: '#ffffff',
       errorBorder: '#b03020',

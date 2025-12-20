@@ -41,46 +41,8 @@ window.addEventListener('beforeunload', () => {
   }
 });
 
-// Check if extension context is still valid
-function isExtensionContextValid() {
-  try {
-    // Check multiple indicators of valid extension context
-    // chrome.runtime.id is the most reliable indicator
-    if (!chrome || !chrome.runtime) return false;
-    
-    // Try to access runtime.id - this will throw if context is invalid
-    const id = chrome.runtime.id;
-    return !!id;
-  } catch (error) {
-    // Silent fail - context is invalid
-    return false;
-  }
-}
-
-async function getLicense() {
-  try {
-    // Check if extension context is valid before accessing storage
-    if (!isExtensionContextValid()) {
-      debugLog('Extension context invalid, returning FREE license');
-      return LICENSE_TYPES.FREE;
-    }
-    
-    const result = await chrome.storage.local.get(['license']);
-    const license = result.license;
-    
-    // Handle both string format ("pro") and object format ({type: "pro"})
-    if (typeof license === 'string') {
-      return license;
-    } else if (license?.type) {
-      return license.type;
-    }
-    
-    return LICENSE_TYPES.FREE;
-  } catch (error) {
-    debugError('Error getting license:', error);
-    return LICENSE_TYPES.FREE;
-  }
-}
+// Note: isExtensionContextValid() is defined in utils.js which is loaded before this file
+// Note: getLicense() is defined in license.js which is loaded before this file
 
 async function canAddPin() {
   try {
@@ -309,10 +271,11 @@ async function getThemeColors() {
     cancelBorder: UI_CONFIG.get('dialog.buttonSecondaryBorder'),
     cancelText: UI_CONFIG.get('dialog.buttonSecondaryText'),
     cancelHover: UI_CONFIG.get('dialog.buttonSecondaryHover'),
-    saveBg: UI_CONFIG.get('colors.accent'),
+    // Use ChatGPT's accent color with grey fallback
+    saveBg: getChatGPTAccentColor().color,
     saveText: UI_CONFIG.get('colors.white'),
-    saveHover: UI_CONFIG.get('colors.accentHover'),
-    focusBorder: UI_CONFIG.get('colors.accent'),
+    saveHover: getChatGPTAccentColor().hover,
+    focusBorder: getChatGPTAccentColor().color,
     helpText: UI_CONFIG.get('dialog.labelText'),
     borderRadius: UI_CONFIG.get('dialog.borderRadius'),
     shadow: UI_CONFIG.get('dialog.backdropBg'),
@@ -2056,6 +2019,84 @@ function adjustColor(hex, amount) {
   }
 }
 
+/**
+ * Get ChatGPT's accent color from CSS variables
+ * Falls back to grey if not found or if using ChatGPT's default colors
+ * @returns {Object} { color: string, hover: string, light: string }
+ */
+function getChatGPTAccentColor() {
+  // Get default colors from UI_CONFIG
+  const DEFAULT_CHATGPT_COLORS = UI_CONFIG.get('colors.fixed.chatGPTDefaultColors');
+  
+  const GREY_DEFAULT = {
+    color: UI_CONFIG.get('colors.fixed.greyAccent'),
+    hover: UI_CONFIG.get('colors.fixed.greyAccentHover'),
+    light: UI_CONFIG.get('colors.fixed.greyAccentLight')
+  };
+  
+  try {
+    const rootStyles = window.getComputedStyle(document.documentElement);
+    
+    // Try to get the theme entity accent color (used for buttons, links, etc.)
+    let accentColor = rootStyles.getPropertyValue('--theme-entity-accent').trim();
+    
+    // DEBUG: Log the raw accent color
+    debugLog('Raw --theme-entity-accent:', accentColor);
+    
+    if (accentColor) {
+      // Convert rgb() to hex if needed
+      const originalColor = accentColor;
+      accentColor = accentColor.startsWith('rgb') ? rgbToHex(accentColor) : accentColor;
+      debugLog('Converted accent color:', originalColor, '->', accentColor);
+    } else {
+      // Fallback: try submit button background
+      const submitBg = rootStyles.getPropertyValue('--theme-submit-btn-bg').trim();
+      debugLog('No accent, trying submit bg:', submitBg);
+      if (submitBg) {
+        accentColor = submitBg.startsWith('rgb') ? rgbToHex(submitBg) : submitBg;
+      }
+    }
+    
+    // If no color found, use grey
+    if (!accentColor) {
+      debugLog('No color found, using grey default');
+      return GREY_DEFAULT;
+    }
+    
+    // Normalize the color to lowercase for comparison
+    const normalizedColor = accentColor.toLowerCase();
+    
+    // DEBUG: Log comparison
+    debugLog('Normalized color:', normalizedColor);
+    debugLog('Default colors to check:', DEFAULT_CHATGPT_COLORS);
+    
+    // Check if it's one of ChatGPT's default colors - if so, use grey instead
+    const isDefaultColor = DEFAULT_CHATGPT_COLORS.some(defaultColor => {
+      const match = normalizedColor === defaultColor.toLowerCase();
+      if (match) debugLog('Matched default color:', defaultColor);
+      return match;
+    });
+    
+    debugLog('Is default color?', isDefaultColor);
+    
+    if (isDefaultColor) {
+      debugLog('Using grey because it matches a default color');
+      return GREY_DEFAULT;
+    }
+    
+    // User has set a custom accent color - use it
+    debugLog('Using custom accent color:', accentColor);
+    return {
+      color: accentColor,
+      hover: adjustColor(accentColor, -20),
+      light: accentColor + '26'
+    };
+  } catch (err) {
+    debugError('Error getting ChatGPT accent color:', err);
+    return GREY_DEFAULT;
+  }
+}
+
 // Helper function to create SVG element safely
 function createSVGElement(width, height, viewBox, pathData, styles = {}) {
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -3439,10 +3480,10 @@ try {
       // Handle accent color detection request from popup
       if (msg.action === 'get-accent-color') {
         try {
-          // Default grey when no custom accent is set
-          let accentColor = '#6b7280';
+          // Get ChatGPT accent color (handles default color filtering)
+          const accentColors = getChatGPTAccentColor();
           
-          // Get the root element to read CSS variables
+          // Get the root element to read CSS variables for theme detection
           const rootStyles = window.getComputedStyle(document.documentElement);
           
           // Detect theme (dark/light) from --bg-primary color
@@ -3473,33 +3514,19 @@ try {
             }
           }
           
-          // Try to get the theme entity accent color (used for buttons, links, etc.)
-          const entityAccent = rootStyles.getPropertyValue('--theme-entity-accent').trim();
-          if (entityAccent) {
-            // Convert rgb() to hex if needed
-            accentColor = entityAccent.startsWith('rgb') ? rgbToHex(entityAccent) : entityAccent;
-          } else {
-            // Fallback: try submit button background
-            const submitBg = rootStyles.getPropertyValue('--theme-submit-btn-bg').trim();
-            if (submitBg) {
-              accentColor = submitBg.startsWith('rgb') ? rgbToHex(submitBg) : submitBg;
-            }
-            // If neither exists, keep default grey #6b7280
-          }
-          
-          // Generate hover and light variants
-          const accentHover = adjustColor(accentColor, -20);
-          const accentLight = accentColor + '26';
-          
           sendResponse({ 
-            accentColor,
-            accentHover,
-            accentLight,
+            accentColor: accentColors.color,
+            accentHover: accentColors.hover,
+            accentLight: accentColors.light,
             theme: isDark ? 'dark' : 'light'
           });
         } catch (err) {
           debugError('Error detecting accent color:', err);
-          sendResponse({ accentColor: '#6b7280' }); // Grey fallback
+          sendResponse({ 
+            accentColor: UI_CONFIG.get('colors.fixed.greyAccent'),
+            accentHover: UI_CONFIG.get('colors.fixed.greyAccentHover'),
+            accentLight: UI_CONFIG.get('colors.fixed.greyAccentLight')
+          });
         }
         return true;
       }
@@ -4142,13 +4169,15 @@ function addManualPinButton() {
     
     manualBtn.title = '';
     
-    // Use grey color for chat outline button
+    // Get ChatGPT's accent color for the button
+    const accentColors = getChatGPTAccentColor();
+    
     manualBtn.style.cssText = `
       position: fixed;
       bottom: 100px;
       right: 20px;
       z-index: 10000;
-      background: #6b7280;
+      background: ${accentColors.color};
       color: white;
       border: none;
       border-radius: 50%;
@@ -4165,6 +4194,10 @@ function addManualPinButton() {
       justify-content: center;
     `;
     
+    // Store accent colors for hover effect
+    manualBtn._accentColor = accentColors.color;
+    manualBtn._accentHover = accentColors.hover;
+    
     manualBtn.addEventListener('mouseenter', () => {
       // Update tooltip colors based on current theme
       const colors = getTooltipColors();
@@ -4173,6 +4206,8 @@ function addManualPinButton() {
       buttonText.style.color = colors.color;
       tooltipArrow.style.borderLeftColor = colors.arrowColor;
       
+      // Update button hover color
+      manualBtn.style.background = manualBtn._accentHover;
       manualBtn.style.transform = 'scale(1.05)';
       manualBtn.style.boxShadow = '0 6px 16px rgba(0,0,0,0.3)';
       buttonText.style.opacity = '1';
@@ -4182,6 +4217,8 @@ function addManualPinButton() {
     }, { passive: true });
     
     manualBtn.addEventListener('mouseleave', () => {
+      // Restore original accent color
+      manualBtn.style.background = manualBtn._accentColor;
       manualBtn.style.transform = 'scale(1)';
       manualBtn.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
       buttonText.style.opacity = '0';
