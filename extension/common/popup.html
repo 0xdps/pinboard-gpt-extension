@@ -97,53 +97,66 @@
         <button id="closeSettings" class="modal-close" aria-label="Close">×</button>
       </div>
       <div class="modal-body">
-        <!-- Preferences -->
-        <div class="settings-group">
-          <h4>Preferences</h4>
-          <div class="setting-row">
-            <div class="setting-label">
-              <svg class="setting-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4m0 4h.01M3.05 11h2m14.9 0h2M6.34 6.34l1.42 1.42m8.49 8.49l1.41 1.41M6.34 17.66l1.42-1.42m8.49-8.49l1.41-1.41"/><circle cx="12" cy="12" r="3"/></svg>
-              <span id="debugText">Debug mode</span>
-            </div>
-            <label class="toggle-switch">
-              <input type="checkbox" id="debugToggle">
-              <span class="toggle-track"></span>
-            </label>
+        <!-- Plan Card -->
+        <div class="plan-card" id="planCard">
+          <div class="plan-card-header">
+            <span class="plan-icon" id="planIcon">📦</span>
+            <span class="plan-name" id="planName">Free Plan</span>
           </div>
+          <div class="plan-card-body">
+            <span class="plan-usage" id="planUsage">0/5 pins used</span>
+            <span class="plan-email" id="planEmail" style="display: none;"></span>
+          </div>
+          <button id="upgradePlanBtn" class="plan-action-btn">Upgrade to Pro →</button>
+          <button id="managePlanBtn" class="plan-action-btn" style="display: none;">Manage Subscription</button>
         </div>
 
-        <!-- Account -->
-        <div class="settings-group">
-          <h4>Account</h4>
-          <div id="authSection" style="display: none;">
-            <button id="googleSignInBtn" class="btn-secondary">
-              <svg width="18" height="18" viewBox="0 0 48 48">
-                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-              </svg>
-              Continue with Google
-            </button>
-          </div>
-          <div id="accountSection" style="display: none;">
-            <div class="account-info">
-              <p><span id="userEmail">user@example.com</span></p>
-              <small id="licenseDetails"></small>
-            </div>
-            <div class="account-actions">
-              <button id="syncLicenseBtn" class="btn-text">Sync License</button>
-              <button id="logoutBtn" class="btn-text">Sign Out</button>
-            </div>
-          </div>
+        <!-- Data Actions -->
+        <div class="data-actions">
+          <button id="importBtn" class="data-action-btn" data-tooltip="Import">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            <span>Import</span>
+          </button>
+          <button id="exportBtn" class="data-action-btn" data-tooltip="Export">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <span>Export</span>
+          </button>
+          <button id="deleteAllBtn" class="data-action-btn danger" data-tooltip="Delete All">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+            </svg>
+            <span>Delete</span>
+          </button>
         </div>
 
-        <!-- Data -->
-        <div class="settings-group">
-          <h4>Data</h4>
-          <button id="importBtn" class="btn-text">Import Pins</button>
-          <button id="exportBtn" class="btn-text">Export Pins</button>
-          <button id="deleteAllBtn" class="btn-text danger">Delete All Pins</button>
+        <!-- Advanced Section (Collapsible) -->
+        <div class="advanced-section">
+          <button id="advancedToggle" class="advanced-toggle" aria-expanded="false">
+            <svg class="advanced-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+            <span>Advanced</span>
+          </button>
+          <div id="advancedContent" class="advanced-content" style="display: none;">
+            <div class="setting-row">
+              <div class="setting-label">
+                <span id="debugText">Debug mode</span>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="debugToggle">
+                <span class="toggle-track"></span>
+              </label>
+            </div>
+          </div>
         </div>
       </div>
     </div>

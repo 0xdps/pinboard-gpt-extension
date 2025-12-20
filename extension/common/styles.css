@@ -761,6 +761,154 @@ body.dark-mode .toggle-track::before {
   left: 22px;
 }
 
+/* ===== PLAN CARD ===== */
+.plan-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.plan-card-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-xs);
+}
+
+.plan-icon {
+  font-size: 16px;
+}
+
+.plan-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.plan-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: var(--spacing-md);
+}
+
+.plan-usage {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.plan-email {
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+.plan-action-btn {
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.plan-action-btn:hover {
+  background: var(--accent-hover);
+}
+
+.plan-card.pro {
+  border-color: var(--accent);
+}
+
+.plan-card.pro .plan-icon::before {
+  content: '⭐';
+}
+
+/* ===== DATA ACTIONS ===== */
+.data-actions {
+  display: flex;
+  justify-content: space-around;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md) 0;
+  margin-bottom: var(--spacing-md);
+  border-bottom: 1px solid var(--border);
+}
+
+.data-action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: 11px;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  min-width: 70px;
+}
+
+.data-action-btn:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.data-action-btn.danger {
+  color: var(--danger);
+}
+
+.data-action-btn.danger:hover {
+  background: var(--danger-light);
+  color: var(--danger);
+}
+
+.data-action-btn svg {
+  flex-shrink: 0;
+}
+
+/* ===== ADVANCED SECTION ===== */
+.advanced-section {
+  padding-top: var(--spacing-sm);
+}
+
+.advanced-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  width: 100%;
+  padding: var(--spacing-sm) 0;
+  background: transparent;
+  border: none;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.advanced-toggle:hover {
+  color: var(--text-secondary);
+}
+
+.advanced-chevron {
+  transition: transform var(--duration-fast) ease;
+}
+
+.advanced-toggle[aria-expanded="true"] .advanced-chevron {
+  transform: rotate(90deg);
+}
+
+.advanced-content {
+  padding: var(--spacing-sm) 0;
+  animation: fadeIn var(--duration-fast) ease;
+}
+
 /* ===== ACCOUNT ===== */
 .account-info {
   margin-bottom: 14px;

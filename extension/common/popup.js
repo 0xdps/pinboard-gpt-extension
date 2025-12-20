@@ -93,6 +93,19 @@ document.addEventListener('DOMContentLoaded', async () => {
   const versionNumber = document.getElementById('versionNumber');
   const deleteAllBtn = document.getElementById('deleteAllBtn');
   
+  // Plan Card Elements
+  const planCard = document.getElementById('planCard');
+  const planIcon = document.getElementById('planIcon');
+  const planName = document.getElementById('planName');
+  const planUsage = document.getElementById('planUsage');
+  const planEmail = document.getElementById('planEmail');
+  const upgradePlanBtn = document.getElementById('upgradePlanBtn');
+  const managePlanBtn = document.getElementById('managePlanBtn');
+  
+  // Advanced Section Elements
+  const advancedToggle = document.getElementById('advancedToggle');
+  const advancedContent = document.getElementById('advancedContent');
+  
   // Upgrade Modal Elements
   const upgradeModal = document.getElementById('upgradeModal');
   const closeUpgrade = document.getElementById('closeUpgrade');
@@ -386,66 +399,108 @@ document.addEventListener('DOMContentLoaded', async () => {
     const accountSection = document.getElementById('accountSection');
     const userEmailEl = document.getElementById('userEmail');
     
+    // These elements may not exist in the new minimal settings
+    if (!authSection && !accountSection) {
+      return; // Skip if using new settings layout
+    }
+    
     const loggedIn = await isLoggedIn();
     
     if (loggedIn) {
       const result = await storageAPI.local.get(['userData']);
       const userData = result.userData;
       
-      authSection.style.display = 'none';
-      accountSection.style.display = 'block';
+      if (authSection) authSection.style.display = 'none';
+      if (accountSection) accountSection.style.display = 'block';
       if (userEmailEl && userData) {
         userEmailEl.textContent = userData.email;
       }
     } else {
-      authSection.style.display = 'block';
-      accountSection.style.display = 'none';
+      if (authSection) authSection.style.display = 'block';
+      if (accountSection) accountSection.style.display = 'none';
     }
   }
 
   // License key activation removed - licenses managed server-side
   // Update license display in settings
   async function updateLicenseDisplay() {
+    // Get current pin count
+    const pins = await getPins();
+    const pinCount = pins.length;
+    
+    const license = await getLicense();
+    const result = await storageAPI.local.get(['licenseData', 'userEmail']);
+    const licenseData = result.licenseData;
+    const userEmail = result.userEmail;
+
+    // Update plan card
+    if (planCard && planIcon && planName && planUsage) {
+      if (license === LICENSE_TYPES.PRO || license === LICENSE_TYPES.PREMIUM) {
+        // Pro/Premium user
+        planCard.classList.add('pro');
+        planIcon.textContent = '⭐';
+        planName.textContent = license === LICENSE_TYPES.PREMIUM ? 'Premium Plan' : 'Pro Plan';
+        planUsage.textContent = `${pinCount} pins`;
+        
+        if (userEmail && planEmail) {
+          planEmail.textContent = userEmail;
+          planEmail.style.display = 'block';
+        }
+        
+        if (upgradePlanBtn) upgradePlanBtn.style.display = 'none';
+        if (managePlanBtn) {
+          managePlanBtn.style.display = 'block';
+          managePlanBtn.onclick = () => {
+            tabsAPI.create({ url: 'https://pinboardgpt.app/account' });
+          };
+        }
+        
+        // Show upgrade to premium for Pro users
+        if (license === LICENSE_TYPES.PRO && upgradePlanBtn) {
+          upgradePlanBtn.textContent = 'Upgrade to Premium →';
+          upgradePlanBtn.style.display = 'block';
+          upgradePlanBtn.onclick = () => {
+            tabsAPI.create({ url: 'https://pinboardgpt.app/pricing.html?plan=premium' });
+          };
+        }
+      } else {
+        // Free user
+        planCard.classList.remove('pro');
+        planIcon.textContent = '📦';
+        planName.textContent = 'Free Plan';
+        planUsage.textContent = `${pinCount}/5 pins used`;
+        
+        if (planEmail) planEmail.style.display = 'none';
+        
+        if (upgradePlanBtn) {
+          upgradePlanBtn.style.display = 'block';
+          upgradePlanBtn.textContent = 'Upgrade to Pro →';
+          upgradePlanBtn.onclick = () => {
+            tabsAPI.create({ url: 'https://pinboardgpt.app/pricing.html' });
+          };
+        }
+        if (managePlanBtn) managePlanBtn.style.display = 'none';
+      }
+    }
+    
+    // Legacy support for old elements
     const currentPlanEl = document.getElementById('currentPlan');
     const licenseDetailsEl = document.getElementById('licenseDetails');
     
-    if (!currentPlanEl || !licenseDetailsEl) return;
+    if (currentPlanEl && licenseDetailsEl) {
+      let planText = 'Free';
+      let detailsText = 'Up to 5 pins, local storage only';
 
-    const license = await getLicense();
-    const result = await storageAPI.local.get(['licenseData']);
-    const licenseData = result.licenseData;
-
-    let planText = 'Free';
-    let detailsText = 'Up to 10 pins, local storage only';
-
-    if (license === LICENSE_TYPES.PRO) {
-      planText = 'Pro • <a href="#" id="upgradeToPremiumLink" style="color: var(--primary); cursor: pointer;">Upgrade to Premium</a>';
-      if (licenseData?.complementary) {
-        const expiryDate = new Date(licenseData.complementaryExpiry);
-        detailsText = `✨ Complementary access (expires ${expiryDate.toLocaleDateString()})`;
-      } else {
-        detailsText = 'Unlimited pins, sync, export, multi-AI';
-      }
-    } else if (license === LICENSE_TYPES.PREMIUM) {
-      planText = 'Premium';
-      if (licenseData?.complementary) {
-        const expiryDate = new Date(licenseData.complementaryExpiry);
-        detailsText = `✨ Complementary access (expires ${expiryDate.toLocaleDateString()})`;
-      } else {
+      if (license === LICENSE_TYPES.PRO) {
+        planText = 'Pro';
+        detailsText = 'Unlimited pins, sync, export';
+      } else if (license === LICENSE_TYPES.PREMIUM) {
+        planText = 'Premium';
         detailsText = 'Unlimited pins, cloud sync, cross-browser';
       }
-    }
 
-    currentPlanEl.innerHTML = planText;
-    licenseDetailsEl.textContent = detailsText;
-    
-    // Add event listener for upgrade to premium link if it exists
-    const upgradeToPremiumLink = document.getElementById('upgradeToPremiumLink');
-    if (upgradeToPremiumLink) {
-      upgradeToPremiumLink.onclick = (e) => {
-        e.preventDefault();
-        tabsAPI.create({ url: 'https://pinboardgpt.app/pricing.html?plan=premium' });
-      };
+      currentPlanEl.innerHTML = planText;
+      licenseDetailsEl.textContent = detailsText;
     }
   }
 
@@ -457,6 +512,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   closeSettings.onclick = () => {
     settingsModal.style.display = 'none';
   };
+
+  // Advanced section toggle
+  if (advancedToggle && advancedContent) {
+    advancedToggle.onclick = () => {
+      const isExpanded = advancedToggle.getAttribute('aria-expanded') === 'true';
+      advancedToggle.setAttribute('aria-expanded', !isExpanded);
+      advancedContent.style.display = isExpanded ? 'none' : 'block';
+    };
+  }
 
   // Close modal when clicking on overlay
   const settingsOverlay = settingsModal.querySelector('.modal-overlay');
@@ -1458,12 +1522,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       syncStatus.textContent = license === LICENSE_TYPES.PRO ? 'Pro' : 'Premium';
       syncStatus.classList.add('pro');
+      syncStatus.style.cursor = 'pointer';
+      syncStatus.onclick = () => {
+        tabsAPI.create({ url: 'https://pinboardgpt.app/account' });
+      };
       // Hide upgrade button for PRO/PREMIUM users
       if (upgradeBtn) upgradeBtn.style.display = 'none';
       if (license === LICENSE_TYPES.PREMIUM && coffeeBtn) coffeeBtn.style.display = 'none';
     } else {
       syncStatus.textContent = 'Free';
       syncStatus.classList.remove('pro');
+      syncStatus.style.cursor = 'pointer';
+      syncStatus.onclick = () => {
+        tabsAPI.create({ url: 'https://pinboardgpt.app/pricing.html' });
+      };
       // Show upgrade button for FREE users
       if (upgradeBtn) upgradeBtn.style.display = 'block';
     }
